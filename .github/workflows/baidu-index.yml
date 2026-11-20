@@ -26,7 +26,7 @@
 #   被 cancel-in-progress 把自己掐了。
 # 注意：YAML 的注释只能以 # 开头，写成 /* */ 会让整个文件解析失败、GitHub 直接不认这个 workflow。
 
-name: baidu-index-ljwsr
+name: baidu-index-ljswr
 
 on:
   schedule:
@@ -41,7 +41,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: baidu-index-ljwsr
+  group: baidu-index-ljswr
   cancel-in-progress: true
 
 jobs:
