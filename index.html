@@ -1314,7 +1314,7 @@ const ICO = {
   clock: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>'
 };
 function renderKPI() {
-  const dq = F('detawen'), yh = F('yunhe'), j = F('iqiyi');
+  const dq = F('detawen'), yh = F('yunhe');
   const items = [];
   const yPeak = (S.heat.peak || []).filter(x => x.d === bjShiftDay(bjDay(), -1)).map(x => x.v)[0];
   if (S.jy.cur != null) items.push(kpiItem('flame', '爱奇艺 · 实时热度', S.jy.cur, '',
@@ -1373,8 +1373,6 @@ function renderKPI() {
       esc(l.date) + ' · 定档日以来 ' + num(qm.list.filter(x => x.date >= CONFIG.anchorDate).reduce((a, x) => a + x.v, 0)),
       '#ff5f43', ''));
   }
-  if (j && j.reserve != null) items.push(kpiItem('star', '爱奇艺预约', yi(j.reserve).t, yi(j.reserve).u,
-    '上线前累计 · ' + (j.captured_at ? bjClock(new Date(j.captured_at)) : '—'), '#ffc861', ''));
 
   document.getElementById('kpi').innerHTML = items.map((x, i) => `
     <div class="card in" style="--c:${x.color};transition-delay:${i * 45}ms">
