@@ -1,0 +1,17 @@
+{
+  "name": "两京十五日",
+  "nameId": null,
+  "at": "2026-11-20 22:51",
+  "atDay": "2026-11-20",
+  "fetchedAt": "2026-11-20T14:51:34.251Z",
+  "runs": 2,
+  "board": {
+    "date": "2026-11-19",
+    "size": 30,
+    "inBoard": false
+  },
+  "inBoard": false,
+  "latest": null,
+  "days": [],
+  "fixes": []
+}

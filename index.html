@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="《两京十五日》数据看板：爱奇艺实时热度与分时曲线、CCTV-8 实时收视与节目单、爱奇艺更新时间表、德塔文景气指数与付费力、灯塔正片播放量、云合市占与评级、百度指数、微信指数、七麦下载量预估">
+<title>两京十五日 · 数据看板</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>:root{
+  --ink:#05060b;
+  --ink-2:#0a0c15;
+  --glass:rgba(255,255,255,.045);
+  --glass-hi:rgba(255,255,255,.09);
+  --line:rgba(255,255,255,.09);
+  --txt:#f4f6fc;
+  --dim:#adb6cd;
+  --dimmer:#8e97b0;
+  --gold:#ffc861;
+  --ember:#ff5f43;
+  --iqiyi:#00d98a;
+  --tencent:#4f9dff;
+  --ok:#3ddc97;
+  --warn:#ffb020;
+  --bad:#ff5c5c;
+  --r:18px;
+  --shadow:0 18px 50px -18px rgba(0,0,0,.85);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--ink);color:var(--txt);
+  font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,-apple-system,"Segoe UI",sans-serif;
+  min-height:100vh;overflow-x:hidden;line-height:1.5;
+}
+.serif{font-family:"Songti SC","STSong","SimSun","Noto Serif SC",serif}
+
+/* ---------- backdrop ---------- */
+.bg{position:fixed;inset:0;z-index:-2;background:
+  radial-gradient(1100px 620px at 12% -8%,rgba(0,217,138,.16),transparent 62%),
+  radial-gradient(900px 560px at 88% 4%,rgba(255,200,97,.14),transparent 60%),
+  radial-gradient(1000px 700px at 50% 108%,rgba(79,157,255,.11),transparent 65%),
+  linear-gradient(180deg,var(--ink) 0%,var(--ink-2) 60%,var(--ink) 100%);}
+.stars{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.45}
+.stars i{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;
+  box-shadow:0 0 6px rgba(255,255,255,.8);animation:tw 4s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.12;transform:scale(.6)}50%{opacity:.85;transform:scale(1.25)}}
+.wrap{max-width:1320px;margin:0 auto;padding:26px 20px 60px}
+
+/* ---------- hero ---------- */
+.hero{position:relative;display:flex;gap:30px;align-items:flex-end;flex-wrap:wrap;
+  padding:34px 34px 30px;margin-bottom:26px;border-radius:24px;
+  background:linear-gradient(135deg,rgba(0,217,138,.10),rgba(255,200,97,.07) 45%,rgba(255,255,255,.02));
+  border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(115deg,transparent 0 22px,rgba(255,255,255,.018) 22px 44px);pointer-events:none}
+.hero::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--iqiyi),var(--gold),transparent)}
+.poster-box{position:relative;flex:0 0 auto}
+.poster{width:172px;height:242px;object-fit:cover;border-radius:14px;display:block;
+  border:1px solid rgba(255,200,97,.35);box-shadow:0 22px 45px -14px rgba(0,0,0,.9);
+  background:#111;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.poster:hover{transform:translateY(-6px) scale(1.02)}
+.poster-badge{position:absolute;top:-9px;right:-9px;padding:5px 11px;border-radius:999px;
+  background:linear-gradient(135deg,var(--ember),#ff8a3c);font-size:.72rem;font-weight:700;
+  letter-spacing:.5px;box-shadow:0 6px 18px -4px rgba(255,95,67,.7)}
+.hero-main{flex:1 1 420px;min-width:300px;position:relative;z-index:1}
+.hero-kicker{font-size:.78rem;letter-spacing:.32em;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
+h1{font-size:clamp(2.3rem,5.4vw,3.6rem);font-weight:800;letter-spacing:.06em;line-height:1.12;
+  background:linear-gradient(120deg,#fff 15%,var(--gold) 55%,var(--iqiyi) 95%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 4px}
+.chip{padding:5px 12px;border-radius:999px;font-size:.8rem;color:#dfe4f2;
+  background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(8px)}
+.chip b{color:var(--gold);font-weight:600}
+.byline{margin-top:14px;font-size:.86rem;color:var(--dim)}
+.byline a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(255,200,97,.4)}
+
+/* ---------- 更新进度 ---------- */
+.march{flex:1 1 100%;margin-top:8px;position:relative;z-index:1}
+.march-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:9px}
+.march-label{font-size:.82rem;color:var(--dim);letter-spacing:.16em}
+.march-label b{color:var(--txt);font-weight:600;letter-spacing:0}
+.countdown{font-variant-numeric:tabular-nums;font-size:.9rem;color:var(--gold);font-weight:600}
+.march-sub{margin-top:9px;font-size:.75rem;line-height:1.6;color:var(--dim)}
+.track{position:relative;height:9px;border-radius:99px;background:rgba(255,255,255,.07)}
+.track-fill{position:absolute;inset:0 auto 0 0;border-radius:99px;width:0;
+  background:linear-gradient(90deg,var(--iqiyi),var(--gold));
+  transition:width 1.1s cubic-bezier(.2,.9,.25,1);box-shadow:0 0 18px rgba(0,217,138,.45)}
+.track-head{position:absolute;top:50%;left:0;width:15px;height:15px;margin:-7.5px 0 0 -7.5px;border-radius:50%;
+  background:#fff;box-shadow:0 0 0 3px rgba(255,200,97,.35),0 0 18px 4px rgba(0,217,138,.6);
+  transition:left 1.1s cubic-bezier(.2,.9,.25,1)}
+.track-head::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:1px solid rgba(255,200,97,.5);
+  animation:ping 2.2s ease-out infinite}
+@keyframes ping{0%{transform:scale(.7);opacity:.9}100%{transform:scale(2);opacity:0}}
+.mile{position:absolute;top:50%;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;
+  background:rgba(255,255,255,.28)}
+
+/* ---------- KPI ---------- */
+.sec-title{display:flex;align-items:center;gap:11px;margin:34px 0 16px;font-size:1.02rem;
+  letter-spacing:.2em;color:var(--dim);font-weight:600}
+.sec-title::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+.sec-title span{color:var(--txt)}
+.src-tag{display:inline-flex;align-items:center;gap:6px;font-size:.68rem;letter-spacing:.06em;
+  padding:4px 10px;border-radius:999px;font-weight:600;white-space:nowrap}
+.src-tag i{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.src-tag.live{color:#5ff0b5;background:rgba(60,220,150,.1);border:1px solid rgba(60,220,150,.32)}
+.src-tag.live i{animation:blip 1.6s ease-in-out infinite}
+.src-tag.lag{color:#ffbe6a;background:rgba(255,176,32,.09);border:1px solid rgba(255,176,32,.28)}
+@keyframes blip{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(95,240,181,.6)}50%{opacity:.55;box-shadow:0 0 0 5px rgba(95,240,181,0)}}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:16px}
+.card{position:relative;padding:20px 20px 18px;border-radius:var(--r);
+  background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(14px);
+  box-shadow:var(--shadow);overflow:hidden;transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .35s,background .35s;
+  opacity:0;transform:translateY(16px)}
+.card.in{opacity:1;transform:none}
+.card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.2);background:var(--glass-hi)}
+.card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--c,var(--gold));opacity:.85}
+.card::after{content:"";position:absolute;top:-60%;right:-30%;width:150px;height:150px;border-radius:50%;
+  background:radial-gradient(circle,var(--c,var(--gold)),transparent 68%);opacity:.11;pointer-events:none;
+  transition:opacity .4s}
+.card:hover::after{opacity:.24}
+.c-head{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.c-ico{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:0 0 auto;
+  background:color-mix(in srgb,var(--c,var(--gold)) 18%,transparent);
+  border:1px solid color-mix(in srgb,var(--c,var(--gold)) 34%,transparent)}
+.c-ico svg{width:16px;height:16px;fill:var(--c,var(--gold))}
+.c-name{font-size:.83rem;color:var(--dim);letter-spacing:.05em}
+.c-val{font-size:2.15rem;font-weight:800;letter-spacing:-.5px;line-height:1.1;
+  font-variant-numeric:tabular-nums;color:var(--txt);display:flex;align-items:baseline;gap:5px}
+.c-val .u{font-size:.85rem;font-weight:500;color:var(--dim);letter-spacing:0}
+.c-sub{margin-top:9px;font-size:.78rem;color:var(--dimmer);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+/* 数据滞后提示用琥珀，别用红——红在这页面上是"涨" */
+.c-sub .warn,.p-note .warn{color:#ffbe6a}
+.delta{font-weight:700;font-variant-numeric:tabular-nums;padding:2px 7px;border-radius:6px;font-size:.75rem}
+/* 国内习惯：红涨绿跌 */
+.delta.up{color:#ff9d9d;background:rgba(255,92,92,.13)}
+.delta.down{color:#79f2c0;background:rgba(61,220,151,.13)}
+.delta.flat{color:var(--dim);background:rgba(255,255,255,.06)}
+
+/* ---------- panels ---------- */
+.grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:16px}
+.grid2 .wide{grid-column:1 / -1}
+@media(max-width:1024px){.grid2{grid-template-columns:1fr}}
+.panel{padding:22px;border-radius:var(--r);background:var(--glass);border:1px solid var(--line);
+  backdrop-filter:blur(14px);box-shadow:var(--shadow)}
+.p-head{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.p-title{font-size:1.02rem;font-weight:700;letter-spacing:.04em;display:flex;align-items:center;gap:9px}
+.p-title i{width:4px;height:16px;border-radius:2px;background:linear-gradient(180deg,var(--gold),var(--iqiyi))}
+.p-note{font-size:.8rem;color:var(--dimmer)}
+.sub-label{margin:18px 0 8px;font-size:.78rem;letter-spacing:.22em;color:var(--gold);
+  display:flex;align-items:center;gap:9px}
+.sub-label::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(255,200,97,.4),transparent)}
+.tabs{display:flex;gap:6px;background:rgba(255,255,255,.05);padding:4px;border-radius:11px;border:1px solid var(--line)}
+.tab{padding:5px 13px;border-radius:8px;font-size:.79rem;color:var(--dim);cursor:pointer;
+  border:none;background:transparent;font-family:inherit;transition:.25s;white-space:nowrap}
+.tab:hover{color:var(--txt)}
+.tab.on{background:linear-gradient(135deg,rgba(255,200,97,.9),rgba(0,217,138,.8));color:#0c1a12;font-weight:700}
+.chart-box{position:relative;height:326px;margin-top:12px}
+.chart-box.short{height:262px}
+.empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--dimmer);font-size:.86rem;text-align:center;padding:20px}
+
+/* ---------- 行表 ---------- */
+.rows{margin-top:12px;display:flex;flex-direction:column}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 2px;
+  border-bottom:1px dashed rgba(255,255,255,.07);font-size:.86rem}
+.row:last-child{border-bottom:none}
+.row .k{color:var(--dim)}
+.row .v{font-weight:700;font-variant-numeric:tabular-nums;color:var(--txt)}
+.board{margin-top:12px;display:flex;flex-direction:column;gap:5px}
+.bd-row{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;
+  padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.035);font-size:.85rem}
+.bd-row.me{background:linear-gradient(90deg,rgba(255,200,97,.16),rgba(255,200,97,.02));
+  border:1px solid rgba(255,200,97,.4)}
+.bd-row .no{color:var(--dimmer);font-variant-numeric:tabular-nums;text-align:right}
+.bd-row .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bd-row .ix{font-variant-numeric:tabular-nums;font-weight:700;color:var(--gold)}
+.bd-row .pl{font-size:.7rem;color:var(--dimmer);margin-left:6px}
+/* 角色贡献度：横条用 .hbar，别叫 .bar */
+.hbar{display:grid;grid-template-columns:96px 1fr 54px;gap:10px;align-items:center;padding:6px 0;font-size:.82rem}
+.hbar .hb-nm{color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar .hb-tr{height:8px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden}
+.hbar .hb-tr>i{display:block;height:100%;border-radius:99px;width:0;
+  background:linear-gradient(90deg,var(--iqiyi),var(--gold));transition:width .9s cubic-bezier(.2,.9,.25,1)}
+.hbar .hb-v{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:var(--txt)}
+.sg-big{display:flex;align-items:baseline;gap:8px;margin:6px 0 2px}
+.sg-big b{font-size:2.9rem;font-weight:800;line-height:1;letter-spacing:-1px;
+  font-variant-numeric:tabular-nums;color:var(--ember)}
+.sg-big span{font-size:.86rem;color:var(--dim)}
+.sg-tags{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 4px}
+.sg-tags em{font-style:normal;font-size:.74rem;padding:4px 10px;border-radius:999px;
+  color:#ffd79a;background:rgba(255,200,97,.1);border:1px solid rgba(255,200,97,.26)}
+/* 付费力四档：列名和配色照抄德塔文自己那页的定义 */
+.pp-tbl{width:100%;border-collapse:collapse;margin-top:12px;font-size:.82rem}
+.pp-tbl th,.pp-tbl td{padding:8px 8px;border-bottom:1px solid var(--line);text-align:left;
+  font-variant-numeric:tabular-nums}
+.pp-tbl th{color:var(--dim);font-weight:600;font-size:.7rem;letter-spacing:.1em}
+.pp-tbl td.nm{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pp-tbl tr.me td{background:rgba(255,200,97,.1)}
+.pp-lv{display:inline-block;min-width:52px;color:var(--txt);font-weight:700}
+.pp-blocks{display:flex;gap:2px}
+.pp-blocks i{width:9px;height:14px;border-radius:2px;background:rgba(255,255,255,.12)}
+.rank-card{position:relative;overflow:hidden;padding:16px 18px;border-radius:14px;
+  background:linear-gradient(135deg,#ffe9b8 0%,#ffc861 46%,#4fd8a6 100%);
+  color:#12241a;box-shadow:0 10px 30px -12px rgba(255,180,80,.5)}
+.rank-card::after{content:'';position:absolute;top:-60%;left:-30%;width:55%;height:220%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);
+  transform:rotate(18deg);animation:sheen 5.5s ease-in-out infinite}
+@keyframes sheen{0%,72%{left:-40%}100%{left:130%}}
+.rc-name{font-size:.82rem;font-weight:700;letter-spacing:.04em;line-height:1.4;opacity:.86}
+.rc-no{font-size:1.05rem;font-weight:700;letter-spacing:.06em;margin-top:2px}
+.rc-no b{font-size:2.3rem;font-weight:900;letter-spacing:-1px;margin-left:6px;
+  font-family:'Times New Roman',serif;font-style:italic;line-height:1}
+.rc-tip{font-size:.7rem;opacity:.7;margin-top:7px;letter-spacing:.03em}
+
+/* ---------- 排播表 ---------- */
+.sch-tbl{width:100%;border-collapse:collapse;margin-top:14px;font-size:.85rem}
+.sch-tbl th,.sch-tbl td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);
+  font-variant-numeric:tabular-nums}
+.sch-tbl th{color:var(--dim);font-weight:600;font-size:.72rem;letter-spacing:.14em}
+.sch-tbl td.dow{color:var(--dim);font-weight:500}
+.sch-tbl td.vip{color:var(--gold);font-weight:700}
+.sch-tbl td.free{color:var(--iqiyi);font-weight:600}
+.sch-tbl tr.now td{background:linear-gradient(90deg,rgba(0,217,138,.14),transparent 78%)}
+.sch-tag{display:inline-block;margin-left:7px;padding:1px 7px;border-radius:999px;font-size:.62rem;
+  letter-spacing:.06em;color:var(--ember);border:1px solid rgba(255,95,67,.45);vertical-align:2px}
+.sch-note{margin-top:10px;font-size:.74rem;line-height:1.65;color:var(--dim)}
+/* 电视节目单 */
+.tv-list{margin-top:12px;display:flex;flex-direction:column;gap:4px;max-height:342px;overflow:auto}
+.tv-row{display:grid;grid-template-columns:86px 1fr;gap:10px;padding:7px 9px;border-radius:9px;
+  font-size:.82rem;background:rgba(255,255,255,.03)}
+.tv-row.me{background:linear-gradient(90deg,rgba(255,200,97,.15),transparent);
+  border-left:3px solid var(--gold)}
+.tv-row.past{opacity:.45}
+.tv-row .tm{color:var(--dimmer);font-variant-numeric:tabular-nums}
+.tv-row .pg{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- status ---------- */
+.status{margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:10px}
+.st-row{padding:11px 13px;border-radius:12px;background:rgba(255,255,255,.035);
+  border:1px solid var(--line);font-size:.78rem}
+.st-row .n{display:flex;align-items:center;gap:7px;color:#d7dcea;margin-bottom:5px;font-weight:600}
+.st-row .m{color:var(--dimmer);font-variant-numeric:tabular-nums}
+.st-row.ok{border-left:3px solid var(--ok)}
+.st-row.bad{border-left:3px solid var(--bad)}
+.st-row.idle{border-left:3px solid var(--dimmer)}
+.st-row.wait{border-left:3px solid var(--warn)}
+
+/* ---------- toolbar / footer ---------- */
+.toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:26px 0 4px;justify-content:center}
+.btn{padding:11px 24px;border-radius:999px;border:1px solid rgba(255,200,97,.4);cursor:pointer;
+  font-family:inherit;font-size:.87rem;font-weight:600;letter-spacing:.05em;transition:.3s;
+  background:linear-gradient(135deg,rgba(0,217,138,.2),rgba(255,200,97,.15));color:var(--txt)}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 26px -10px rgba(0,200,130,.5);border-color:var(--gold)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--dim)}
+.btn.ghost:hover{color:var(--txt);border-color:rgba(255,255,255,.28);box-shadow:none}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.28);
+  border-top-color:var(--gold);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.stamp{text-align:center;font-size:.78rem;color:var(--dimmer);margin-top:10px;font-variant-numeric:tabular-nums}
+footer{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);
+  text-align:center;font-size:.77rem;color:var(--dimmer);line-height:2}
+footer b{color:var(--dim);font-weight:600}
+footer a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(255,200,97,.4)}
+
+/* ---------- 打赏 ---------- */
+.donate-fab{position:fixed;right:18px;bottom:20px;z-index:60;display:flex;align-items:center;gap:7px;
+  padding:12px 20px;border-radius:999px;text-decoration:none;font-size:.85rem;font-weight:700;
+  letter-spacing:.04em;color:#2a1a04;font-family:inherit;
+  background:linear-gradient(135deg,#ffe9b8,#ffc861 55%,#ff9f43);
+  box-shadow:0 14px 34px -12px rgba(255,170,70,.75),0 0 0 1px rgba(255,220,150,.35) inset;
+  transition:transform .3s,box-shadow .3s;animation:bpulse 2.8s ease-in-out infinite}
+.donate-fab:hover{transform:translateY(-3px) scale(1.04);animation-play-state:paused}
+.donate-fab .df-ico{font-size:1.05rem;line-height:1}
+@keyframes bpulse{0%,100%{box-shadow:0 14px 34px -12px rgba(255,170,70,.75),0 0 0 0 rgba(255,200,97,.5)}
+  55%{box-shadow:0 14px 34px -12px rgba(255,170,70,.75),0 0 0 14px rgba(255,200,97,0)}}
+.modal{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
+  padding:22px;background:rgba(3,4,9,.78);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+.modal.open{display:flex;animation:fadein .25s ease}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.modal-card{position:relative;max-width:340px;width:100%;padding:26px 24px;border-radius:20px;text-align:center;
+  background:linear-gradient(160deg,#151b2e,#0d1120);border:1px solid rgba(255,200,97,.3);
+  box-shadow:0 30px 70px -20px rgba(0,0,0,.85)}
+.modal-title{font-size:1.15rem;font-weight:800;color:var(--gold);letter-spacing:.06em}
+.modal-img{display:block;width:100%;max-width:250px;margin:16px auto 6px;border-radius:14px;
+  background:#fff;box-shadow:0 8px 24px -10px rgba(0,0,0,.7)}
+.modal-tip{font-size:.76rem;color:var(--dim);line-height:1.7;margin-bottom:16px}
+.modal-x{position:absolute;top:10px;right:14px;width:28px;height:28px;border:none;border-radius:50%;
+  background:rgba(255,255,255,.07);color:var(--dim);font-size:1rem;cursor:pointer;line-height:1}
+.modal-x:hover{background:rgba(255,95,67,.28);color:#fff}
+@media(max-width:640px){
+  .wrap{padding:16px 12px 40px}
+  .hero{padding:20px 16px;gap:16px;align-items:flex-start;border-radius:20px}
+  .poster{width:104px;height:148px;border-radius:10px}
+  .poster-badge{top:-7px;right:-7px;font-size:.64rem;padding:4px 8px}
+  .hero-main{flex:1 1 180px;min-width:0}
+  h1{font-size:clamp(1.7rem,8vw,2.3rem);letter-spacing:.03em}
+  .hero-kicker{font-size:.66rem;letter-spacing:.22em}
+  .chips{gap:6px;margin:12px 0 2px}
+  .chip{font-size:.72rem;padding:4px 9px}
+  .byline{font-size:.78rem;margin-top:10px}
+  .kpi{grid-template-columns:repeat(2,1fr);gap:10px}
+  .card{padding:14px 13px}
+  .c-val{font-size:1.42rem}
+  .c-val .u{font-size:.72rem}
+  .c-name{font-size:.75rem}
+  .c-sub{font-size:.7rem;gap:6px;margin-top:7px}
+  .c-ico svg{width:15px;height:15px}
+  .delta{font-size:.66rem;padding:2px 6px}
+  .panel{padding:16px 14px}
+  .p-title{font-size:.95rem}
+  .chart-box{height:236px}.chart-box.short{height:212px}
+  .tab{padding:4px 10px;font-size:.74rem}
+  .row{font-size:.8rem;gap:8px}
+  .sec-title{font-size:.9rem;margin:26px 0 14px}
+  .src-tag{font-size:.6rem;padding:3px 8px}
+  .btn{font-size:.82rem;padding:9px 16px}
+  footer{font-size:.72rem;padding-bottom:20px}
+  .rc-name{font-size:.76rem}
+  .rc-no b{font-size:1.9rem}
+  .hbar{grid-template-columns:74px 1fr 48px;font-size:.76rem}
+  .tv-list{max-height:none}
+  .donate-fab{right:12px;bottom:12px;padding:10px 15px;font-size:.78rem}
+  .modal-card{padding:22px 18px}
+}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="stars" id="stars"></div>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="poster-box">
+      <img class="poster" id="poster" alt="《两京十五日》海报">
+      <span class="poster-badge" id="posterBadge">爱奇艺独播 · CCTV-8</span>
+    </div>
+    <div class="hero-main">
+      <div class="hero-kicker">两 京 十 五 日 · 数 据 看 板</div>
+      <h1 class="serif">两京十五日</h1>
+      <div class="chips" id="chips"></div>
+      <div class="byline" id="byline"></div>
+      <div class="march">
+        <div class="march-top">
+          <div class="march-label">十五日进度 · <b id="marchTxt">—</b></div>
+          <div class="countdown" id="marchCdown">—</div>
+        </div>
+        <div class="track"><div class="track-fill" id="marchFill"></div><div class="track-head" id="marchHead"></div></div>
+        <div class="march-sub" id="marchSub"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="sec-title">核心指标<span class="src-tag live" id="tagTop"><i></i><span>实时</span></span></div>
+  <section class="kpi" id="kpi"></section>
+
+  <div class="sec-title">热度 <span>· 爱奇艺</span></div>
+  <section class="grid2">
+    <div class="panel">
+      <div class="p-head">
+        <div class="p-title"><i></i>分时热度</div>
+        <div class="tabs" id="heatTabs">
+          <button class="tab on" data-d="0">今天</button>
+          <button class="tab" data-d="-1">昨天</button>
+          <button class="tab" data-d="peak">逐日峰值</button>
+        </div>
+      </div>
+      <div class="p-note" id="heatNote">—</div>
+      <div class="chart-box"><canvas id="heatChart"></canvas><div class="empty" id="heatEmpty">正在取数…</div></div>
+    </div>
+    <div class="panel">
+      <div class="p-head"><div class="p-title"><i></i>爱奇艺侧</div></div>
+      <div class="p-note" id="iqyLiveNote">—</div>
+      <div class="rows" id="iqyLiveRows"></div>
+      <div class="sub-label">豆瓣侧</div>
+      <div class="rows" id="dbRows"></div>
+    </div>
+  </section>
+
+  <div class="sec-title">电视端 <span>· CCTV-8</span></div>
+  <section class="grid2">
+    <div class="panel">
+      <div class="p-head">
+        <div class="p-title"><i></i>酷云实时收视</div>
+        <span class="src-tag live" id="kyTag"><i></i><span>—</span></span>
+      </div>
+      <div class="p-note" id="kyNote">—</div>
+      <div class="rows" id="kyRows"></div>
+    </div>
+    <div class="panel">
+      <div class="p-head">
+        <div class="p-title"><i></i>央视节目单</div>
+        <div class="tabs" id="epgTabs">
+          <button class="tab on" data-d="0">今天</button>
+          <button class="tab" data-d="1">明天</button>
+        </div>
+      </div>
+      <div class="p-note" id="epgNote">—</div>
+      <div class="tv-list" id="epgList"></div>
+    </div>
+  </section>
+
+  <div class="sec-title">网播端 <span>· 爱奇艺飙升榜 / 更新时间表</span></div>
+  <section class="grid2">
+    <div class="panel wide">
+      <div class="p-head">
+        <div class="p-title"><i></i>电视剧飙升榜</div>
+        <span class="src-tag live" id="sgTag"><i></i><span>实时</span></span>
+      </div>
+      <div class="p-note" id="sgNote">—</div>
+      <div id="sgMine"></div>
+      <div class="p-note" id="sgRule">—</div>
+    </div>
+    <div class="panel wide">
+      <div class="p-head">
+        <div class="p-title"><i></i>更新时间表</div>
+        <div class="p-note" id="iqyCalNote">—</div>
+      </div>
+      <div class="p-note" id="iqyRule">—</div>
+      <table class="sch-tbl">
+        <thead><tr><th>日期</th><th>星期</th><th>会员更新集数</th><th>免费转至</th><th>状态</th></tr></thead>
+        <tbody id="iqyCal"></tbody>
+      </table>
+      <div class="sch-note" id="iqyCalTail"></div>
+    </div>
+  </section>
+
+  <div class="sec-title">行业榜 <span>· 德塔文 / 云合 / 灯塔</span></div>
+  <section class="grid2">
+    <div class="panel">
+      <div class="p-head"><div class="p-title"><i></i>德塔文景气指数</div></div>
+      <div class="p-note" id="dwNote">—</div>
+      <div class="chart-box short"><canvas id="dwChart"></canvas><div class="empty" id="dwEmpty">正在读档案…</div></div>
+      <div class="sub-label">当日全榜</div>
+      <div class="tabs" id="dwTabs" style="margin-bottom:6px">
+        <button class="tab on" data-b="onair">已播</button>
+        <button class="tab" data-b="upcoming">待播</button>
+      </div>
+      <div class="board" id="dwBoard"></div>
+    </div>
+    <div class="panel">
+      <div class="p-head"><div class="p-title"><i></i>角色贡献度</div></div>
+      <div class="p-note" id="dwRoleNote">—</div>
+      <div id="dwRoles"></div>
+      <div class="sub-label">云合市占与评级</div>
+      <div class="p-note" id="yhNote">—</div>
+      <div class="rows" id="yhRows"></div>
+    </div>
+    <div class="panel wide">
+      <div class="p-head">
+        <div class="p-title"><i></i>德塔文 · 剧集付费力榜</div>
+        <div class="p-note" id="ppNote">—</div>
+      </div>
+      <table class="pp-tbl">
+        <thead><tr><th>榜位</th><th>剧名</th><th>当日等级</th><th>累计等级</th>
+          <th>观众包场</th><th>云周边</th><th>品牌广告</th><th>主创投入</th></tr></thead>
+        <tbody id="ppRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="sec-title">正片播放量 <span>· 灯塔</span></div>
+  <section class="grid2">
+    <div class="panel">
+      <div class="p-head"><div class="p-title"><i></i>当日分时</div></div>
+      <div class="p-note" id="dtHourNote">—</div>
+      <div class="chart-box short"><canvas id="dtHourChart"></canvas><div class="empty" id="dtHourEmpty">—</div></div>
+    </div>
+    <div class="panel">
+      <div class="p-head"><div class="p-title"><i></i>当日位次</div></div>
+      <div class="p-note" id="dtRankNote">—</div>
+      <div id="dtRankCard"></div>
+      <div class="rows" id="dtRows"></div>
+    </div>
+    <div class="panel wide">
+      <div class="p-head"><div class="p-title"><i></i>逐日正片播放量与市占</div></div>
+      <div class="p-note" id="dtDayNote">—</div>
+      <div class="chart-box"><canvas id="dtDayChart"></canvas><div class="empty" id="dtDayEmpty">—</div></div>
+    </div>
+  </section>
+
+  <div class="sec-title">搜索与社交 <span>· 百度指数 / 微信指数</span></div>
+  <section class="grid2">
+    <div class="panel">
+      <div class="p-head"><div class="p-title"><i></i>百度指数 · 近 90 天</div></div>
+      <div class="p-note" id="bdNote">—</div>
+      <div class="chart-box short"><canvas id="bdChart"></canvas><div class="empty" id="bdEmpty">—</div></div>
+    </div>
+    <div class="panel">
+      <div class="p-head"><div class="p-title"><i></i>微信指数 · 近 365 天</div></div>
+      <div class="p-note" id="wxNote">—</div>
+      <div class="chart-box short"><canvas id="wxChart"></canvas><div class="empty" id="wxEmpty">—</div></div>
+    </div>
+    <div class="panel">
+      <div class="p-head"><div class="p-title"><i></i>微信指数 · 渠道构成</div></div>
+      <div class="p-note" id="wxChanNote">—</div>
+      <div id="wxChans"></div>
+    </div>
+    <div class="panel">
+      <div class="p-head"><div class="p-title"><i></i>七麦 · 爱奇艺 App 下载量预估</div></div>
+      <div class="p-note" id="qmNote">—</div>
+      <div class="chart-box short"><canvas id="qmChart"></canvas><div class="empty" id="qmEmpty">—</div></div>
+      <div class="rows" id="qmRows"></div>
+    </div>
+  </section>
+
+  <div class="sec-title">波动记录 <span>· 微信指数单日涨跌</span></div>
+  <section class="grid2">
+    <div class="panel wide">
+      <div class="p-note" id="wxFlucNote">—</div>
+      <div class="rows" id="wxFluc"></div>
+    </div>
+  </section>
+
+  <div class="status" id="status"></div>
+
+  <div class="toolbar">
+    <button class="btn" id="refreshBtn">立即重算</button>
+    <button class="btn ghost" id="liveBtn">暂停轮询</button>
+  </div>
+  <div class="stamp" id="stamp">—</div>
+
+  <footer>
+    <div><b>《两京十五日》</b> 爱奇艺全网独播 · CCTV-8 电视播出 · 2026-11-20 首播 · 共 26 集</div>
+    <div>微信指数那一份是档案，字段名沿用它的原始键；<code>w1w_score</code>、<code>score_exp</code> 两个键微信没给中文名。</div>
+    <div>© 2026 九处 · 两京十五日数据看板 · <a id="donateLink" href="https://pic.sl.al/gdrive/pic/2025-11-26/fileid_1aPF614Jn4683MxgdV3UiuvN5lKyCLsdE_%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20251125182103_66_269.jpg" target="_blank" rel="noopener">请作者喝杯咖啡 ☕</a></div>
+  </footer>
+</div>
+
+<a class="donate-fab" id="donateBtn" href="https://pic.sl.al/gdrive/pic/2025-11-26/fileid_1aPF614Jn4683MxgdV3UiuvN5lKyCLsdE_%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20251125182103_66_269.jpg" target="_blank" rel="noopener">
+  <span class="df-ico">🧧</span><span>打赏作者</span>
+</a>
+
+<div class="modal" id="donateModal">
+  <div class="modal-card">
+    <button class="modal-x" id="donateClose" aria-label="关闭">×</button>
+    <div class="modal-title serif">感谢支持</div>
+    <img class="modal-img" id="donateImg" alt="微信赞赏码">
+    <div class="modal-tip">扫码赞赏 · 看板会持续更新<br>长按图片也可保存二维码</div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG —— 换剧只改这里
+   ============================================================ */
+const CONFIG = {
+  title: '两京十五日',
+  donate: 'https://pic.sl.al/gdrive/pic/2025-11-26/fileid_1aPF614Jn4683MxgdV3UiuvN5lKyCLsdE_%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20251125182103_66_269.jpg',
+  mediaId: 1394197,                  // 灯塔专业版 mediaId
+  doubanId: '35235320',              // 豆瓣条目号
+  qipuId: '3190714930072901',        // 爱奇艺专辑号（采集侧用，页面只读档案）
+  juyunlu: { iqiyi: 'uu6qr7xu7d' },  // 剧云录 video_id
+  kuyun: { channel: 'CCTV-8' },      // 酷云 /api/rtepg 按剧名匹配，这里只是备注
+  cctv: { channel: 'cctv8' },        // 央视节目单 api.cntv.cn 的频道号，浏览器直连免代理
+  qimaiAppid: '393765873',           // 爱奇艺 iPhone 版
+  /* 爱奇艺风云榜·电视剧飙升榜。这一口是 https 且 ACAO:*，浏览器能直连，
+     不过代理、不占 Worker 额度；参数全是 H5 常量，没有 cookie 也没有签名。
+     category_id=2 是电视剧，page_st=2 + tag=-1 是飙升榜（这两个值从它自己的 tab 接口里读出来的）。 */
+  surge: {
+    aid: '3190714930072901',
+    api: 'https://cards.iqiyi.com/views_category/3.0/rank_list?from_type=3&category_id=2&rec_tags=&page_st=2&rankNewStyle=1&tag=-1&from_category_id=8192&card_v=3.0&from_subtype=6&psp_status=1&dev_os=10&app_k=h5_8e48946f144759d86a50075555fd5862&net_sts=1&req_sn=1622181887070&req_from=h5&qyid=h5_webview&platform_id=12&secure_p=1&secure_v=1&dev_ua=h5&app_v=12.6.5&layout_v=87.9999.1622018362'
+  },
+  premiereDate: '2026-11-20',        // 首播日
+  anchorDate: '2026-11-18',          // 定档日，下载量统计窗口的左端
+  episodes: 26,
+  progressLabel: '十五日进度',
+  vipTime: '19:30',                  // VIP 每日更新
+  freeTime: '21:30',                 // 非会员转免
+  mtop: 'https://proxy.jiuchu.top/mtop',
+  proxies: [
+    u => 'https://proxy.jiuchu.top/proxy?url=' + encodeURIComponent(u),
+    u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
+    u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u)
+  ],
+  /* live/idle 是一对：北京 liveWindow 内按 live 秒级轮，窗口外自动降到 idle。
+     本剧 19:30 会员放量 + CCTV-8 19:30–21:31 两集连播，陡升段就这一段。
+     Cloudflare 免费档 10 万请求/天是整个账号共享的，两个面板加所有轮询都算在里面，
+     所以窗口外一律降到慢档，窗口内也只有剧云录按 20 秒、酷云 15 秒。 */
+  refresh: { live: 20e3, idle: 300e3, kuyun: 15e3, idleKuyun: 300e3, epg: 60e3,
+             surge: 60e3, idleSurge: 600e3, dengta: 600e3, heat: 600e3, file: 900e3 },
+  liveWindow: [19.3, 23.5]
+};
+
+/* ============================================================
+   通用：北京时间、格式化、代理
+   ============================================================ */
+const pad2 = n => String(n).padStart(2, '0');
+function bjParts(d = new Date()) {
+  const p = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Shanghai', hour12: false,
+    year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', weekday: 'short'
+  }).formatToParts(d).reduce((a, x) => (a[x.type] = x.value, a), {});
+  if (p.hour === '24') p.hour = '0';
+  return p;
+}
+const bjDay = d => { const p = bjParts(d); return `${p.year}-${pad2(p.month)}-${pad2(p.day)}`; };
+const bjYmd = d => bjDay(d).replace(/-/g, '');
+const bjHM = d => { const p = bjParts(d); return `${pad2(p.hour)}:${pad2(p.minute)}`; };
+const bjClock = d => { const p = bjParts(d); return `${p.year}-${pad2(p.month)}-${pad2(p.day)} ${pad2(p.hour)}:${pad2(p.minute)}`; };
+const bjShiftDay = (dayStr, delta) => {
+  const [y, m, d] = dayStr.split('-').map(Number);
+  return bjDay(new Date(Date.UTC(y, m - 1, d) + delta * 864e5));
+};
+function bjNow() { const p = bjParts(); return { h: +p.hour, m: +p.minute, f: +p.hour + +p.minute / 60, day: `${p.year}-${pad2(p.month)}-${pad2(p.day)}` }; }
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function num(v, d = 0) { return v == null || !isFinite(v) ? '—' : Number(v).toLocaleString('zh-CN', { minimumFractionDigits: d, maximumFractionDigits: d }); }
+/* 量词自己切，别让「216.00 万」这种假精度上屏 */
+function yi(v) {
+  if (v == null || !isFinite(v)) return { t: '—', u: '' };
+  const n = Number(v);
+  const sig3 = x => String(Number(x.toPrecision(3)));
+  if (Math.abs(n) >= 1e8) return { t: sig3(n / 1e8), u: '亿' };
+  if (Math.abs(n) >= 1e4) return { t: sig3(n / 1e4), u: '万' };
+  return { t: num(Math.round(n)), u: '' };
+}
+const clean = s => String(s == null ? '' : s).replace(/[　​-‏]/g, '').trim();
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+let proxyIdx = 0;
+async function pfetch(url, { timeout = 14000 } = {}) {
+  const errs = [];
+  for (let n = 0; n < CONFIG.proxies.length; n++) {
+    const i = (proxyIdx + n) % CONFIG.proxies.length;
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), timeout);
+    try {
+      const r = await fetch(CONFIG.proxies[i](url), { signal: ctl.signal, cache: 'no-store' });
+      clearTimeout(t);
+      if (!r.ok) { errs.push('HTTP ' + r.status); continue; }
+      const body = await r.text();
+      proxyIdx = i;
+      return body;
+    } catch (e) { clearTimeout(t); errs.push(e.name === 'AbortError' ? 'timeout' : String(e.message).slice(0, 30)); }
+  }
+  throw new Error(errs.join(' / ') || 'all proxies failed');
+}
+const pjson = async u => JSON.parse(await pfetch(u));
+
+async function mtop(api, dataObj, ver = '1.0', timeout = 12000) {
+  const u = CONFIG.mtop + '?api=' + encodeURIComponent(api) + '&v=' + ver +
+            '&data=' + encodeURIComponent(JSON.stringify(dataObj));
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), timeout);
+  let r;
+  try { r = await fetch(u, { signal: ctl.signal, cache: 'no-store' }); } finally { clearTimeout(t); }
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const j = await r.json();
+  if (j.error) throw new Error(j.error);
+  return (j.data && j.data.data) || j.data || {};
+}
+
+/* 豆瓣那两个口靠 <script> 标签：浏览器天然带 Referer，不过代理、不要 cookie */
+let jsonpSeq = 0;
+function jsonp(url, timeout = 18000) {
+  return new Promise((resolve, reject) => {
+    const cb = '__lj' + (++jsonpSeq) + Date.now();
+    const s = document.createElement('script');
+    const timer = setTimeout(() => { done(new Error('timeout')); }, timeout);
+    function done(err, data) {
+      clearTimeout(timer);
+      try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+      s.remove();
+      err ? reject(err) : resolve(data);
+    }
+    window[cb] = d => done(null, d);
+    s.onerror = () => done(new Error('JSONP 失败'));
+    s.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
+    document.head.appendChild(s);
+  });
+}
+
+/* ============================================================
+   状态
+   ============================================================ */
+const S = {
+  jy: {}, heat: {}, kuyun: null, epg: null,
+  douban: null, dbInterest: null,
+  dtDay: [], dtHour: [], dtRank: null, dtHot: null, dtMarket: null, dtMine: null,
+  surge: null,
+  file: {}, tab: { heat: '0', epg: '0', dw: 'onair' },
+  bootAt: Date.now(), live: true
+};
+const src = {};
+function mark(name, ok, msg) {
+  src[name] = { ok: !!ok, msg: msg || '', at: ok ? Date.now() : (src[name] && src[name].at || 0) };
+  renderStatus();
+}
+/* 上一次同键读数存本机，用来算「较上一拍」——只有本机看得见的差值，不冒充平台口径 */
+const PREV_KEY = 'lj_prev_v1';
+function pulse(key, v) {
+  if (v == null || !isFinite(v)) return null;
+  let o = {};
+  try { o = JSON.parse(localStorage.getItem(PREV_KEY) || '{}'); } catch (e) {}
+  const p = o[key];
+  o[key] = { v, at: Date.now() };
+  try { localStorage.setItem(PREV_KEY, JSON.stringify(o)); } catch (e) {}
+  if (!p || Date.now() - p.at > 6 * 3600e3 || p.v === v) return null;
+  return v - p.v;
+}
+function deltaTag(d, unit, digits) {
+  if (d == null || Math.abs(d) < 1e-9) return '';
+  const cls = d > 0 ? 'up' : 'down';
+  const t = Math.abs(d) >= 1e4 ? yi(Math.abs(d)).t + yi(Math.abs(d)).u
+                               : Math.abs(d).toFixed(digits == null ? 0 : digits);
+  return `<span class="delta ${cls}">${d > 0 ? '+' : '−'}${t}${unit || ''}</span>`;
+}
+function inLiveWindow() { const f = bjNow().f; const [a, b] = CONFIG.liveWindow; return f >= a && f <= b; }
+function cadence(kLive, kIdle) { return inLiveWindow() ? kLive : kIdle; }
+
+/* ============================================================
+   档案：Actions 落进仓库的那几份 JSON
+   ============================================================ */
+const FILES = ['iqiyi.json', 'detawen.json', 'yunhe.json', 'baidu-index.json', 'wxindex.json', 'qimai.json'];
+const FILE_CN = { 'iqiyi.json': '爱奇艺档案', 'detawen.json': '德塔文档案', 'yunhe.json': '云合档案',
+  'baidu-index.json': '百度指数档案', 'wxindex.json': '微信指数档案', 'qimai.json': '七麦档案' };
+async function loadFile(name) {
+  try {
+    const r = await fetch(name + '?cb=' + bjYmd(), { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    S.file[name] = JSON.parse(await r.text());
+    mark(FILE_CN[name], true);
+  } catch (e) {
+    S.file[name] = null;
+    mark(FILE_CN[name], false, e.message.slice(0, 34));
+  }
+}
+const F = n => S.file[n + '.json'] || null;
+
+/* ============================================================
+   剧云录 —— 分时热度
+   ============================================================ */
+const JYL = a => 'https://juyunlu.top/heat?action=' + a +
+  '&video_id=' + encodeURIComponent(CONFIG.juyunlu.iqiyi) + '&platform=iqiyi';
+async function heatHistory(dateStr) {
+  const j = await pjson(JYL('get_history') + '&date=' + dateStr + '&max_points=288');
+  if (!j.success) throw new Error('api fail');
+  return (j.records || []).filter(r => (r.record_time || '').startsWith(dateStr))
+    .map(r => ({ hhmm: r.record_time.slice(11, 16), v: +r.heat_value }));
+}
+async function loadHeat() {
+  const today = bjDay(), yest = bjShiftDay(today, -1);
+  const want = S.tab.heat === 'peak' ? [] : (S.tab.heat === '-1' ? [yest] : [today]);
+  for (const d of want) if (!S.heat[d]) S.heat[d] = await heatHistory(d).catch(() => null);
+  const [cur, mx, pk] = await Promise.all([
+    pjson(JYL('get_current_heat')).catch(() => null),
+    S.jy.max == null ? pjson(JYL('get_max_heat')).catch(() => null) : null,
+    S.heat.peak ? null : pjson(JYL('get_daily_peaks') + '&days=60').catch(() => null)
+  ]);
+  if (cur && cur.success && cur.heat_value != null) { S.jy.cur = +cur.heat_value; S.jy.curAt = cur.record_time; }
+  if (mx && mx.success && mx.heat_value != null) {
+    S.jy.max = +mx.heat_value; S.jy.maxDay = mx.record_date; S.jy.maxTime = mx.record_time_only;
+  }
+  if (pk && pk.success && !S.heat.peak) {
+    S.heat.peak = (pk.items || []).map(x => ({ d: x.date, v: +x.heat, t: x.time, diff: x.diff }));
+  }
+  const ok = S.jy.cur != null || (S.heat[today] && S.heat[today].length);
+  if (!ok) throw new Error('爱奇艺热度已建档，暂无数据');
+  renderHeat(); renderKPI(); renderStatus();
+  mark('爱奇艺热度', true);
+}
+function renderHeat() {
+  const note = document.getElementById('heatNote'), empty = document.getElementById('heatEmpty');
+  const mode = S.tab.heat;
+  let labels = [], vals = [], title = '';
+  if (mode === 'peak') {
+    const p = S.heat.peak || [];
+    labels = p.map(x => x.d.slice(5)); vals = p.map(x => x.v);
+    title = p.length ? `近 ${p.length} 天逐日峰值` : '';
+  } else {
+    const day = mode === '-1' ? bjShiftDay(bjDay(), -1) : bjDay();
+    const rec = S.heat[day] || [];
+    labels = rec.map(x => x.hhmm); vals = rec.map(x => x.v);
+    title = rec.length ? `${day} 分时 · ${rec.length} 个点 · 首点 ${rec[0].hhmm} ${rec[0].v}` : '';
+  }
+  if (!vals.length) { empty.style.display = 'grid'; empty.textContent = mode === 'peak' ? '峰值序列还没攒出来' : '这一天没有分时点'; }
+  else empty.style.display = 'none';
+  const last = vals.length ? vals[vals.length - 1] : null;
+  const prevVal = vals.length > 1 ? vals[vals.length - 2] : null;
+  const dMinute = mode === '0' && S.jy.curAt ? (bjNow().f - (+S.jy.curAt.slice(11, 13) + +S.jy.curAt.slice(14, 16) / 60)) : null;
+  note.innerHTML = title
+    ? `${esc(title)} · 现值 <b style="color:var(--gold)">${S.jy.cur == null ? '—' : S.jy.cur}</b>（${esc(S.jy.curAt || '')}）`
+      + (S.jy.max != null ? ` · 建档以来峰值 ${S.jy.max} · ${esc(S.jy.maxDay || '')}${S.jy.maxTime ? ' ' + esc(S.jy.maxTime) : ''}` : '')
+      + (dMinute != null && dMinute > 1.5 ? ` <span class="warn">· 上游回话在 ${dMinute.toFixed(0)} 分钟前</span>` : '')
+    : '—';
+  lineChart('heatChart', 'heat', labels, [{ label: '热度', data: vals, color: '#00d98a' }], { yTitle: '热度' });
+}
+
+/* ============================================================
+   酷云 —— CCTV-8 实时收视
+   ============================================================ */
+async function loadKuyun() {
+  if (!inLiveWindow()) { mark('酷云', false, '非播出时段'); renderKuyun(); return; }
+  const j = await pjson('https://www.ky.live/api/rtepg?tv_type=0&ca_type=0&area=-1&end=0&rt=1');
+  const list = j.data || [];
+  /* 酷云写「两京十五日 2」，央视写「两京十五日第2集」；startsWith 同时躲掉别人的重名片段 */
+  const hit = list.find(x => clean(x.epg).startsWith(CONFIG.title));
+  if (!hit) { mark('酷云', false, '频道单中未匹配（本集未播出或已播完）'); renderKuyun(); return; }
+  S.kuyun = { rating: hit.r, share: hit.mr, rank: hit.rk, progress: hit.progress,
+              time: hit.rt_time, tvn: hit.tvn, epg: hit.epg, start: hit.start_time, end: hit.end_time, size: list.length };
+  renderKuyun(); renderKPI(); mark('酷云', true);
+}
+function renderKuyun() {
+  const rows = document.getElementById('kyRows'), note = document.getElementById('kyNote');
+  const tag = document.getElementById('kyTag').querySelector('span');
+  const st = src['酷云'];
+  if (!S.kuyun) {
+    rows.innerHTML = '';
+    note.innerHTML = `<span class="warn">${esc(st && st.msg || '等待第一拍')}</span>`;
+    tag.textContent = st && st.msg === '非播出时段' ? '窗口外' : '未取到';
+    document.getElementById('kyTag').className = 'src-tag lag';
+    return;
+  }
+  document.getElementById('kyTag').className = 'src-tag live';
+  tag.textContent = '实时';
+  note.textContent = esc(S.kuyun.tvn) + ' · ' + esc((S.kuyun.time || '').slice(11, 19));
+  const row = (k, v) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  rows.innerHTML =
+    row('在播', esc(S.kuyun.epg) + '（' + esc(S.kuyun.start || '?').slice(11) + '–' + esc(S.kuyun.end || '?').slice(11) + '）') +
+    row('实时收视率', `<b style="color:var(--gold)">${(S.kuyun.rating * 100).toFixed(4)}%</b>`) +
+    row('实时市占率', (S.kuyun.share * 100).toFixed(4) + '%') +
+    row('全国同时段排名', `第 ${S.kuyun.rank ?? '—'} 名 · 共 ${S.kuyun.size} 频道`) +
+    row('本集播出进度', S.kuyun.progress + '%');
+}
+
+/* ============================================================
+   央视节目单（浏览器直连，不过代理）
+   ============================================================ */
+async function epgOf(dayStr) {
+  const url = 'https://api.cntv.cn/epg/getEpgInfoByChannelNew?c=' + CONFIG.cctv.channel +
+              '&serviceId=tvcctv&d=' + dayStr.replace(/-/g, '') + '&t=json';
+  const r = await fetch(url, { cache: 'no-store' });
+  const c = (((await r.json()) || {}).data || {})[CONFIG.cctv.channel] || {};
+  return (c.list || []).filter(x => x && x.showTime).map(x => ({
+    t: x.showTime, n: (x.title || '').trim()
+  }));
+}
+async function loadEpg() {
+  const day = bjShiftDay(bjDay(), +S.tab.epg);
+  if (S.epg && S.epg.day === day && Date.now() - S.epg.at < 5 * 60e3) { renderEpg(); return; }
+  const list = await epgOf(day);
+  S.epg = { day, at: Date.now(), list };
+  renderEpg(); mark('央视节目单', list.length > 0, list.length ? '' : '节目单为空');
+}
+function renderEpg() {
+  const box = document.getElementById('epgList'), note = document.getElementById('epgNote');
+  if (!S.epg) { box.innerHTML = '<div class="p-note">读取中…</div>'; return; }
+  const nowF = bjNow().f, isToday = S.epg.day === bjDay();
+  const hits = S.epg.list.filter(x => clean(x.n).startsWith(CONFIG.title));
+  note.innerHTML = `${esc(S.epg.day)} CCTV-8 共 ${S.epg.list.length} 档 · 本剧 ${hits.length} 档`
+    + (hits.length ? `：${hits.map(h => esc(h.n) + ' ' + h.t.slice(0, 5)).join('、')}` : '');
+  box.innerHTML = S.epg.list.map(x => {
+    const h = +x.t.slice(0, 2) + +x.t.slice(3, 5) / 60;
+    const me = clean(x.n).startsWith(CONFIG.title);
+    const past = isToday && h < nowF;
+    return `<div class="tv-row ${me ? 'me' : ''} ${past ? 'past' : ''}">
+      <span class="tm">${esc(x.t.slice(0, 5))}</span><span class="pg">${esc(x.n)}</span></div>`;
+  }).join('') || '<div class="p-note">这一天的节目单是空的</div>';
+}
+
+/* ============================================================
+   爱奇艺风云榜 · 电视剧飙升榜
+   ============================================================ */
+/* 那一行不是一格文字，是 metas[] 里按 meta_class 分档的几段；飙升幅度那格
+   （RankListCarryIndexMetaHandler）把箭头图标和数字拆成两个 span，content_type=1 的是图标 URL，要丢掉。 */
+function parseSurge(j) {
+  const txt = m => (m && ((m.spans || []).filter(x => String(x.content_type) !== '1')
+                          .map(x => x.content).join('') || m.text)) || '';
+  const cards = j.cards || [];
+  const blocks = ((cards.find(c => (c.blocks || []).length > 1) || {}).blocks) || [];
+  const rows = blocks.map((b, i) => {
+    const g = cls => (b.metas || []).find(m => m.meta_class === cls) || {};
+    return { no: i + 1, aid: String((b.statistics || {}).aid || ''),
+             name: txt(g('b823_1_meta1')), rise: txt(g('b823_1_meta5')),
+             info: txt(g('b823_1_meta6')),
+             tags: (b.metas || []).map(m => txt(m)).filter(t => /弹幕|讨论|上新/.test(t)).join(' ') };
+  });
+  const rule = JSON.stringify(((cards.find(c => c.card_class === 'card_rank_rule') || {}).blocks) || []);
+  const head = rule.match(/按飙升幅度排行最近更新([\d\-: ]+)/);
+  return { rows, head: head ? head[1].trim() : '' };
+}
+async function loadSurge() {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), 15000);
+  let j;
+  try {
+    const r = await fetch(CONFIG.surge.api, { signal: ctl.signal, cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    j = await r.json();
+  } finally { clearTimeout(t); }
+  if (j.code !== 0) throw new Error('接口回 code ' + j.code);
+  const p = parseSurge(j);
+  if (!p.rows.length) throw new Error('code 0 但榜内 0 行');
+  const mine = p.rows.find(x => x.aid === CONFIG.surge.aid) || null;
+  S.surge = { rows: p.rows, head: p.head, mine, at: Date.now() };
+  renderSurge(); renderKPI();
+  mark('爱奇艺飙升榜', !!mine, mine ? '' : `榜内 ${p.rows.length} 行没有本剧`);
+}
+function renderSurge() {
+  const note = document.getElementById('sgNote');
+  const mineBox = document.getElementById('sgMine'), rule = document.getElementById('sgRule');
+  const st = src['爱奇艺飙升榜'];
+  if (!S.surge) {
+    mineBox.innerHTML = '';
+    note.innerHTML = `<span class="warn">${esc(st && st.msg || '等待第一拍')}</span>`;
+    rule.textContent = '—'; return;
+  }
+  note.innerHTML = `爱奇艺侧更新 ${esc(S.surge.head || '—')}`
+    + ` · 本页取数 ${bjClock(new Date(S.surge.at))} · 榜内 ${S.surge.rows.length} 行`;
+  const val = r => parseFloat(String(r.rise)) || 0;
+  const m = S.surge.mine;
+  mineBox.innerHTML = m ? `<div class="sg-big"><b>${esc(String(val(m)))}</b><span>% · 飙升幅度</span></div>
+    <div class="sg-tags"><em>本剧 · 榜内第 ${m.no} 名</em>${(m.tags || '').split(' ').filter(Boolean).map(t => `<em>${esc(t)}</em>`).join('')}</div>
+    <div class="p-note">${esc(m.info)}</div>`
+    : `<div class="p-note"><span class="warn">此刻榜内 ${S.surge.rows.length} 行没有本剧那一行 —— 飙升榜只收当日有涨幅的条目，掉出榜不等于热度掉了。</span></div>`;
+  rule.innerHTML = '飙升幅度是爱奇艺自己算的相对涨幅，它没公布口径，这里照抄页面上那句话、不做二次换算。'
+    + (S.surge.head ? ` <b>「按飙升幅度排行 · 最近更新 ${esc(S.surge.head)}」</b>` : '');
+}
+
+/* ============================================================
+   灯塔 —— 正片播放量 / 市占 / 榜单 / 平台热度
+   ============================================================ */
+async function loadDengta() {
+  const today = bjYmd();
+  const [vvDay, vvHour, hot, rk] = await Promise.all([
+    mtop('mtop.alipictures.gravitywave.media.vv.detail.list',
+         { mediaId: CONFIG.mediaId, platform: 'ALL', dateType: 'DAY' }).catch(() => null),
+    mtop('mtop.alipictures.gravitywave.media.vv.detail.list',
+         { mediaId: CONFIG.mediaId, platform: 'ALL', dateType: 'HOUR' }).catch(() => null),
+    mtop('mtop.alipictures.gravitywave.media.hot.newdetail',
+         { mediaId: CONFIG.mediaId, platform: 'iqiyi', dateType: 'DAY' }).catch(() => null),
+    mtop('mtop.alipictures.gravitywave.media.rank.list',
+         { configCode: '1', typeCode: '1', platformCode: 'iqiyi', showDate: today,
+           dateType: '0', marketShareType: 1, isLoop: 'false' }, '3.0').catch(() => null)
+  ]);
+  const dayRows = (vvDay && vvDay.dataList) || [];
+  if (dayRows.length) S.dtDay = dayRows.map(x => ({
+    d: String(x.showDate).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'),
+    vv: x.vvCnt, total: x.totalVv, share: x.marketShare, rank: x.vvRank, hot: x.hotIndex
+  })).sort((a, b) => a.d < b.d ? -1 : 1);
+  const hourRows = (vvHour && vvHour.dataList) || [];
+  if (hourRows.length) S.dtHour = hourRows.map(x => ({ hh: x.hh, vv: x.vvCnt, share: x.marketShare }))
+    .sort((a, b) => a.hh < b.hh ? -1 : 1);
+  const hotList = ((hot && hot.dataList && hot.dataList[0] && hot.dataList[0].mediaVVHotDetailVOList) || [])
+    .map(x => ({ d: String(x.showDate).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'),
+                 avg: (x.vvCntList.find(y => y.hotKey === '当日平均') || {}).hotValue,
+                 max: (x.vvCntList.find(y => y.hotKey === '当日最高') || {}).hotValue,
+                 min: (x.vvCntList.find(y => y.hotKey === '当日最低') || {}).hotValue }))
+    .reverse();                                  // 接口是新的在前，翻成升序再画
+  if (hotList.length) S.dtHot = hotList;
+  const rm = rk && rk.rankMap;
+  if (rm) {
+    const rows = rm.rankList || [];
+    S.dtRank = rows.map(x => ({ name: x.name || x.showName, id: x.mediaId, cnt: x.cnt, vv: x.vvCnt }));
+    S.dtMarket = rm.market ? rm.market.vvCnt : null;
+    S.dtMine = rows.find(x => String(x.mediaId) === String(CONFIG.mediaId)) || null;
+  }
+  const ok = S.dtDay.length || S.dtHour.length || !!S.dtRank;
+  if (!ok) throw new Error('四个口都空');
+  renderDengta(); renderKPI(); mark('灯塔', true);
+}
+function renderDengta() {
+  /* 分时 */
+  const hn = document.getElementById('dtHourNote'), he = document.getElementById('dtHourEmpty');
+  if (S.dtHour.length) {
+    he.style.display = 'none';
+    const peak = S.dtHour.reduce((a, x) => x.vv > a.vv ? x : a, S.dtHour[0]);
+    hn.innerHTML = `${bjDay()} 已出 ${S.dtHour.length} 个时段 · 最高 ${esc(peak.hh)} ${yi(peak.vv).t}${yi(peak.vv).u}`
+      + ` · 时段市占 ${(parseFloat(String(S.dtHour.reduce((a, x) => x.share > a.share ? x : a, S.dtHour[0]).share)) || 0).toFixed(2)}%`;
+    barChart('dtHourChart', 'dth', S.dtHour.map(x => x.hh), S.dtHour.map(x => x.vv), '#00d98a');
+  } else { he.style.display = 'grid'; he.textContent = '灯塔还没给今天的分时格'; hn.textContent = '—'; }
+  /* 当日位次 */
+  const rn = document.getElementById('dtRankNote'), card = document.getElementById('dtRankCard');
+  const rowsBox = document.getElementById('dtRows');
+  if (S.dtRank) {
+    const mine = S.dtMine;
+    rn.innerHTML = mine
+      ? `爱奇艺网剧榜 ${bjDay()} · 第 ${S.dtRank.findIndex(x => String(x.id) === String(CONFIG.mediaId)) + 1} / ${S.dtRank.length} 名（榜内口径）`
+      : `榜内 ${S.dtRank.length} 行，此刻没有本剧那一行`;
+    const last = S.dtDay[S.dtDay.length - 1] || null;
+    card.innerHTML = `<div class="rank-card">
+      <div class="rc-name">当日正片播放量 · 全网口径</div>
+      <div class="rc-no">${last ? yi(last.vv).t : '—'}<b style="font-size:1rem;font-style:normal;margin-left:4px">${last ? yi(last.vv).u : ''}</b></div>
+      <div class="rc-tip">${last ? esc(last.d) + ' 市占 ' + esc(last.share) + ' · 累计 ' + yi(last.total).t + yi(last.total).u : '灯塔还没出当日格'}</div></div>`;
+    const row = (k, v) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+    rowsBox.innerHTML =
+      row('大盘当日 VV', S.dtMarket == null ? '—' : yi(S.dtMarket).t + yi(S.dtMarket).u) +
+      row('本剧当日热度指数', last && last.hot ? num(last.hot) : '—') +
+      row('平台热度（今日）', S.dtHot && S.dtHot.length ? `${S.dtHot[S.dtHot.length - 1].max} 峰值 / ${S.dtHot[S.dtHot.length - 1].avg} 均值` : '—') +
+      row('爱奇艺网剧榜', mine ? '榜内第 ' + (S.dtRank.findIndex(x => String(x.id) === String(CONFIG.mediaId)) + 1) + ' 名' : '未上榜');
+  } else { rn.textContent = '榜单口未回话'; rowsBox.innerHTML = ''; card.innerHTML = ''; }
+  /* 逐日 */
+  const dn = document.getElementById('dtDayNote'), de = document.getElementById('dtDayEmpty');
+  if (S.dtDay.length) {
+    de.style.display = 'none';
+    const sum = S.dtDay.reduce((a, x) => a + (x.vv || 0), 0);
+    dn.innerHTML = `${S.dtDay[0].d} → ${S.dtDay[S.dtDay.length - 1].d} 共 ${S.dtDay.length} 天 · 合计 ${yi(sum).t}${yi(sum).u}`
+      + (S.dtDay.length === 1 ? '（首播当天，序列从今天开始攒）' : '');
+    lineChart('dtDayChart', 'dtd', S.dtDay.map(x => x.d.slice(5)),
+      [{ label: '当日正片播放量', data: S.dtDay.map(x => x.vv), color: '#ffc861' },
+       { label: '平台热度', data: S.dtHot && S.dtHot.length ? S.dtHot.map(x => x.avg) : [], color: '#00d98a', axis: 'y1' }],
+      { yTitle: 'VV', y1Title: '热度' });
+  } else { de.style.display = 'grid'; de.textContent = '还没取到逐日格'; dn.textContent = '—'; }
+}
+
+/* ============================================================
+   德塔文 / 云合 / 爱奇艺 / 百指 / 微信指数 / 七麦 —— 全读档案
+   ============================================================ */
+function renderDetawen() {
+  const j = F('detawen');
+  const note = document.getElementById('dwNote'), empty = document.getElementById('dwEmpty');
+  if (!j) { empty.style.display = 'grid'; empty.textContent = 'detawen.json 还没进仓库'; return; }
+  empty.style.display = 'none';
+  const series = j.series || [];
+  const mine = j.mine;
+  note.innerHTML = (mine ? `本剧 ${mine.board === 'onair' ? '已播榜' : '待播榜'}第 ${mine.rank} 名 · 指数 <b style="color:var(--gold)">${mine.idx}</b>`
+                        : '两张榜都没对上本剧那一行')
+    + ` · 最后一次回话 ${esc(j.stamp && j.stamp.real_time || '—')}`
+    + ` · 序列 ${series.length} 天（档案最早 ${esc(j.archive && j.archive.earliest || '—')}）`;
+  lineChart('dwChart', 'dw', series.map(x => x.d.slice(5)),
+    [{ label: '景气指数', data: series.map(x => x.idx), color: '#ffc861' }],
+    { yTitle: '景气指数', gaps: true });
+
+  /* 当日全榜 */
+  const board = (j.board || {})[S.tab.dw] || [];
+  document.getElementById('dwBoard').innerHTML = board.map(x => {
+    const me = clean(x.name) === CONFIG.title;
+    return `<div class="bd-row ${me ? 'me' : ''}"><span class="no">${x.rank}</span>
+      <span class="nm">${esc(x.name)}</span><span class="ix">${x.index_value == null ? '—' : x.index_value}</span></div>`;
+  }).join('') || '<div class="p-note">这一张榜是空的</div>';
+
+  /* 角色贡献度 */
+  const roles = (mine && mine.roles) || [];
+  document.getElementById('dwRoleNote').innerHTML = roles.length
+    ? `当日榜那一行的拆分 · ${esc(j.stamp.real_date || '')}` : '当日榜行里没有角色拆分';
+  const maxc = roles.length ? Math.max(...roles.map(r => r.contribute || 0)) : 1;
+  document.getElementById('dwRoles').innerHTML = roles.map(r => `<div class="hbar">
+    <span class="hb-nm" title="${esc(r.actor)}">${esc(r.role)}</span>
+    <span class="hb-tr"><i style="width:${((r.contribute || 0) / maxc * 100).toFixed(1)}%"></i></span>
+    <span class="hb-v">${((r.contribute || 0) * 100).toFixed(1)}%</span></div>`).join('')
+    + (roles.length ? `<div class="p-note" style="margin-top:8px">主演：${roles.map(r => esc(r.actor)).join(' · ')}</div>` : '');
+
+  /* 付费力榜 */
+  const pp = j.paid || {};
+  const pn = document.getElementById('ppNote'), pr = document.getElementById('ppRows');
+  pn.innerHTML = `德塔文侧最新一期 ${esc((pp.date || '—').replace(/-/g, '.'))} · 对方回话 ${esc(pp.update_time || '—')}`
+    + (pp.mine ? '' : ' · 本期没有本剧');
+  const rows = pp.rows || [];
+  pr.innerHTML = rows.map(r => {
+    const me = clean(r.name) === CONFIG.title;
+    const full = (pp.mine && me) ? pp.mine.parts : null;
+    const cell = i => {
+      if (!full) return '<span class="pp-lv" style="color:var(--dimmer)">—</span>';
+      const p = full[i];
+      const lv = String(p.level || '0').replace('w以下', '万以下').replace('w+', '万+');
+      return `<span class="pp-lv">${esc(lv)}</span><span class="pp-blocks">${blocksOf(p.blocks)}</span>`;
+    };
+    return `<tr class="${me ? 'me' : ''}"><td>${r.rank}</td><td class="nm">${esc(r.name)}</td>
+      <td>${esc(r.daily || '')}</td><td>${esc(r.cumulative || '')}</td>
+      <td>${full ? cell(0) : '—'}</td><td>${full ? cell(1) : '—'}</td>
+      <td>${full ? cell(2) : '—'}</td><td>${full ? cell(3) : '—'}</td></tr>`;
+  }).join('') || '<tr><td colspan="8">还没拿到那一期</td></tr>';
+}
+/* 德塔文那页把等级串映射成 0~6 格阶梯，这里照它的对应关系画 */
+function blocksOf(n) {
+  const k = Math.max(0, Math.min(6, Number(n) || 0));
+  return Array.from({ length: 6 }, (_, i) => `<i style="${i < k ? 'background:linear-gradient(180deg,#ffd48a,#c98a2a)' : ''}"></i>`).join('');
+}
+function renderYunhe() {
+  const j = F('yunhe');
+  const note = document.getElementById('yhNote'), box = document.getElementById('yhRows');
+  if (!j) { note.innerHTML = '云合档案未到'; box.innerHTML = ''; return; }
+  const days = j.days || [];
+  note.innerHTML = j.inBoard
+    ? `榜内最新一期 ${esc(j.board.date || '')} · 云合榜 T+1`
+    : `本期榜（${esc(j.board.date || '')}）30 行里没有本剧 · 最后一次检查 ${esc(j.at || '')}`;
+  const row = (k, v) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  box.innerHTML = row('正片有效播放市占率', days.length ? (days[days.length - 1].share ?? '—') + '%' : '—') +
+    row('云合评级', days.length && days[days.length - 1].level ? days[days.length - 1].level : '未出') +
+    row('榜单名次', days.length && days[days.length - 1].rank ? '第 ' + days[days.length - 1].rank + ' 名' : '—') +
+    (days.length > 1 ? row('已攒天数', days.length + ' 天 · ' + esc(days[0].date) + ' → ' + esc(days[days.length - 1].date)) : '') +
+    (j.days && j.days.length ? '' : `<div class="p-note" style="margin-top:8px">开播首日还没有这一格，明天那一拍起才会出现。</div>`);
+}
+function renderIqiyi() {
+  const j = F('iqiyi');
+  const cal = document.getElementById('iqyCal'), tail = document.getElementById('iqyCalTail');
+  const rule = document.getElementById('iqyRule'), note = document.getElementById('iqyCalNote');
+  const liveRows = document.getElementById('iqyLiveRows'), liveNote = document.getElementById('iqyLiveNote');
+  if (!j) {
+    note.innerHTML = '<span class="warn">iqiyi.json 还没进仓库</span>';
+    cal.innerHTML = ''; return;
+  }
+  note.textContent = '最后一次回话 ' + (j.captured_at ? bjClock(new Date(j.captured_at)) : '—');
+  const p = j.progress || {}, rows = (j.calendar || {}).rows || [], today = bjDay();
+  rule.innerHTML = [p.update_notification, p.display_update_notification].filter(Boolean).map(esc).join(' ｜ ')
+    + (p.extra_tip ? ` · ${esc(p.extra_tip)}` : '');
+  cal.innerHTML = rows.map(r => `<tr class="${r.date === today ? 'now' : ''}">
+    <td>${esc(r.label)}${r.date === today ? '<span class="sch-tag">今天</span>' : ''}</td>
+    <td class="dow">${esc(r.week)}</td>
+    <td class="vip">${r.vip ? '第 ' + esc(r.vip) + ' 集' : '—'}</td>
+    <td class="free">${r.nonVip ? '第 ' + esc(r.nonVip) + ' 集' : '—'}</td>
+    <td>${r.stopped ? `<span class="warn">${esc(r.stopReason || '停更')}</span>` : '更新'}</td></tr>`).join('')
+    || '<tr><td colspan="5">时间表是空的</td></tr>';
+  tail.textContent = ((j.calendar || {}).tail || '').replace(/[<>]/g, '').trim();
+  liveNote.innerHTML = `爱奇艺口径热度 <b>${p.heat == null ? '—' : p.heat}</b>（${esc(p.publish_date || '')}）`
+    + ` · 预约 <b style="color:var(--gold)">${j.reserve == null ? '—' : yi(j.reserve).t + yi(j.reserve).u}</b>`;
+  const row = (k, v) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  liveRows.innerHTML =
+    row('更新进度', esc(p.update_status || '—')) +
+    row('会员规则', esc(p.update_notification || '—')) +
+    row('免费规则', esc(p.display_update_notification || '—')) +
+    row('预约人数', j.reserve == null ? '—' : num(j.reserve)) +
+    row('总集数', (p.ep_total || p.total_episode || CONFIG.episodes) + ' 集');
+}
+function renderBaidu() {
+  const j = F('baidu-index');
+  const note = document.getElementById('bdNote'), empty = document.getElementById('bdEmpty');
+  if (!j || !j.rows || !j.rows.length) {
+    empty.style.display = 'grid'; empty.textContent = j ? '档案里没有非零日' : '百度指数档案还没进仓库';
+    note.textContent = '—'; return;
+  }
+  empty.style.display = 'none';
+  const last = j.rows[j.rows.length - 1];
+  note.innerHTML = `最新 ${esc(j.asof)} · 搜索指数 <b style="color:var(--gold)">${num(last[1])}</b>`
+    + ` · 最后一次采到 ${j.lastRun ? esc(String(j.lastRun).replace('T', ' ').slice(0, 16)) : '—'}`;
+  lineChart('bdChart', 'bd', j.rows.map(r => r[0]), [{ label: '搜索指数', data: j.rows.map(r => r[1]), color: '#4f9dff' }]);
+}
+function renderWx() {
+  const j = F('wxindex');
+  const note = document.getElementById('wxNote'), empty = document.getElementById('wxEmpty');
+  if (!j || !j.daily || !j.daily.length) {
+    empty.style.display = 'grid'; empty.textContent = 'wxindex.json 还没进仓库';
+    note.textContent = '—'; return;
+  }
+  empty.style.display = 'none';
+  const d = j.daily, last = d[d.length - 1];
+  const peak = d.reduce((a, x) => x.s > a.s ? x : a, d[0]);
+  const fmt = s => s.slice(0, 4) + '-' + s.slice(4, 6) + '-' + s.slice(6, 8);
+  note.innerHTML = `最新 ${esc(fmt(last.d))} · <b style="color:var(--gold)">${yi(last.s).t}${yi(last.s).u}</b>`
+    + ` · 档案内最高 ${esc(fmt(peak.d))} ${yi(peak.s).t}${yi(peak.s).u} · 这份档案 ${esc(bjClock(new Date(j.captured_at)))}`;
+  lineChart('wxChart', 'wx', d.map(x => fmt(x.d).slice(5)), [{ label: '微信指数', data: d.map(x => x.s), color: '#3ddc97' }]);
+
+  const ch = j.channels[j.channels.length - 1] || {};
+  const NAMES = { total_score: '总指数', finder_score: '视频号', query_score: '搜一搜',
+                  mpdoc_score: '公众号', live_score: '直播', miniapp_score: '小程序',
+                  emoji_score: '表情', ad_score: '广告', extlink_score: '站外链接',
+                  w1w_score: 'w1w_score（微信没给名字）', score_exp: 'score_exp（微信没给名字）' };
+  const keys = Object.keys(ch).filter(k => k !== 'd' && Number(ch[k]) > 0);
+  const tot = Number(ch.total_score) || 1;
+  document.getElementById('wxChanNote').innerHTML = `${esc(fmt(ch.d || last.d))} · 分项相加 ${Math.abs(tot - keys.filter(k => k !== 'total_score').reduce((a, k) => a + Number(ch[k]), 0)) <= 3 ? '与总指数相符' : '与总指数有出入'}`;
+  document.getElementById('wxChans').innerHTML = keys
+    .sort((a, b) => Number(ch[b]) - Number(ch[a]))
+    .map(k => `<div class="hbar"><span class="hb-nm">${esc(NAMES[k] || k)}</span>
+      <span class="hb-tr"><i style="width:${(Number(ch[k]) / tot * 100).toFixed(1)}%"></i></span>
+      <span class="hb-v">${(Number(ch[k]) / tot * 100).toFixed(1)}%</span></div>`).join('') || '<div class="p-note">渠道那一份是空的</div>';
+
+  const fl = j.fluctuations || [];
+  document.getElementById('wxFlucNote').innerHTML = `微信指数自己标出的涨跌格 · 档案内 ${fl.length} 条 · ${fl.length ? esc(fmt(fl[0].d)) + ' 为最新' : ''}`;
+  document.getElementById('wxFluc').innerHTML = fl.slice(0, 10).map(x => {
+    const up = x.gain_pct > 0;
+    return `<div class="row"><span class="k">${esc(fmt(x.d))} ${up ? '↑' : '↓'}</span>
+      <span class="v">${yi(x.today).t}${yi(x.today).u}
+        <span class="delta ${up ? 'up' : 'down'}">${up ? '+' : '−'}${Math.abs(x.gain_pct).toFixed(2)}%</span></span></div>`;
+  }).join('') || '<div class="p-note">没有记录到涨跌格</div>';
+}
+function renderQimai() {
+  const j = F('qimai');
+  const note = document.getElementById('qmNote'), empty = document.getElementById('qmEmpty'), box = document.getElementById('qmRows');
+  if (!j || !j.list || !j.list.length) {
+    empty.style.display = 'grid';
+    empty.textContent = j ? '档案里还没有非零日' : '七麦档案还没进仓库';
+    note.textContent = '—'; box.innerHTML = ''; return;
+  }
+  empty.style.display = 'none';
+  const anchor = CONFIG.anchorDate;
+  const win = j.list.filter(x => x.date >= anchor);
+  const sum = win.reduce((a, x) => a + x.v, 0);
+  const last = j.list[j.list.length - 1];
+  note.innerHTML = `${esc(j.app)}（appid ${j.appid}）· ${esc(j.sdate)} → ${esc(j.edate)}`
+    + (j.pending && j.pending.length ? ` · <span class="warn">${esc(j.pending.join('、'))} 尚在统计</span>` : '');
+  lineChart('qmChart', 'qm', j.list.map(x => x.date.slice(5)),
+    [{ label: '预估下载量', data: j.list.map(x => x.v), color: '#ff5f43' }]);
+  const row = (k, v) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  box.innerHTML =
+    row('定档日以来（' + esc(anchor) + '→' + esc(last.date) + '）', num(sum) + ' · ' + win.length + ' 天') +
+    row('日均', win.length ? num(Math.round(sum / win.length)) : '—') +
+    row('最新一天', esc(last.date) + ' ' + num(last.v)) +
+    row('窗口内最高', j.peak ? esc(j.peak.date) + ' ' + num(j.peak.v) : '—') +
+    row('拉取方式', j.auto ? '云端自动重采' : '人工快照') + ' ' +
+    row('拉取于', esc(j.at || ''));
+}
+
+/* ============================================================
+   豆瓣 —— JSONP，星级分布不在这一口里
+   ============================================================ */
+async function loadDouban() {
+  const base = 'https://m.douban.com/rexxar/api/v2/tv/' + CONFIG.doubanId;
+  const [d, r] = await Promise.all([
+    jsonp(base + '?ck=jq_a&for_mobile=1').catch(() => null),
+    jsonp(base + '/rating?for_mobile=1').catch(() => null)
+  ]);
+  if (!d) throw new Error('豆瓣两个口都没回话');
+  S.douban = d; S.dbInterest = r;
+  const hot = (d.realtime_hot_honor_infos || [])[0] || {};
+  document.getElementById('poster').src = (d.cover && d.cover.url) || '';
+  const row = (k, v) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  document.getElementById('dbRows').innerHTML =
+    row('评分', (d.rating && d.rating.value) ? d.rating.value.toFixed(1) + ' / ' + (d.rating.max || 10)
+        : `<span class="warn">${esc(d.null_rating_reason || '暂无评分')}</span>`) +
+    row('评分人数', d.rating && d.rating.count ? num(d.rating.count) : '0') +
+    row('想看', r ? num(r.wish_count) : '—') +
+    row('正在看', r ? num(r.doing_count) : '—') +
+    row('已看完', r ? num(r.done_count) : '—') +
+    row('豆瓣热门电视榜', hot.rank ? '第 ' + hot.rank + ' 名 · ' + yi(hot.score).t + yi(hot.score).u : '—');
+  mark('豆瓣', true);
+  renderKPI();
+}
+
+/* ============================================================
+   hero / KPI / status
+   ============================================================ */
+function renderHero() {
+  const j = F('iqiyi'), p = (j && j.progress) || {};
+  const total = p.ep_total || p.total_episode || CONFIG.episodes;
+  const now = p.ep_now == null ? null : p.ep_now;
+  document.getElementById('chips').innerHTML = [
+    `<span class="chip">共 <b>${total}</b> 集</span>`,
+    `<span class="chip">首播 <b>${esc(CONFIG.premiereDate)}</b> ${esc(CONFIG.vipTime)}</span>`,
+    `<span class="chip">会员 <b>${esc((p.update_notification || '每日' + CONFIG.vipTime + '更新2集')).replace('VIP会员', '')}</b></span>`,
+    `<span class="chip">免费 <b>${esc((p.display_update_notification || CONFIG.freeTime + '转免').replace('非会员', ''))}</b></span>`,
+    `<span class="chip">电视 <b>CCTV-8</b></span>`,
+    `<span class="chip">导演 <b>张黎</b></span>`,
+    `<span class="chip">领衔主演 <b>傅诗淇（成毅）</b></span>`
+  ].join('');
+  document.getElementById('byline').innerHTML =
+    `原著 <b>马伯庸</b> · 爱奇艺 ${esc((S.douban && S.douban.card_subtitle) || '全网独播')}`
+    + ` · 作者 <a href="https://weibo.com/u/2136166244" target="_blank" rel="noopener">九处</a>`;
+  const pct = now == null ? 0 : Math.min(100, now / total * 100);
+  const t = bjNow();
+  const vipF = +CONFIG.vipTime.slice(0, 2) + +CONFIG.vipTime.slice(3) / 60;
+  // 恒取"下一次"：19:30 那格过了就要滚到明天，直接相减会在夜里印出负数。
+  const mins = ((vipF - t.f + 24) % 24) * 60;
+  document.getElementById('marchTxt').innerHTML = `已播 <b>${now == null ? '—' : now}</b> / ${total} 集`;
+  document.getElementById('marchFill').style.width = pct + '%';
+  document.getElementById('marchHead').style.left = pct + '%';
+  document.getElementById('marchCdown').textContent =
+    now != null && now >= total ? '已收官'
+      : mins < 60 ? `距下一次会员更新约 ${Math.round(mins)} 分钟`
+        : `距下一次会员更新约 ${(mins / 60).toFixed(1)} 小时`;
+  const cal = (j && j.calendar && j.calendar.rows) || [];
+  const calTail = ((j && j.calendar && j.calendar.tail) || '').replace(/[<>]/g, '').trim();
+  document.getElementById('marchSub').innerHTML = cal.length
+    ? `未来七天：${cal.map(r => `${esc(r.label)} ${esc(r.vip || '—')}`).join(' · ')}` +
+      (calTail ? ` · 「${esc(calTail)}」` : '')
+    : '更新时间表档案未到';
+}
+function kpiItem(icon, name, val, unit, sub, color, dHtml) {
+  return { icon, name, val, unit, sub, color, dHtml };
+}
+const ICO = {
+  flame: '<path d="M12 2c3 4 5 6 5 9a5 5 0 0 1-10 0c0-1 .4-2 1-3 .2 1.2 1 2 2 2 0-3-1-5 2-8z"/>',
+  tv: '<path d="M3 7h18v10H3zM8 21h8"/>',
+  film: '<path d="M4 4h16v16H4zm4 0v16M16 4v16"/>',
+  chart: '<path d="M4 20V9m5 11V4m5 16v-7m5 7V7"/>',
+  share: '<path d="M7 17 17 7M8 7h9v9"/>',
+  search: '<path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14m5 12 4 4"/>',
+  chat: '<path d="M4 5h16v11H8l-4 4z"/>',
+  dl: '<path d="M12 4v10m0 0 4-4m-4 4-4-4M5 19h14"/>',
+  up: '<path d="M4 17 10 11l4 4 6-8m0 0h-6m6 0v6"/>',
+  star: '<path d="m12 3 2.6 5.6 6 .7-4.4 4.1 1.2 5.9L12 16.9 6.6 19.3l1.2-5.9L3.4 9.3l6-.7z"/>',
+  clock: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>'
+};
+function renderKPI() {
+  const dq = F('detawen'), yh = F('yunhe'), j = F('iqiyi');
+  const items = [];
+  const yPeak = (S.heat.peak || []).filter(x => x.d === bjShiftDay(bjDay(), -1)).map(x => x.v)[0];
+  if (S.jy.cur != null) items.push(kpiItem('flame', '爱奇艺 · 实时热度', S.jy.cur, '',
+    (S.jy.curAt ? `采样于 ${esc(String(S.jy.curAt).slice(11, 16))}` : '热度读取中')
+      + (S.jy.max != null ? ` · 历史最高 ${num(S.jy.max)} · ${esc(S.jy.maxDay || '')}` : ''),
+    '#00d98a',
+    yPeak == null ? '' : deltaTag(S.jy.cur - yPeak, '', 0) + '<span class="u">对昨日峰值</span>'));
+  if (S.surge && S.surge.mine) items.push(kpiItem('up', '爱奇艺 · 飙升幅度',
+    parseFloat(String(S.surge.mine.rise)) || 0, '%',
+    `榜内第 ${S.surge.mine.no} 名 · 爱奇艺侧更新 ${esc(S.surge.head || '—')}`, '#ff5f43', ''));
+
+  const lastDay = S.dtDay[S.dtDay.length - 1];
+  const prevDay = S.dtDay[S.dtDay.length - 2];
+  if (lastDay) {
+    const sh = (parseFloat(String(lastDay.share)) || 0).toFixed(2);
+    items.push(kpiItem('film', '灯塔 · 今日实时播放量', yi(lastDay.vv).t, yi(lastDay.vv).u,
+      `实时市占 ${sh}%` + (lastDay.rank ? ` · 网剧榜第 ${lastDay.rank}` : '')
+        + (prevDay ? ` · 昨日 ${yi(prevDay.vv).t}${yi(prevDay.vv).u}` : ''),
+      '#ff5f43', deltaTag(pulse('dtd.' + lastDay.d, lastDay.vv), '', 0)));
+  }
+  if (S.dtHour.length) {
+    const pk = S.dtHour.reduce((a, x) => x.vv > a.vv ? x : a, S.dtHour[0]);
+    const pkSh = S.dtHour.reduce((a, x) => (parseFloat(String(x.share)) || 0) >
+      (parseFloat(String(a.share)) || 0) ? x : a, S.dtHour[0]);
+    items.push(kpiItem('clock', '灯塔 · 分时峰值', yi(pk.vv).t, yi(pk.vv).u,
+      `${esc(pk.hh)} · 时段最高市占 ${(parseFloat(String(pkSh.share)) || 0).toFixed(2)}%`, '#00d98a', ''));
+  }
+  if (S.kuyun) items.push(kpiItem('tv', '酷云 · CCTV-8 收视率', (S.kuyun.rating * 100).toFixed(4), '%',
+    `同时段第 ${S.kuyun.rank} 名 · ${esc(S.kuyun.epg)}`, '#ffc861', ''));
+  if (dq && dq.mine) items.push(kpiItem('chart', '德塔文 · 景气指数', dq.mine.idx, '',
+    `${dq.mine.board === 'onair' ? '已播榜' : '待播榜'}第 ${dq.mine.rank} 名 · ${esc(dq.stamp.real_date || '')}`, '#ffc861', ''));
+
+  const yhLast = yh && yh.days && yh.days.length ? yh.days[yh.days.length - 1] : null;
+  const yhLevel = yhLast && yhLast.level ? yhLast.level : null;
+  items.push(kpiItem('share', '云合 · 评级', yhLevel || '—', '',
+    yhLast ? [yhLevel ? '' : '评级未出',
+      yhLast.share != null ? `有效播放市占 ${esc(yhLast.share)}%` : '', esc(yhLast.date || '')]
+        .filter(Boolean).join(' · ') : '云合评级未出', '#4f9dff', ''));
+  const bd = F('baidu-index');
+  const bdLast = bd && bd.rows && bd.rows.length ? bd.rows[bd.rows.length - 1] : null;
+  items.push(kpiItem('search', '百度指数', bdLast ? num(bdLast[1]) : '—', '',
+    bdLast ? esc(bd.asof) : '百度指数档案未到', '#4f9dff',
+    bdLast && bd.rows.length > 1 ? deltaTag(bdLast[1] - bd.rows[bd.rows.length - 2][1], '', 0) : ''));
+  const wx = F('wxindex');
+  if (wx && wx.daily && wx.daily.length) {
+    const l = wx.daily[wx.daily.length - 1];
+    const pv = wx.daily[wx.daily.length - 2];
+    items.push(kpiItem('chat', '微信指数', yi(l.s).t, yi(l.s).u,
+      esc(l.d.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')), '#3ddc97',
+      pv ? deltaTag(l.s - pv.s, '', 0) : ''));
+  }
+  const qm = F('qimai');
+  if (qm && qm.list && qm.list.length) {
+    const l = qm.list[qm.list.length - 1];
+    items.push(kpiItem('dl', '七麦 · 爱奇艺下载量', num(l.v), '',
+      esc(l.date) + ' · 定档日以来 ' + num(qm.list.filter(x => x.date >= CONFIG.anchorDate).reduce((a, x) => a + x.v, 0)),
+      '#ff5f43', ''));
+  }
+  if (j && j.reserve != null) items.push(kpiItem('star', '爱奇艺预约', yi(j.reserve).t, yi(j.reserve).u,
+    '上线前累计 · ' + (j.captured_at ? bjClock(new Date(j.captured_at)) : '—'), '#ffc861', ''));
+
+  document.getElementById('kpi').innerHTML = items.map((x, i) => `
+    <div class="card in" style="--c:${x.color};transition-delay:${i * 45}ms">
+      <div class="c-head"><div class="c-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linecap="round">${ICO[x.icon]}</svg></div><div class="c-name">${x.name}</div></div>
+      <div class="c-val">${x.val}<span class="u">${x.unit}</span>${x.dHtml}</div>
+      <div class="c-sub">${x.sub}</div>
+    </div>`).join('') || '<div class="p-note">第一拍还没回话</div>';
+}
+function renderStatus() {
+  const names = Object.keys(src);
+  document.getElementById('status').innerHTML = names.map(n => {
+    const s = src[n];
+    const cls = s.ok ? 'ok' : (s.msg === '非播出时段' ? 'idle' : 'bad');
+    return `<div class="st-row ${cls}"><div class="n">${esc(n)}</div>
+      <div class="m">${s.ok ? '最后一次回话 ' + new Date(s.at).toLocaleTimeString('zh-CN', { hour12: false })
+                             : esc(s.msg || '未回话')}</div></div>`;
+  }).join('');
+}
+
+/* ============================================================
+   图表
+   ============================================================ */
+const CH = {};
+function mkChart(id, cfg) {
+  const el = document.getElementById(id);
+  if (!window.Chart || !el) return;
+  if (CH[id]) CH[id].destroy();
+  CH[id] = new Chart(el, cfg);
+}
+function lineChart(id, key, labels, sets, opt = {}) {
+  const ds = sets.filter(s => s.data && s.data.length).map(s => ({
+    label: s.label, data: s.data, borderColor: s.color,
+    backgroundColor: s.color + '22', borderWidth: 2, tension: .28,
+    pointRadius: 0, pointHoverRadius: 4, fill: true, spanGaps: !!opt.gaps,
+    yAxisID: s.axis || 'y'
+  }));
+  const scales = {
+    x: { ticks: { color: '#8e97b0', maxTicksLimit: 10 }, grid: { color: 'rgba(255,255,255,.05)' } },
+    y: { ticks: { color: '#adb6cd' }, grid: { color: 'rgba(255,255,255,.06)' }, title: { display: !!opt.yTitle, text: opt.yTitle, color: '#8e97b0' } }
+  };
+  if (sets.some(s => s.axis === 'y1')) {
+    scales.y1 = { position: 'right', ticks: { color: '#00d98a' }, grid: { drawOnChartArea: false },
+                  title: { display: !!opt.y1Title, text: opt.y1Title, color: '#8e97b0' } };
+  }
+  mkChart(id, { type: 'line', data: { labels, datasets: ds },
+    options: { responsive: true, maintainAspectRatio: false, animation: { duration: 500 },
+               plugins: { legend: { labels: { color: '#adb6cd', boxWidth: 10 } } }, scales } });
+}
+function barChart(id, key, labels, vals, color) {
+  mkChart(id, { type: 'bar', data: { labels, datasets: [{ data: vals, backgroundColor: color + 'aa', borderRadius: 5 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+               plugins: { legend: { display: false } },
+               scales: { x: { ticks: { color: '#8e97b0' }, grid: { display: false } },
+                         y: { ticks: { color: '#adb6cd' }, grid: { color: 'rgba(255,255,255,.06)' } } } } });
+}
+
+/* ============================================================
+   调度
+   ============================================================ */
+const timers = [];
+/* 每个任务一把自己的锁、一个自己的名字：名字同时是状态格的键和 busy 的键。
+   早先传匿名函数进去，safe 收到的名字全是 'task'，四个任务并成一把锁，撞车的那些直接跳过。 */
+function every(name, ms, fn) {
+  const step = async () => {
+    await safe(name, fn);
+    timers.push(setTimeout(step, typeof ms === 'function' ? ms() : ms));
+  };
+  timers.push(setTimeout(step, typeof ms === 'function' ? ms() : ms));
+}
+let busy = {};
+async function safe(name, fn) {
+  if (!S.live) return;
+  if (busy[name]) return;
+  busy[name] = true;
+  try { await fn(); }
+  catch (e) { mark(name, false, String(e.message || e).slice(0, 44)); }
+  finally { busy[name] = false; updateStamp(); }
+}
+function updateStamp() {
+  document.getElementById('stamp').textContent =
+    `本页 ${bjClock()} · 窗口内按秒级轮，窗口外降慢档 · 打开已 ${Math.round((Date.now() - S.bootAt) / 1000)} 秒`;
+}
+
+/* ============================================================
+   交互
+   ============================================================ */
+function wireTabs(boxId, key, onPick) {
+  const box = document.getElementById(boxId);
+  if (!box) return;
+  box.addEventListener('click', e => {
+    const b = e.target.closest('.tab'); if (!b) return;
+    box.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
+    S.tab[key] = b.dataset.d != null ? b.dataset.d : b.dataset.b;
+    onPick();
+  });
+}
+function stars() {
+  const box = document.getElementById('stars');
+  let html = '';
+  for (let i = 0; i < 46; i++) html += `<i style="left:${(Math.random() * 100).toFixed(2)}%;top:${(Math.random() * 100).toFixed(2)}%;animation-delay:${(Math.random() * 4).toFixed(1)}s"></i>`;
+  box.innerHTML = html;
+}
+
+const dm = document.getElementById('donateModal');
+function donateOpen(e) {
+  if (e) e.preventDefault();
+  const img = document.getElementById('donateImg');
+  if (!img.src) img.src = CONFIG.donate;
+  dm.classList.add('open');
+}
+document.getElementById('donateBtn').addEventListener('click', donateOpen);
+document.getElementById('donateLink').addEventListener('click', donateOpen);
+document.getElementById('donateClose').addEventListener('click', () => dm.classList.remove('open'));
+dm.addEventListener('click', e => { if (e.target === dm) dm.classList.remove('open'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') dm.classList.remove('open'); });
+
+/* ============================================================
+   启动
+   ============================================================ */
+(async function boot() {
+  stars();
+  wireTabs('heatTabs', 'heat', () => { renderHeat(); safe('爱奇艺热度', loadHeat); });
+  wireTabs('epgTabs', 'epg', () => safe('央视节目单', loadEpg));
+  wireTabs('dwTabs', 'dw', () => renderDetawen());
+  document.getElementById('refreshBtn').addEventListener('click', async () => {
+    const b = document.getElementById('refreshBtn');
+    b.disabled = true; b.innerHTML = '<span class="spin"></span> 重算中';
+    S.heat = {}; S.jy.max = null;
+    const one = (n, f) => f().catch(e => mark(n, false, String(e.message || e).slice(0, 44)));
+    await Promise.all([loadAllFiles(),
+      one('爱奇艺热度', loadHeat), one('酷云', loadKuyun), one('灯塔', loadDengta),
+      one('央视节目单', loadEpg), one('豆瓣', loadDouban), one('爱奇艺飙升榜', loadSurge)]);
+    renderAll();
+    b.disabled = false; b.textContent = '立即重算';
+  });
+  document.getElementById('liveBtn').addEventListener('click', e => {
+    S.live = !S.live;
+    e.target.textContent = S.live ? '暂停轮询' : '继续轮询';
+    if (S.live) startPolling();
+  });
+  await loadAllFiles();
+  renderAll();
+  await Promise.all([
+    safe('爱奇艺热度', loadHeat), safe('酷云', loadKuyun), safe('灯塔', loadDengta),
+    safe('央视节目单', loadEpg), safe('豆瓣', loadDouban), safe('爱奇艺飙升榜', loadSurge)
+  ]);
+  startPolling();
+  updateStamp();
+})();
+async function loadAllFiles() { await Promise.all(FILES.map(loadFile)); }
+function renderAll() {
+  renderHero(); renderDetawen(); renderYunhe(); renderIqiyi();
+  renderBaidu(); renderWx(); renderQimai(); renderKuyun(); renderEpg(); renderSurge();
+  renderHeat(); renderKPI(); renderStatus();
+}
+let pollingStarted = false;
+function startPolling() {
+  if (pollingStarted) return;
+  pollingStarted = true;
+  every('爱奇艺热度', () => cadence(CONFIG.refresh.live, CONFIG.refresh.idle), loadHeat);
+  every('酷云', () => cadence(CONFIG.refresh.kuyun, CONFIG.refresh.idleKuyun), loadKuyun);
+  every('爱奇艺飙升榜', () => cadence(CONFIG.refresh.surge, CONFIG.refresh.idleSurge), loadSurge);
+  every('灯塔', CONFIG.refresh.dengta, loadDengta);
+  every('央视节目单', CONFIG.refresh.epg, loadEpg);
+  every('档案', CONFIG.refresh.file, async () => {
+    await loadAllFiles();
+    renderDetawen(); renderYunhe(); renderIqiyi(); renderBaidu(); renderWx(); renderQimai();
+    renderKPI(); renderHero();
+  });
+}
+</script>
+</body>
+</html>

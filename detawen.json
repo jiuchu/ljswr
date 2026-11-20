@@ -1,0 +1,955 @@
+{
+ "title": "两京十五日",
+ "captured_at": "2026-11-20T14:51:33.969Z",
+ "stamp": {
+  "real_date": "2026-11-20",
+  "real_time": "2026-11-20 22:51",
+  "db_date": "2026-11-20",
+  "update_time": "2026-11-20 22:51"
+ },
+ "archive": {
+  "earliest": "2018-08-06",
+  "latest": "2026-11-20",
+  "days": 2394
+ },
+ "board": {
+  "onair": [
+   {
+    "rank": 1,
+    "name": "谷雨",
+    "idx": 2.028,
+    "trend": "up"
+   },
+   {
+    "rank": 2,
+    "name": "今天是太阳雨",
+    "idx": 2.02,
+    "trend": "up"
+   },
+   {
+    "rank": 3,
+    "name": "多喜一家人",
+    "idx": 1.669,
+    "trend": "down"
+   },
+   {
+    "rank": 4,
+    "name": "两京十五日",
+    "idx": 1.626,
+    "trend": "flat"
+   },
+   {
+    "rank": 5,
+    "name": "玉簟秋",
+    "idx": 1.583,
+    "trend": "down"
+   },
+   {
+    "rank": 6,
+    "name": "尚公主",
+    "idx": 1.483,
+    "trend": "down"
+   },
+   {
+    "rank": 7,
+    "name": "兰香如故",
+    "idx": 1.412,
+    "trend": "down"
+   },
+   {
+    "rank": 8,
+    "name": "小城良方",
+    "idx": 1.408,
+    "trend": "up"
+   },
+   {
+    "rank": 9,
+    "name": "嫁金钗",
+    "idx": 1.407,
+    "trend": "down"
+   },
+   {
+    "rank": 10,
+    "name": "走马上任",
+    "idx": 1.272,
+    "trend": "down"
+   }
+  ],
+  "upcoming": [
+   {
+    "rank": 1,
+    "name": "百妖谱",
+    "idx": 0.652,
+    "trend": "down"
+   },
+   {
+    "rank": 2,
+    "name": "云初令",
+    "idx": 0.643,
+    "trend": "flat"
+   },
+   {
+    "rank": 3,
+    "name": "告别信",
+    "idx": 0.608,
+    "trend": "up"
+   },
+   {
+    "rank": 4,
+    "name": "浮生",
+    "idx": 0.593,
+    "trend": "up"
+   },
+   {
+    "rank": 5,
+    "name": "璀璨之上",
+    "idx": 0.417,
+    "trend": "up"
+   },
+   {
+    "rank": 6,
+    "name": "红舞鞋",
+    "idx": 0.396,
+    "trend": "up"
+   },
+   {
+    "rank": 7,
+    "name": "不为人知的故事",
+    "idx": 0.396,
+    "trend": "up"
+   },
+   {
+    "rank": 8,
+    "name": "剑来",
+    "idx": 0.369,
+    "trend": "up"
+   },
+   {
+    "rank": 9,
+    "name": "十日终焉",
+    "idx": 0.361,
+    "trend": "flat"
+   },
+   {
+    "rank": 10,
+    "name": "金枝",
+    "idx": 0.353,
+    "trend": "down"
+   }
+  ]
+ },
+ "mine": {
+  "d": null,
+  "board": "onair",
+  "rank": 4,
+  "idx": 1.626,
+  "trend": "flat",
+  "platform": "爱奇艺",
+  "tv": [
+   "CCTV8"
+  ],
+  "web": [
+   "爱奇艺"
+  ],
+  "roles": [
+   {
+    "actor": "成毅",
+    "role": "朱瞻基",
+    "contribute": 0.4443,
+    "yiren": 0.5027
+   },
+   {
+    "actor": "林更新",
+    "role": "吴定缘",
+    "contribute": 0.1953,
+    "yiren": 0.6305
+   },
+   {
+    "actor": "吴幸键",
+    "role": "于谦",
+    "contribute": 0.1062,
+    "yiren": 0.2581
+   },
+   {
+    "actor": "姜佩瑶",
+    "role": "苏荆溪",
+    "contribute": 0.0691,
+    "yiren": 0.4513
+   },
+   {
+    "actor": "陈数",
+    "role": "张皇后",
+    "contribute": 0.0418,
+    "yiren": 0.4175
+   }
+  ]
+ },
+ "paid": {
+  "date": "2026-11-19",
+  "update_time": "2026-11-20 17:31",
+  "labels": [
+   "观众包场",
+   "云周边",
+   "品牌广告",
+   "主创投入"
+  ],
+  "rows": [
+   {
+    "rank": 1,
+    "name": "谷雨",
+    "daily": "100万+",
+    "cumulative": "2千万+"
+   },
+   {
+    "rank": 2,
+    "name": "尚公主",
+    "daily": "50万+",
+    "cumulative": "3千万+"
+   },
+   {
+    "rank": 3,
+    "name": "多喜一家人",
+    "daily": "50万+",
+    "cumulative": "200万+"
+   },
+   {
+    "rank": 4,
+    "name": "今天是太阳雨",
+    "daily": "10万+",
+    "cumulative": "500万+"
+   },
+   {
+    "rank": 5,
+    "name": "折月亮",
+    "daily": "10万+",
+    "cumulative": "500万+"
+   },
+   {
+    "rank": 6,
+    "name": "宝珠",
+    "daily": "10万+",
+    "cumulative": "100万+"
+   },
+   {
+    "rank": 7,
+    "name": "十万狂花入梦来",
+    "daily": "1万+",
+    "cumulative": "100万+"
+   },
+   {
+    "rank": 8,
+    "name": "走马上任",
+    "daily": "0",
+    "cumulative": "200万+"
+   }
+  ],
+  "mine": null
+ },
+ "series": [
+  {
+   "d": "2026-11-02",
+   "board": "upcoming",
+   "rank": 6,
+   "idx": 0.448,
+   "trend": "up",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.5476,
+     "yiren": 0.4672
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.2235,
+     "yiren": 0.6343
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.1305,
+     "yiren": 0.1404
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.0984,
+     "yiren": 0.5023
+    }
+   ]
+  },
+  {
+   "d": "2026-11-03",
+   "board": "upcoming",
+   "rank": 3,
+   "idx": 0.655,
+   "trend": "up",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.5713,
+     "yiren": 0.4979
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.2126,
+     "yiren": 0.629
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.1224,
+     "yiren": 0.1498
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.0937,
+     "yiren": 0.4792
+    }
+   ]
+  },
+  {
+   "d": "2026-11-04",
+   "board": "upcoming",
+   "rank": 8,
+   "idx": 0.517,
+   "trend": "down",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.5559,
+     "yiren": 0.5083
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.2318,
+     "yiren": 0.6909
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.1188,
+     "yiren": 0.1553
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.0935,
+     "yiren": 0.4842
+    }
+   ]
+  },
+  {
+   "d": "2026-11-05",
+   "board": "upcoming",
+   "rank": 4,
+   "idx": 0.55,
+   "trend": "up",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.5621,
+     "yiren": 0.5319
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.2186,
+     "yiren": 0.6282
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.1239,
+     "yiren": 0.1577
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.0953,
+     "yiren": 0.479
+    }
+   ]
+  },
+  {
+   "d": "2026-11-07",
+   "board": "upcoming",
+   "rank": 6,
+   "idx": 0.447,
+   "trend": "up",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.5374,
+     "yiren": 0.4804
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.2276,
+     "yiren": 0.6345
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.1308,
+     "yiren": 0.1915
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.1042,
+     "yiren": 0.5518
+    }
+   ]
+  },
+  {
+   "d": "2026-11-08",
+   "board": "upcoming",
+   "rank": 6,
+   "idx": 0.441,
+   "trend": "flat",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.574,
+     "yiren": 0.5127
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.2116,
+     "yiren": 0.665
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.1208,
+     "yiren": 0.1514
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.0936,
+     "yiren": 0.4889
+    }
+   ]
+  },
+  {
+   "d": "2026-11-09",
+   "board": "upcoming",
+   "rank": 10,
+   "idx": 0.335,
+   "trend": "down",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.573,
+     "yiren": 0.5133
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.2124,
+     "yiren": 0.6442
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.1201,
+     "yiren": 0.1463
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.0945,
+     "yiren": 0.484
+    }
+   ]
+  },
+  {
+   "d": "2026-11-10",
+   "board": "upcoming",
+   "rank": 7,
+   "idx": 0.48,
+   "trend": "up",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.5318,
+     "yiren": 0.4702
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.2327,
+     "yiren": 0.6022
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.1273,
+     "yiren": 0.1443
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.1081,
+     "yiren": 0.597
+    }
+   ]
+  },
+  {
+   "d": "2026-11-12",
+   "board": "upcoming",
+   "rank": 2,
+   "idx": 0.666,
+   "trend": "up",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.5643,
+     "yiren": 0.5074
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.2154,
+     "yiren": 0.6183
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.1195,
+     "yiren": 0.1421
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.1008,
+     "yiren": 0.584
+    }
+   ]
+  },
+  {
+   "d": "2026-11-13",
+   "board": "upcoming",
+   "rank": 1,
+   "idx": 0.744,
+   "trend": "up",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.5326,
+     "yiren": 0.5087
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.2311,
+     "yiren": 0.6144
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.1289,
+     "yiren": 0.1631
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.1075,
+     "yiren": 0.5526
+    }
+   ]
+  },
+  {
+   "d": "2026-11-14",
+   "board": "upcoming",
+   "rank": 2,
+   "idx": 0.645,
+   "trend": "down",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.5401,
+     "yiren": 0.4524
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.2295,
+     "yiren": 0.601
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.1272,
+     "yiren": 0.1862
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.1032,
+     "yiren": 0.5264
+    }
+   ]
+  },
+  {
+   "d": "2026-11-15",
+   "board": "upcoming",
+   "rank": 2,
+   "idx": 0.799,
+   "trend": "up",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.5443,
+     "yiren": 0.5517
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.2234,
+     "yiren": 1
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.1265,
+     "yiren": 0.5
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.1057,
+     "yiren": 1
+    }
+   ]
+  },
+  {
+   "d": "2026-11-16",
+   "board": "upcoming",
+   "rank": 2,
+   "idx": 0.693,
+   "trend": "down",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.559,
+     "yiren": 0.5117
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.2192,
+     "yiren": 0.5889
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.1223,
+     "yiren": 0.1816
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.0995,
+     "yiren": 0.5464
+    }
+   ]
+  },
+  {
+   "d": "2026-11-17",
+   "board": "upcoming",
+   "rank": 1,
+   "idx": 0.796,
+   "trend": "up",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.5571,
+     "yiren": 0.514
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.2272,
+     "yiren": 0.6266
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.1188,
+     "yiren": 0.1854
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.0969,
+     "yiren": 0.5109
+    }
+   ]
+  },
+  {
+   "d": "2026-11-18",
+   "board": "upcoming",
+   "rank": 1,
+   "idx": 0.842,
+   "trend": "up",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.474,
+     "yiren": 0.4898
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.1895,
+     "yiren": 0.6389
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.1015,
+     "yiren": 0.1986
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.0815,
+     "yiren": 0.4858
+    },
+    {
+     "actor": "张凯莹",
+     "role": "吴玉露",
+     "contribute": 0.0305,
+     "yiren": 0.5
+    }
+   ]
+  },
+  {
+   "d": "2026-11-19",
+   "board": "upcoming",
+   "rank": 1,
+   "idx": 0.818,
+   "trend": "down",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.4593,
+     "yiren": 0.4713
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.181,
+     "yiren": 0.6398
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.089,
+     "yiren": 0.2677
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.0714,
+     "yiren": 0.5021
+    },
+    {
+     "actor": "陈数",
+     "role": "张皇后",
+     "contribute": 0.0443,
+     "yiren": 0.4906
+    }
+   ]
+  },
+  {
+   "d": "2026-11-20",
+   "board": "onair",
+   "rank": 4,
+   "idx": 1.626,
+   "trend": "flat",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.4443,
+     "yiren": 0.5027
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.1953,
+     "yiren": 0.6305
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.1062,
+     "yiren": 0.2581
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.0691,
+     "yiren": 0.4513
+    },
+    {
+     "actor": "陈数",
+     "role": "张皇后",
+     "contribute": 0.0418,
+     "yiren": 0.4175
+    }
+   ]
+  }
+ ],
+ "backfill": {
+  "from": "2026-11-02",
+  "to": "2026-11-19",
+  "hit": 16,
+  "miss": 2,
+  "at": "2026-11-20T13:09:50.385Z"
+ }
+}
