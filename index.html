@@ -333,7 +333,9 @@ footer a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(25
 
   <header class="hero">
     <div class="poster-box">
-      <img class="poster" id="poster" alt="《两京十五日》海报">
+      <img class="poster" referrerpolicy="no-referrer"
+           src="https://pic9.iqiyipic.com/image/20261118/ea/9d/a_100693385_m_601_m8_344_480.jpg"
+           alt="《两京十五日》海报">
       <span class="poster-badge" id="posterBadge">爱奇艺独播 · CCTV-8</span>
     </div>
     <div class="hero-main">
@@ -488,9 +490,16 @@ footer a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(25
       <div class="chart-box short"><canvas id="bdChart"></canvas><div class="empty" id="bdEmpty">—</div></div>
     </div>
     <div class="panel">
-      <div class="p-head"><div class="p-title"><i></i>微信指数 · 近 365 天</div></div>
+      <div class="p-head"><div class="p-title"><i></i>微信指数</div>
+        <div class="tabs" id="wxTabs">
+          <button class="tab" data-d="7">近 7 天</button>
+          <button class="tab on" data-d="30">近 30 天</button>
+          <button class="tab" data-d="all">全部</button>
+        </div>
+      </div>
       <div class="p-note" id="wxNote">—</div>
       <div class="chart-box short"><canvas id="wxChart"></canvas><div class="empty" id="wxEmpty">—</div></div>
+      <div class="sub-label" id="wxWin">—</div>
     </div>
     <div class="panel">
       <div class="p-head"><div class="p-title"><i></i>微信指数 · 渠道构成</div></div>
@@ -498,14 +507,14 @@ footer a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(25
       <div id="wxChans"></div>
     </div>
     <div class="panel">
-      <div class="p-head"><div class="p-title"><i></i>七麦 · 爱奇艺 App 下载量预估</div></div>
+      <div class="p-head"><div class="p-title"><i></i>七麦预估 · 下载量</div></div>
       <div class="p-note" id="qmNote">—</div>
       <div class="chart-box short"><canvas id="qmChart"></canvas><div class="empty" id="qmEmpty">—</div></div>
       <div class="rows" id="qmRows"></div>
     </div>
   </section>
 
-  <div class="sec-title">波动记录 <span>· 微信指数单日涨跌</span></div>
+  <div class="sec-title">指数变化记录 <span>· 来自微信指数</span></div>
   <section class="grid2">
     <div class="panel wide">
       <div class="p-note" id="wxFlucNote">—</div>
@@ -523,7 +532,6 @@ footer a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(25
 
   <footer>
     <div><b>《两京十五日》</b> 爱奇艺全网独播 · CCTV-8 电视播出 · 2026-11-20 首播 · 共 26 集</div>
-    <div>微信指数那一份是档案，字段名沿用它的原始键；<code>w1w_score</code>、<code>score_exp</code> 两个键微信没给中文名。</div>
     <div>© 2026 九处 · 两京十五日数据看板 · <a id="donateLink" href="https://pic.sl.al/gdrive/pic/2025-11-26/fileid_1aPF614Jn4683MxgdV3UiuvN5lKyCLsdE_%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20251125182103_66_269.jpg" target="_blank" rel="noopener">请作者喝杯咖啡 ☕</a></div>
   </footer>
 </div>
@@ -1071,7 +1079,7 @@ function blocksOf(n) {
 function renderYunhe() {
   const j = F('yunhe');
   const note = document.getElementById('yhNote'), box = document.getElementById('yhRows');
-  if (!j) { note.innerHTML = '云合档案未到'; box.innerHTML = ''; return; }
+  if (!j) { note.innerHTML = '云合评级未出'; box.innerHTML = ''; return; }
   const days = j.days || [];
   note.innerHTML = j.inBoard
     ? `榜内最新一期 ${esc(j.board.date || '')} · 云合榜 T+1`
@@ -1130,47 +1138,82 @@ function renderBaidu() {
 function renderWx() {
   const j = F('wxindex');
   const note = document.getElementById('wxNote'), empty = document.getElementById('wxEmpty');
+  const winEl = document.getElementById('wxWin');
   if (!j || !j.daily || !j.daily.length) {
-    empty.style.display = 'grid'; empty.textContent = 'wxindex.json 还没进仓库';
-    note.textContent = '—'; return;
+    empty.style.display = 'grid'; empty.textContent = '档案未到';
+    note.textContent = '—'; winEl.textContent = '—';
+    document.getElementById('wxChans').innerHTML = '';
+    document.getElementById('wxChanNote').textContent = '—'; return;
   }
   empty.style.display = 'none';
-  const d = j.daily, last = d[d.length - 1];
-  const peak = d.reduce((a, x) => x.s > a.s ? x : a, d[0]);
+  const all = j.daily, last = all[all.length - 1];
   const fmt = s => s.slice(0, 4) + '-' + s.slice(4, 6) + '-' + s.slice(6, 8);
+  const isAll = S.tab.wx === 'all';
+  const days = isAll ? 365 : (+S.tab.wx || 30);
+  const wName = isAll ? '全部' : '近 ' + days + ' 天';
+  const win = isAll ? all : all.slice(Math.max(0, all.length - days));
+  const first = win[0];
+  const cross = String(first.d).slice(0, 4) !== String(last.d).slice(0, 4);
+  const df = s => cross ? fmt(s) : fmt(s).slice(5);
+  const peak = win.reduce((a, x) => x.s > a.s ? x : a, win[0]);
+  const avg = win.reduce((a, x) => a + x.s, 0) / win.length;
+  const flAll = j.fluctuations || [];
+  const flIn = flAll.filter(x => String(x.d) >= String(first.d));
   note.innerHTML = `最新 ${esc(fmt(last.d))} · <b style="color:var(--gold)">${yi(last.s).t}${yi(last.s).u}</b>`
-    + ` · 档案内最高 ${esc(fmt(peak.d))} ${yi(peak.s).t}${yi(peak.s).u} · 这份档案 ${esc(bjClock(new Date(j.captured_at)))}`;
-  lineChart('wxChart', 'wx', d.map(x => fmt(x.d).slice(5)), [{ label: '微信指数', data: d.map(x => x.s), color: '#3ddc97' }]);
+    + ` · ${esc(wName)}最高 ${esc(df(peak.d))} ${yi(peak.s).t}${yi(peak.s).u}`
+    + ` · 档案抓到于 ${esc(bjClock(new Date(j.captured_at)))}`;
+  const ma = win.map((x, i) => {
+    const s = win.slice(Math.max(0, i - 6), i + 1);
+    return Math.round(s.reduce((a, y) => a + y.s, 0) / s.length);
+  });
+  lineChart('wxChart', 'wx', win.map(x => cross ? fmt(x.d).slice(2) : fmt(x.d).slice(5)),
+    [{ label: '微信指数', data: win.map(x => x.s), color: '#3ddc97' },
+     { label: '7 日均值', data: ma, color: '#ffc861', fill: false }],
+    { ticks: cross ? 5 : 8 });
+  const ratio = first.s ? last.s / first.s : null;
+  const mag = ratio == null ? '' : ratio >= 1
+    ? `${ratio >= 10 ? Math.round(ratio) : ratio.toFixed(1)} 倍` : `${((1 - ratio) * 100).toFixed(0)}%`;
+  winEl.innerHTML = `${esc(wName)} ${esc(df(first.d))} → ${esc(df(last.d))}`
+    + ` · 日均 ${yi(avg).t}${yi(avg).u}`
+    + (ratio == null ? '' : ` · 窗口内 <span class="delta ${ratio >= 1 ? 'up' : 'down'}">${ratio >= 1 ? '涨' : '跌'} ${esc(mag)}</span>`);
 
-  const ch = j.channels[j.channels.length - 1] || {};
-  const NAMES = { total_score: '总指数', finder_score: '视频号', query_score: '搜一搜',
-                  mpdoc_score: '公众号', live_score: '直播', miniapp_score: '小程序',
-                  emoji_score: '表情', ad_score: '广告', extlink_score: '站外链接',
-                  w1w_score: 'w1w_score（微信没给名字）', score_exp: 'score_exp（微信没给名字）' };
-  const keys = Object.keys(ch).filter(k => k !== 'd' && Number(ch[k]) > 0);
-  const tot = Number(ch.total_score) || 1;
-  document.getElementById('wxChanNote').innerHTML = `${esc(fmt(ch.d || last.d))} · 分项相加 ${Math.abs(tot - keys.filter(k => k !== 'total_score').reduce((a, k) => a + Number(ch[k]), 0)) <= 3 ? '与总指数相符' : '与总指数有出入'}`;
-  document.getElementById('wxChans').innerHTML = keys
-    .sort((a, b) => Number(ch[b]) - Number(ch[a]))
+  const NAMES = { finder_score: '视频号', query_score: '搜一搜', mpdoc_score: '公众号',
+                  live_score: '直播', miniapp_score: '小程序', emoji_score: '表情',
+                  ad_score: '广告', extlink_score: '站外链接' };
+  const chRows = (j.channels || []).filter(x => String(x.d) >= String(first.d));
+  const use = chRows.length ? chRows : (j.channels || []).slice(-1);
+  const keys = Object.keys(use[0]).filter(k => NAMES[k]);
+  const mean = {};
+  keys.forEach(k => mean[k] = use.reduce((a, x) => a + (Number(x[k]) || 0), 0) / use.length);
+  const tot = (use.reduce((a, x) => a + (Number(x.total_score) || 0), 0) / use.length) || 1;
+  const show = keys.filter(k => mean[k] / tot * 100 >= 0.1);
+  const sum = keys.reduce((a, k) => a + mean[k], 0);
+  document.getElementById('wxChanNote').innerHTML = `各渠道占当日指数的比重 · ${use.length} 天`
+    + (Math.abs(tot - sum) <= tot * 0.02 ? '' : ' · 这一档的分项相加对不上总指数');
+  document.getElementById('wxChans').innerHTML = show
+    .sort((a, b) => mean[b] - mean[a])
     .map(k => `<div class="hbar"><span class="hb-nm">${esc(NAMES[k] || k)}</span>
-      <span class="hb-tr"><i style="width:${(Number(ch[k]) / tot * 100).toFixed(1)}%"></i></span>
-      <span class="hb-v">${(Number(ch[k]) / tot * 100).toFixed(1)}%</span></div>`).join('') || '<div class="p-note">渠道那一份是空的</div>';
+      <span class="hb-tr"><i style="width:${(mean[k] / tot * 100).toFixed(1)}%"></i></span>
+      <span class="hb-v">${(mean[k] / tot * 100).toFixed(1)}%</span></div>`).join('')
+    || '<div class="p-note">渠道那一份是空的</div>';
 
-  const fl = j.fluctuations || [];
-  document.getElementById('wxFlucNote').innerHTML = `微信指数自己标出的涨跌格 · 档案内 ${fl.length} 条 · ${fl.length ? esc(fmt(fl[0].d)) + ' 为最新' : ''}`;
-  document.getElementById('wxFluc').innerHTML = fl.slice(0, 10).map(x => {
-    const up = x.gain_pct > 0;
-    return `<div class="row"><span class="k">${esc(fmt(x.d))} ${up ? '↑' : '↓'}</span>
-      <span class="v">${yi(x.today).t}${yi(x.today).u}
-        <span class="delta ${up ? 'up' : 'down'}">${up ? '+' : '−'}${Math.abs(x.gain_pct).toFixed(2)}%</span></span></div>`;
-  }).join('') || '<div class="p-note">没有记录到涨跌格</div>';
+  document.getElementById('wxFlucNote').innerHTML = `整份档案 ${flAll.length} 条 · ${esc(wName)} ${flIn.length} 条`;
+  document.getElementById('wxFluc').innerHTML = (flIn.length ? flIn : flAll).map(wxFlucRow).join('')
+    || '<div class="p-note">档案里没有变化记录</div>';
+}
+function wxFlucRow(x) {
+  const up = x.gain_pct > 0;
+  const fmt = s => String(s).slice(0, 4) + '-' + String(s).slice(4, 6) + '-' + String(s).slice(6, 8);
+  return `<div class="row"><span class="k">${esc(fmt(x.d))} ${up ? '↑' : '↓'}</span>
+    <span class="v">${yi(x.today).t}${yi(x.today).u}
+      <span class="delta ${up ? 'up' : 'down'}">${up ? '+' : '−'}${Math.abs(x.gain_pct).toFixed(2)}%</span></span></div>`;
 }
 function renderQimai() {
   const j = F('qimai');
   const note = document.getElementById('qmNote'), empty = document.getElementById('qmEmpty'), box = document.getElementById('qmRows');
   if (!j || !j.list || !j.list.length) {
     empty.style.display = 'grid';
-    empty.textContent = j ? '档案里还没有非零日' : '七麦档案还没进仓库';
+    empty.textContent = j ? '档案里还没有非零日' : '档案未到';
     note.textContent = '—'; box.innerHTML = ''; return;
   }
   empty.style.display = 'none';
@@ -1178,7 +1221,7 @@ function renderQimai() {
   const win = j.list.filter(x => x.date >= anchor);
   const sum = win.reduce((a, x) => a + x.v, 0);
   const last = j.list[j.list.length - 1];
-  note.innerHTML = `${esc(j.app)}（appid ${j.appid}）· ${esc(j.sdate)} → ${esc(j.edate)}`
+  note.innerHTML = `${esc(j.app)} · 档案 ${esc(j.sdate)} → ${esc(j.edate)}`
     + (j.pending && j.pending.length ? ` · <span class="warn">${esc(j.pending.join('、'))} 尚在统计</span>` : '');
   lineChart('qmChart', 'qm', j.list.map(x => x.date.slice(5)),
     [{ label: '预估下载量', data: j.list.map(x => x.v), color: '#ff5f43' }]);
@@ -1188,8 +1231,7 @@ function renderQimai() {
     row('日均', win.length ? num(Math.round(sum / win.length)) : '—') +
     row('最新一天', esc(last.date) + ' ' + num(last.v)) +
     row('窗口内最高', j.peak ? esc(j.peak.date) + ' ' + num(j.peak.v) : '—') +
-    row('拉取方式', j.auto ? '云端自动重采' : '人工快照') + ' ' +
-    row('拉取于', esc(j.at || ''));
+    row('档案更新于', esc(j.at ? (String(j.at).indexOf('T') > 0 ? bjClock(new Date(j.at)) : j.at) : '—'));
 }
 
 /* ============================================================
@@ -1204,7 +1246,6 @@ async function loadDouban() {
   if (!d) throw new Error('豆瓣两个口都没回话');
   S.douban = d; S.dbInterest = r;
   const hot = (d.realtime_hot_honor_infos || [])[0] || {};
-  document.getElementById('poster').src = (d.cover && d.cover.url) || '';
   const row = (k, v) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
   document.getElementById('dbRows').innerHTML =
     row('评分', (d.rating && d.rating.value) ? d.rating.value.toFixed(1) + ' / ' + (d.rating.max || 10)
@@ -1315,7 +1356,7 @@ function renderKPI() {
   const bd = F('baidu-index');
   const bdLast = bd && bd.rows && bd.rows.length ? bd.rows[bd.rows.length - 1] : null;
   items.push(kpiItem('search', '百度指数', bdLast ? num(bdLast[1]) : '—', '',
-    bdLast ? esc(bd.asof) : '百度指数档案未到', '#4f9dff',
+    bdLast ? esc(bd.asof) : '档案未到', '#4f9dff',
     bdLast && bd.rows.length > 1 ? deltaTag(bdLast[1] - bd.rows[bd.rows.length - 2][1], '', 0) : ''));
   const wx = F('wxindex');
   if (wx && wx.daily && wx.daily.length) {
@@ -1328,7 +1369,7 @@ function renderKPI() {
   const qm = F('qimai');
   if (qm && qm.list && qm.list.length) {
     const l = qm.list[qm.list.length - 1];
-    items.push(kpiItem('dl', '七麦 · 爱奇艺下载量', num(l.v), '',
+    items.push(kpiItem('dl', '七麦预估', num(l.v), '',
       esc(l.date) + ' · 定档日以来 ' + num(qm.list.filter(x => x.date >= CONFIG.anchorDate).reduce((a, x) => a + x.v, 0)),
       '#ff5f43', ''));
   }
@@ -1368,11 +1409,11 @@ function lineChart(id, key, labels, sets, opt = {}) {
   const ds = sets.filter(s => s.data && s.data.length).map(s => ({
     label: s.label, data: s.data, borderColor: s.color,
     backgroundColor: s.color + '22', borderWidth: 2, tension: .28,
-    pointRadius: 0, pointHoverRadius: 4, fill: true, spanGaps: !!opt.gaps,
+    pointRadius: 0, pointHoverRadius: 4, fill: s.fill !== false, spanGaps: !!opt.gaps,
     yAxisID: s.axis || 'y'
   }));
   const scales = {
-    x: { ticks: { color: '#8e97b0', maxTicksLimit: 10 }, grid: { color: 'rgba(255,255,255,.05)' } },
+    x: { ticks: { color: '#8e97b0', maxTicksLimit: opt.ticks || 10 }, grid: { color: 'rgba(255,255,255,.05)' } },
     y: { ticks: { color: '#adb6cd' }, grid: { color: 'rgba(255,255,255,.06)' }, title: { display: !!opt.yTitle, text: opt.yTitle, color: '#8e97b0' } }
   };
   if (sets.some(s => s.axis === 'y1')) {
@@ -1459,6 +1500,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') dm.classList
   wireTabs('heatTabs', 'heat', () => { renderHeat(); safe('爱奇艺热度', loadHeat); });
   wireTabs('epgTabs', 'epg', () => safe('央视节目单', loadEpg));
   wireTabs('dwTabs', 'dw', () => renderDetawen());
+  wireTabs('wxTabs', 'wx', () => renderWx());
   document.getElementById('refreshBtn').addEventListener('click', async () => {
     const b = document.getElementById('refreshBtn');
     b.disabled = true; b.innerHTML = '<span class="spin"></span> 重算中';
