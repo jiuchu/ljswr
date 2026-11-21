@@ -1423,9 +1423,13 @@ function renderKPI() {
 
   const dbr = S.douban && S.douban.rating;
   const dbOpen = dbr && dbr.value > 0;
-  items.push(kpiItem('star', '豆瓣评分', dbOpen ? dbr.value.toFixed(1) : '—', dbOpen ? '/ ' + (dbr.max || 10) : '',
+  const dbCnt = S.douban
+    ? ['短评 ' + num(S.douban.comment_count || 0), '剧评 ' + num(S.douban.review_count || 0)].join(' · ')
+    : '豆瓣没回话';
+  items.push(kpiItem('star', '豆瓣评分', !S.douban ? '—' : dbOpen ? dbr.value.toFixed(1) : '未出',
+    dbOpen ? '/ ' + (dbr.max || 10) : '',
     dbOpen ? [num(dbr.count) + ' 人评价', starSummary(S.dbStats)].filter(Boolean).join(' · ')
-      : esc((S.douban && S.douban.null_rating_reason) || '暂未开分'),
+      : dbCnt,
     '#ffc861', '', dbOpen ? `<div class="c-foot">${starBars(S.dbStats)}</div>` : ''));
 
   const cvb = F('cvb');
