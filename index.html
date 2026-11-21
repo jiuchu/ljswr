@@ -1865,13 +1865,6 @@ function renderKPI() {
     items.push(kpiItem('dl', '灯塔 · 集均播放量', dtTrunc(epRow.epAvg).t, dtTrunc(epRow.epAvg).u,
       `截至 ${esc(epRow.d)}`, '#ffc861', ''));
   }
-  /* 酷云这张卡常驻，但没在播的时候不敲接口、也不摆数：值位留空，第二行直接报酷云那侧的状态。
-     窗口内 15 秒一轮，窗口外 300 秒一轮但那轮只判时段就返回，请求数是零。 */
-  const kySt = src['酷云'];
-  items.push(kpiItem('tv', '酷云 · CCTV-8 收视率',
-    S.kuyun ? (S.kuyun.rating * 100).toFixed(4) : '—', S.kuyun ? '%' : '',
-    S.kuyun ? `实时 · 全国第 ${S.kuyun.rank} · ${esc((S.kuyun.time || '').slice(11, 19))}`
-      : esc((kySt && kySt.msg) || '等待第一拍'), '#ffc861', ''));
   if (dq && dq.mine) items.push(kpiItem('chart', '德塔文 · 景气指数', dq.mine.idx, '',
     `${dq.mine.board === 'onair' ? '已播榜' : '待播榜'}第 ${dq.mine.rank} 名 · ${esc(dq.stamp.real_date || '')}`, '#ffc861', ''));
 
@@ -1921,8 +1914,18 @@ function renderKPI() {
       esc(l.d.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')), '#3ddc97',
       pv ? deltaTag(l.s - pv.s, '', 0) : ''));
   }
-  /* 两张剧集榜卡：榜名与时段字样照抄回包，名次是官方给的那一格。
-     抖音综合指数不占卡片，只在「抖音指数」那一格里印数值。 */
+  /* 抖音搜索指数：档案一次回 32 天，窗口尾恒在 T-2，所以这张卡副行那个日期永远比今天晚两天，
+     不是采集断了。综合指数照旧只在「抖音指数」那一格里印数值、不占卡片。 */
+  const dy = F('douyin');
+  if (dy && dy.days && dy.days.length) {
+    const l = dy.days[dy.days.length - 1], pv = dy.days[dy.days.length - 2];
+    const sv = l.search == null ? null : Number(l.search);
+    items.push(kpiItem('search', '抖音 · 搜索指数', sv == null ? '—' : yi(sv).t,
+      sv == null ? '' : yi(sv).u,
+      esc(String(l.d).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')), '#3ddc97',
+      sv != null && pv && pv.search != null ? deltaTag(sv - Number(pv.search), '', 0) : ''));
+  }
+  /* 两张剧集榜卡：榜名与时段字样照抄回包，名次是官方给的那一格。 */
   const dd = F('doudou');
   const dyRt = dd && dd.dy ? dd.dy.find(b => b.id === 'dyRealTime') : null;
   if (dyRt) {
