@@ -6,7 +6,7 @@
 #
 # 前置（一次性）：
 #   1. Settings → Actions → General → Workflow permissions → Read and write
-#   2. 本文件放 .github/workflows/vv-hourly.yml，fetch_vv_hourly.mjs 放仓库根
+#   2. 本文件放 .github/workflows/vv-hourly.yml，fetch_vv_hourly.mjs 和 fetch_doudou.mjs 放仓库根
 #   3. Worker 那条全天闹钟（*/30 * * * *）的 BILLBOARD_TARGETS 里加上
 #      { repo: 'jiuchu/ljswr', workflow: 'vv-hourly.yml', ref: 'main' }，它才会被敲门；
 #      不加就永远不自动跑，手点仍然可用。
@@ -21,7 +21,8 @@
 # ⚠ 23点-0点 那一格当天拿不到（过 0 点它算昨天，而接口只回今天），脚本改到**第二天**
 #    用当天终值倒推补上，标 derived。当天不能做这个减法：逐日那行比逐时慢一截，减出来会是负数。
 # 24 拍/天 = 最多 24 个 commit ≈ 每小时一次 Pages 重建，和百度指数那条一个量级。
-# 请求账：每次真跑 2 发 mtop（分时 + 逐日），全天最多 48 发，走 Worker 的 /mtop 签名口。
+# 请求账：每次真跑 2 发 mtop（分时 + 逐日，走 Worker 的 /mtop 签名口）+ 1 发剧集榜
+# （doudou.txw.hair/api/data，匿名 GET，一发回 440 KB、本机实测 2 秒）。全天最多 48 + 24 发。
 #
 # ⚠ 这条 schedule 是备份档、实际不会响（GitHub 给他账号投递定时事件早就停了）。
 #    分钟故意取 11/41，和主闹钟的 :00/:30、百度那条的格子都错开，
@@ -45,7 +46,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     env:
       VVH_OUT: vv-hourly.json
       VVH_KEEP: '30'
@@ -94,6 +95,14 @@ jobs:
         if: steps.need.outputs.skip != 'true'
         run: node fetch_vv_hourly.mjs
 
+      # 抖音剧集榜（小时/日/周）和小红书剧集榜跟着这一拍一起攒：那两张榜自己一小时换一档，
+      # 挂在一天两拍的主闹钟上就永远是隔 12 小时的旧格子。口是匿名 GET，不要 secret。
+      # continue-on-error：它红了不挡灯塔那格落地（两份档案各写各的文件）。
+      - name: 抓取剧集榜
+        if: steps.need.outputs.skip != 'true'
+        continue-on-error: true
+        run: node fetch_doudou.mjs
+
       - name: 提交结果
         if: steps.need.outputs.skip != 'true'
         env:
@@ -102,7 +111,7 @@ jobs:
           [ -f "$VVH_OUT" ] || { echo "::notice::没有产出文件，跳过提交（探测模式或抓取失败）"; exit 0; }
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$VVH_OUT"
+          git add "$VVH_OUT" doudou.json
           git diff --cached --quiet && { echo "这一格和上一格完全相同，不提交"; exit 0; }
           git commit -m "灯塔正片播放分时 $(TZ=Asia/Shanghai date '+%F %H:%M')"
           # 同一个仓库三条工作流都在推 main（这条写的是 vv-hourly.json），实测两发落地只差 1~4 秒。
