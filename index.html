@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="《两京十五日》数据看板：爱奇艺实时热度与分时曲线、CCTV-8 实时收视与节目单、爱奇艺更新时间表、德塔文景气指数与付费力、灯塔正片播放量、云合市占与评级、百度指数、微信指数、七麦下载量预估">
+<meta name="description" content="《两京十五日》数据看板：爱奇艺实时热度与分时曲线、CCTV-8 实时收视与节目单、爱奇艺更新时间表、德塔文景气指数与付费力、灯塔正片播放量、云合市占与评级、百度指数、微信指数、抖音指数、七麦下载量预估">
 <title>两京十五日 · 数据看板</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>:root{
@@ -511,7 +511,7 @@ footer a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(25
     </div>
   </section>
 
-  <div class="sec-title">搜索与社交 <span>· 百度指数 / 微信指数</span></div>
+  <div class="sec-title">搜索与社交 <span>· 百度指数 / 微信指数 / 抖音指数</span></div>
   <section class="grid2">
     <div class="panel">
       <div class="p-head"><div class="p-title"><i></i>百度指数 · 近 90 天</div></div>
@@ -529,6 +529,17 @@ footer a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(25
       <div class="p-note" id="wxNote">—</div>
       <div class="chart-box short"><canvas id="wxChart"></canvas><div class="empty" id="wxEmpty">—</div></div>
       <div class="sub-label" id="wxWin">—</div>
+    </div>
+    <div class="panel">
+      <div class="p-head"><div class="p-title"><i></i>抖音指数</div>
+        <div class="tabs" id="dyTabs">
+          <button class="tab on" data-d="comp">综合指数</button>
+          <button class="tab" data-d="search">搜索指数</button>
+        </div>
+      </div>
+      <div class="p-note" id="dyNote">—</div>
+      <div class="chart-box short"><canvas id="dyChart"></canvas><div class="empty" id="dyEmpty">—</div></div>
+      <div class="sub-label" id="dyWin">—</div>
     </div>
     <div class="panel">
       <div class="p-head"><div class="p-title"><i></i>微信指数 · 渠道构成</div></div>
@@ -728,7 +739,7 @@ const S = {
   douban: null, dbInterest: null, dbStats: null,
   dtDay: [], dtHour: [], dtRank: null, dtHot: null, dtMarket: null, dtMine: null,
   surge: null, rank: null,
-  file: {}, tab: { heat: '0', epg: '0', dw: 'onair' },
+  file: {}, tab: { heat: '0', epg: '0', dw: 'onair', dy: 'comp' },
   bootAt: Date.now(), live: true
 };
 const src = {};
@@ -761,10 +772,10 @@ function cadence(kLive, kIdle) { return inLiveWindow() ? kLive : kIdle; }
 /* ============================================================
    档案：Actions 落进仓库的那几份 JSON
    ============================================================ */
-const FILES = ['iqiyi.json', 'detawen.json', 'yunhe.json', 'baidu-index.json', 'wxindex.json', 'qimai.json', 'cvb.json'];
+const FILES = ['iqiyi.json', 'detawen.json', 'yunhe.json', 'baidu-index.json', 'wxindex.json', 'qimai.json', 'cvb.json', 'douyin.json'];
 const FILE_CN = { 'iqiyi.json': '爱奇艺档案', 'detawen.json': '德塔文档案', 'yunhe.json': '云合档案',
   'baidu-index.json': '百度指数档案', 'wxindex.json': '微信指数档案', 'qimai.json': '七麦档案',
-  'cvb.json': 'CVB 日榜档案' };
+  'cvb.json': 'CVB 日榜档案', 'douyin.json': '抖音指数档案' };
 async function loadFile(name) {
   try {
     const r = await fetch(name + '?cb=' + bjYmd(), { cache: 'no-store' });
@@ -1422,6 +1433,53 @@ function wxFlucRow(x) {
     <span class="v">${yi(x.today).t}${yi(x.today).u}
       <span class="delta ${up ? 'up' : 'down'}">${up ? '+' : '−'}${Math.abs(x.gain_pct).toFixed(2)}%</span></span></div>`;
 }
+/* 抖音指数：一次请求回 32 天，窗口尾落在 T-2，所以最新那格永远比今天晚两天。
+   综合指数与搜索指数量纲差着一到两个数量级，一格之内切换着看，不并排画。 */
+function renderDouyin() {
+  const j = F('douyin');
+  const note = document.getElementById('dyNote'), empty = document.getElementById('dyEmpty');
+  const winEl = document.getElementById('dyWin');
+  if (!j || !j.days || !j.days.length) {
+    empty.style.display = 'grid'; empty.textContent = '档案未到';
+    note.textContent = '—'; winEl.textContent = '—';
+    if (CH.dyChart) { CH.dyChart.destroy(); delete CH.dyChart; }
+    return;
+  }
+  empty.style.display = 'none';
+  const all = j.days, last = all[all.length - 1];
+  const dfmt = s => String(s).slice(0, 4) + '-' + String(s).slice(4, 6) + '-' + String(s).slice(6, 8);
+  const M = S.tab.dy === 'search'
+    ? { k: 'search', name: '搜索指数', color: '#3ddc97' }
+    : { k: 'comp', name: '综合指数', color: '#4f9dff' };
+  const val = x => x[M.k] == null ? null : Number(x[M.k]);
+  const win = all.slice(-30);
+  const first = win[0];
+  const cross = String(first.d).slice(0, 4) !== String(last.d).slice(0, 4);
+  const ds = s => cross ? dfmt(s).slice(2) : dfmt(s).slice(5);
+  const series = win.map(x => val(x));
+  const known = series.filter(v => v != null);
+  const peak = win.reduce((a, x) => (val(x) != null && (a == null || val(x) > val(a))) ? x : a, null);
+  const avg = known.length ? known.reduce((a, v) => a + v, 0) / known.length : null;
+  note.innerHTML = `最新 ${esc(dfmt(last.d))} · <b style="color:var(--gold)">${M.name} `
+    + (val(last) == null ? '—' : `${yi(val(last)).t}${yi(val(last)).u}`) + '</b>'
+    + (peak ? ` · 档案里最高 ${esc(ds(peak.d))} ${yi(val(peak)).t}${yi(val(peak)).u}` : '')
+    + ` · 档案抓到于 ${esc(bjClock(new Date(j.fetchedAt)))}`;
+  const ma = win.map((x, i) => {
+    const s = win.slice(Math.max(0, i - 6), i + 1).map(val).filter(v => v != null);
+    return s.length ? Math.round(s.reduce((a, v) => a + v, 0) / s.length) : null;
+  });
+  lineChart('dyChart', 'dy', win.map(x => ds(x.d)),
+    [{ label: M.name, data: series, color: M.color },
+     { label: '7 日均值', data: ma, color: '#ffc861', fill: false }],
+    { ticks: cross ? 5 : 8, gaps: true });
+  const r0 = val(first), r1 = val(last);
+  const ratio = r0 && r1 ? r1 / r0 : null;
+  const mag = ratio == null ? '' : ratio >= 1
+    ? `${ratio >= 10 ? Math.round(ratio) : ratio.toFixed(1)} 倍` : `${((1 - ratio) * 100).toFixed(0)}%`;
+  winEl.innerHTML = `${win.length} 天 ${esc(ds(first.d))} → ${esc(ds(last.d))}`
+    + (avg == null ? '' : ` · 平均值 ${yi(avg).t}${yi(avg).u}`)
+    + (ratio == null ? '' : ` · 窗口内 <span class="delta ${ratio >= 1 ? 'up' : 'down'}">${ratio >= 1 ? '涨' : '跌'} ${esc(mag)}</span>`);
+}
 function renderQimai() {
   const j = F('qimai');
   const note = document.getElementById('qmNote'), empty = document.getElementById('qmEmpty'), box = document.getElementById('qmRows');
@@ -1661,6 +1719,16 @@ function renderKPI() {
       esc(l.d.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')), '#3ddc97',
       pv ? deltaTag(l.s - pv.s, '', 0) : ''));
   }
+  const dy = F('douyin');
+  const dyDays = dy && dy.days && dy.days.length ? dy.days : null;
+  if (dyDays) {
+    const l = dyDays[dyDays.length - 1], pv = dyDays[dyDays.length - 2];
+    const dstr = esc(String(l.d).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'));
+    items.push(kpiItem('film', '抖音 · 综合指数', yi(l.comp).t, yi(l.comp).u, dstr, '#25f4ee',
+      pv ? deltaTag(l.comp - pv.comp, '', 0) : ''));
+    items.push(kpiItem('search', '抖音 · 搜索指数', yi(l.search).t, yi(l.search).u, dstr, '#7c5cff',
+      pv ? deltaTag(l.search - pv.search, '', 0) : ''));
+  }
 
   document.getElementById('kpi').innerHTML = items.map((x, i) => `
     <div class="card in" style="--c:${x.color};transition-delay:${i * 45}ms">
@@ -1788,6 +1856,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') dm.classList
   wireTabs('epgTabs', 'epg', () => safe('央视节目单', loadEpg));
   wireTabs('dwTabs', 'dw', () => renderDetawen());
   wireTabs('wxTabs', 'wx', () => renderWx());
+  wireTabs('dyTabs', 'dy', () => renderDouyin());
   document.getElementById('refreshBtn').addEventListener('click', async () => {
     const b = document.getElementById('refreshBtn');
     b.disabled = true; b.innerHTML = '<span class="spin"></span> 重算中';
@@ -1817,7 +1886,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') dm.classList
 async function loadAllFiles() { await Promise.all(FILES.map(loadFile)); }
 function renderAll() {
   renderHero(); renderDetawen(); renderYunhe(); renderCvb(); renderIqiyi();
-  renderBaidu(); renderWx(); renderQimai(); renderKuyun(); renderEpg(); renderSurge();
+  renderBaidu(); renderWx(); renderDouyin(); renderQimai(); renderKuyun(); renderEpg(); renderSurge();
   renderHeat(); renderKPI(); renderVvHour(); renderStatus();
 }
 let pollingStarted = false;
@@ -1832,7 +1901,7 @@ function startPolling() {
   every('央视节目单', CONFIG.refresh.epg, loadEpg);
   every('档案', CONFIG.refresh.file, async () => {
     await loadAllFiles();
-    renderDetawen(); renderYunhe(); renderCvb(); renderIqiyi(); renderBaidu(); renderWx(); renderQimai();
+    renderDetawen(); renderYunhe(); renderCvb(); renderIqiyi(); renderBaidu(); renderWx(); renderDouyin(); renderQimai();
     await loadVvHourly();
     renderKPI(); renderHero();
   });
