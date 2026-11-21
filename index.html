@@ -72,6 +72,10 @@ h1{font-size:clamp(2.3rem,5.4vw,3.6rem);font-weight:800;letter-spacing:.06em;lin
 .chip{padding:5px 12px;border-radius:999px;font-size:.8rem;color:#dfe4f2;
   background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(8px)}
 .chip b{color:var(--gold);font-weight:600}
+/* 「大家剧场」那张是 210×36 的白字 PNG，不是文字：chip 内边距按字身定的，
+   图按原比例铺会顶高整行，这里锁 14px 行高、把左右留白收窄。 */
+.chip-theatre{padding:5px 10px}
+.chip-theatre img{height:14px;width:auto;display:block}
 .byline{margin-top:14px;font-size:.86rem;color:var(--dim)}
 .byline a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(255,200,97,.4)}
 
@@ -307,6 +311,8 @@ footer a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(25
   .hero-kicker{font-size:.66rem;letter-spacing:.22em}
   .chips{gap:6px;margin:12px 0 2px}
   .chip{font-size:.72rem;padding:4px 9px}
+  .chip-theatre{padding:4px 8px}
+  .chip-theatre img{height:12px}
   .byline{font-size:.78rem;margin-top:10px}
   .kpi{grid-template-columns:repeat(2,1fr);gap:10px}
   .card{padding:14px 13px}
@@ -586,12 +592,20 @@ const CONFIG = {
   kuyun: { channel: 'CCTV-8' },      // 酷云 /api/rtepg 按剧名匹配，这里只是备注
   cctv: { channel: 'cctv8' },        // 央视节目单 api.cntv.cn 的频道号，浏览器直连免代理
   qimaiAppid: '393765873',           // 爱奇艺 iPhone 版
-  /* 爱奇艺风云榜·电视剧飙升榜。这一口是 https 且 ACAO:*，浏览器能直连，
+  /* 爱奇艺风云榜·电视剧榜。这一口是 https 且 ACAO:*，浏览器能直连，
      不过代理、不占 Worker 额度；参数全是 H5 常量，没有 cookie 也没有签名。
-     category_id=2 是电视剧，page_st=2 + tag=-1 是飙升榜（这两个值从它自己的 tab 接口里读出来的）。 */
+     category_id=2 是电视剧，tag=-1，同一个口靠 page_st 换榜：
+     page_st=2 是飙升榜（按涨幅排），page_st=1 是热播榜（按热度排，回包自己写 page_name=风云榜热播榜页面）。
+     两个榜的 metas 结构一模一样，所以解析函数共用。 */
   surge: {
     aid: '3190714930072901',
     api: 'https://cards.iqiyi.com/views_category/3.0/rank_list?from_type=3&category_id=2&rec_tags=&page_st=2&rankNewStyle=1&tag=-1&from_category_id=8192&card_v=3.0&from_subtype=6&psp_status=1&dev_os=10&app_k=h5_8e48946f144759d86a50075555fd5862&net_sts=1&req_sn=1622181887070&req_from=h5&qyid=h5_webview&platform_id=12&secure_p=1&secure_v=1&dev_ua=h5&app_v=12.6.5&layout_v=87.9999.1622018362'
+  },
+  /* 爱奇艺给本剧挂的剧场字标，就是它自己片头页「剧情 / 古装」左边那一枚（210×36 白字 PNG）。
+     和海报一样是 iqiyipic 的直链：带 Referer 会 403，不带才回 200，所以 img 上要写 no-referrer。 */
+  theatre: {
+    name: '大家剧场',
+    logo: 'https://pic2.iqiyipic.com/lequ/20261110/06b4ac1f21a042bd9d11334104611ae4.png'
   },
   premiereDate: '2026-11-20',        // 首播日
   anchorDate: '2026-11-18',          // 定档日，下载量统计窗口的左端
@@ -610,7 +624,7 @@ const CONFIG = {
      Cloudflare 免费档 10 万请求/天是整个账号共享的，两个面板加所有轮询都算在里面，
      所以窗口外一律降到慢档，窗口内也只有剧云录按 20 秒、酷云 15 秒。 */
   refresh: { live: 20e3, idle: 300e3, kuyun: 15e3, idleKuyun: 300e3, epg: 60e3,
-             surge: 60e3, idleSurge: 600e3, dengta: 600e3, heat: 600e3, file: 900e3 },
+             surge: 60e3, idleSurge: 600e3, rank: 600e3, dengta: 600e3, heat: 600e3, file: 900e3 },
   liveWindow: [19.3, 23.5]
 };
 
@@ -710,7 +724,7 @@ const S = {
   jy: {}, heat: {}, kuyun: null, epg: null, epgToday: null,
   douban: null, dbInterest: null, dbStats: null,
   dtDay: [], dtHour: [], dtRank: null, dtHot: null, dtMarket: null, dtMine: null,
-  surge: null,
+  surge: null, rank: null,
   file: {}, tab: { heat: '0', epg: '0', dw: 'onair' },
   bootAt: Date.now(), live: true
 };
@@ -952,6 +966,37 @@ async function loadSurge() {
   S.surge = { rows: p.rows, head: p.head, mine, at: Date.now() };
   renderSurge(); renderKPI();
   mark('爱奇艺飙升榜', !!mine, mine ? '' : `榜内 ${p.rows.length} 行没有本剧`);
+}
+
+/* ============================================================
+   爱奇艺风云榜 · 电视剧热播榜（海报角标用）
+   ============================================================ */
+/* 同一个口把 page_st 换成 1 就是热播榜，那一行的 meta5 是热度值不是涨幅：
+   11-21 实测回 8656，和剧云录那发同时刻的现值 8653 对得上，所以名次和热度是两根独立来源能互证。
+   榜只回前 20 行，掉出 20 名之外查不到第几名，那种情况角标退回「爱奇艺独播 · CCTV-8」，不印 NO. 后面的空号。 */
+async function loadRank() {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), 15000);
+  let j;
+  try {
+    const r = await fetch(CONFIG.surge.api.replace('page_st=2', 'page_st=1'),
+      { signal: ctl.signal, cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    j = await r.json();
+  } finally { clearTimeout(t); }
+  if (j.code !== 0) throw new Error('接口回 code ' + j.code);
+  const p = parseSurge(j);
+  if (!p.rows.length) throw new Error('code 0 但榜内 0 行');
+  const i = p.rows.findIndex(x => x.aid === CONFIG.surge.aid);
+  S.rank = { no: i < 0 ? 0 : i + 1, heat: i < 0 ? null : (parseFloat(p.rows[i].rise) || null),
+             total: p.rows.length, at: Date.now() };
+  renderPosterBadge();
+  mark('爱奇艺热播榜', i >= 0, i < 0 ? `榜内 ${p.rows.length} 行没有本剧` : '');
+}
+function renderPosterBadge() {
+  const r = S.rank;
+  document.getElementById('posterBadge').textContent =
+    r && r.no ? `爱奇艺热播榜 NO.${r.no}` : '爱奇艺独播 · CCTV-8';
 }
 function renderSurge() {
   const note = document.getElementById('sgNote');
@@ -1342,6 +1387,7 @@ function renderHero() {
   const genre = (db.genres || []).join(' / ');
   const epMin = String((db.durations || [])[0] || '').match(/\d+/);
   document.getElementById('chips').innerHTML = [
+    `<span class="chip chip-theatre"><img referrerpolicy="no-referrer" src="${CONFIG.theatre.logo}" alt="${esc(CONFIG.theatre.name)}"></span>`,
     genre ? `<span class="chip">${esc(genre)}</span>` : '',
     `<span class="chip">共 <b>${total}</b> 集</span>`,
     `<span class="chip">首播 <b>${esc(CONFIG.premiereDate)}</b> ${esc(CONFIG.vipTime)}</span>`,
@@ -1426,11 +1472,15 @@ function renderKPI() {
 
   const lastDay = S.dtDay[S.dtDay.length - 1];
   const prevDay = S.dtDay[S.dtDay.length - 2];
+  /* 灯塔给已完结那天回的 vv 就是那一天的全天数（11-20 那行 vv 与 total 逐字节相等），
+     不是峰值；且 昨日全天 + 今日实时 == 累计，三个数能对上账。 */
+  const prevTxt = prevDay
+    ? `${prevDay.d === bjShiftDay(bjDay(), -1) ? '昨日' : prevDay.d.slice(5)}全天 ` +
+      `${yi(prevDay.vv).t}${yi(prevDay.vv).u}` : '';
   if (lastDay) {
     const sh = (parseFloat(String(lastDay.share)) || 0).toFixed(2);
     items.push(kpiItem('film', '灯塔 · 今日实时播放量', yi(lastDay.vv).t, yi(lastDay.vv).u,
-      `实时市占 ${sh}%` + (lastDay.rank ? ` · 网剧榜第 ${lastDay.rank}` : '')
-        + (prevDay ? ` · 昨日 ${yi(prevDay.vv).t}${yi(prevDay.vv).u}` : ''),
+      `实时市占 ${sh}%` + (lastDay.rank ? ` · 网剧榜第 ${lastDay.rank}` : ''),
       '#ff5f43', deltaTag(pulse('dtd.' + lastDay.d, lastDay.vv), '', 0)));
   }
   if (S.dtHour.length) {
@@ -1442,7 +1492,7 @@ function renderKPI() {
   }
   if (lastDay && lastDay.total != null) {
     items.push(kpiItem('dl', '灯塔 · 累计正片播放量', yi(lastDay.total).t, yi(lastDay.total).u,
-      `截至 ${esc(lastDay.d)}`, '#ffc861', ''));
+      `截至 ${esc(lastDay.d)}` + (prevTxt ? ` · ${esc(prevTxt)}` : ''), '#ffc861', ''));
   }
   const epRow = S.dtDay.slice().reverse().find(x => x.epAvg != null);
   if (epRow) {
@@ -1647,7 +1697,8 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') dm.classList
   renderAll();
   await Promise.all([
     safe('爱奇艺热度', loadHeat), safe('酷云', loadKuyun), safe('灯塔', loadDengta),
-    safe('央视节目单', loadEpg), safe('豆瓣', loadDouban), safe('爱奇艺飙升榜', loadSurge)
+    safe('央视节目单', loadEpg), safe('豆瓣', loadDouban), safe('爱奇艺飙升榜', loadSurge),
+    safe('爱奇艺热播榜', loadRank)
   ]);
   startPolling();
   updateStamp();
@@ -1665,6 +1716,7 @@ function startPolling() {
   every('爱奇艺热度', () => cadence(CONFIG.refresh.live, CONFIG.refresh.idle), loadHeat);
   every('酷云', () => cadence(CONFIG.refresh.kuyun, CONFIG.refresh.idleKuyun), loadKuyun);
   every('爱奇艺飙升榜', () => cadence(CONFIG.refresh.surge, CONFIG.refresh.idleSurge), loadSurge);
+  every('爱奇艺热播榜', CONFIG.refresh.rank, loadRank);
   every('灯塔', CONFIG.refresh.dengta, loadDengta);
   every('央视节目单', CONFIG.refresh.epg, loadEpg);
   every('档案', CONFIG.refresh.file, async () => {
