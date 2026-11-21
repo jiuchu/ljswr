@@ -1,13 +1,13 @@
 {
   "keyword": "两京十五日",
-  "at": "2026-11-21 18:01",
-  "fetchedAt": "2026-11-21T10:01:13.516Z",
+  "at": "2026-11-21 20:30",
+  "fetchedAt": "2026-11-21T12:30:51.073Z",
   "encrypted": "2",
   "window": {
-    "start": "20261019",
+    "start": "20261021",
     "end": "20261119"
   },
-  "runs": 1,
+  "runs": 2,
   "days": [
     {
       "d": "20261019",
@@ -172,12 +172,12 @@
   ],
   "period": {
     "date": "20261119",
-    "compAvg": 54876,
-    "searchAvg": 172367,
-    "compPrevAvg": 21155,
-    "searchPrevAvg": 67416,
-    "compYearAvg": 15383,
-    "searchYearAvg": 48430
+    "compAvg": 58023,
+    "searchAvg": 182250,
+    "compPrevAvg": 22704,
+    "searchPrevAvg": 72375,
+    "compYearAvg": 9780,
+    "searchYearAvg": 30345
   },
   "lastError": ""
 }
