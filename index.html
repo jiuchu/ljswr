@@ -663,7 +663,7 @@ const CONFIG = {
   refresh: { live: 20e3, idle: 300e3, kuyun: 15e3, idleKuyun: 300e3, epg: 60e3,
              surge: 60e3, idleSurge: 600e3, rank: 600e3, dengta: 600e3, dengtaIdle: 1800e3,
              heat: 600e3, file: 900e3, pollGuest: 60e3,
-             vvLive: 10e3, vvBlur: 30e3, vvWait: 30e3 },
+             vvLive: 10e3, vvGuest: 60e3, vvWait: 30e3, tick: 30e3 },
   liveWindow: [19.3, 23.5]
 };
 
@@ -806,8 +806,8 @@ function deltaTag(d, unit, digits) {
 }
 function inLiveWindow() { const f = bjNow().f; const [a, b] = CONFIG.liveWindow; return f >= a && f <= b; }
 function cadence(kLive, kIdle) { return inLiveWindow() ? kLive : kIdle; }
-/* 秒级实时只有敲的人自己看得见，请求却按打开页面的人数乘，所以默认关：
-   链接带 ?live=1 才开（他自己的书签存这条），访客吃的是 loadDengta 那趟慢档。 */
+/* 实时那趟人人开，但按打开页面的人数乘，所以访客吃 60 秒档（涨速 ~960/秒，
+   一分钟跳 5.8 万，两位小数那格自己会动）；链接带 ?live=1 才给 10 秒快档。 */
 const LIVE_POLL = new URLSearchParams(location.search).get('live') === '1';
 
 /* ============================================================
@@ -1145,15 +1145,25 @@ async function applyDengtaLive() {
   renderKPI();
   return !S.dtLiveErr;
 }
+/* 定时器固定 30 秒醒一次、敲不敲看间隔：窗口外排的是 30 分钟那一档，
+   下午打开的页面到晚上 ≤30 秒就能补上，而不是干等到那个 30 分钟定时器到点。 */
+let dtLast = 0;
+async function dengtaTick() {
+  const gap = inLiveWindow() ? CONFIG.refresh.dengta : CONFIG.refresh.dengtaIdle;
+  if (dtLast && Date.now() - dtLast < gap) return;
+  dtLast = Date.now();
+  await loadDengta();
+}
 async function liveLoop() {
-  let dwell = CONFIG.refresh.vvLive;
+  let dwell = CONFIG.refresh.vvGuest;
   for (;;) {
     if (document.hidden || !S.live) { await sleep(1e3); continue; }
     /* 窗口外一发不敲：这页访客多，空转那 19.8 小时按人头乘起来比窗口内还贵。 */
     if (!inLiveWindow()) { await sleep(CONFIG.refresh.vvWait); continue; }
     const ok = await applyDengtaLive();
-    dwell = !ok ? Math.min(CONFIG.refresh.vvBlur, dwell * 3)
-                : document.hasFocus() ? CONFIG.refresh.vvLive : CONFIG.refresh.vvBlur;
+    const base = LIVE_POLL ? CONFIG.refresh.vvLive : CONFIG.refresh.vvGuest;
+    dwell = !ok ? Math.min(300e3, dwell * 3)
+                : document.hasFocus() ? base : base * 2;
     await sleep(dwell);
   }
 }
@@ -1965,7 +1975,8 @@ async function safe(name, fn) {
 }
 function updateStamp() {
   document.getElementById('stamp').textContent =
-    `本页 ${bjClock()} · 窗口内按秒级轮，窗口外降慢档 · 打开已 ${Math.round((Date.now() - S.bootAt) / 1000)} 秒`;
+    `本页 ${bjClock()} · 播出时段每 ${LIVE_POLL ? 10 : 60} 秒更新，其余时段降慢档`
+    + ` · 打开已 ${Math.round((Date.now() - S.bootAt) / 1000)} 秒`;
 }
 
 /* ============================================================
@@ -2052,8 +2063,9 @@ function startPolling() {
                              CONFIG.refresh.idleKuyun), loadKuyun);
   every('爱奇艺飙升榜', () => cadence(CONFIG.refresh.surge, CONFIG.refresh.idleSurge), loadSurge);
   every('爱奇艺热播榜', CONFIG.refresh.rank, loadRank);
-  every('灯塔', () => cadence(CONFIG.refresh.dengta, CONFIG.refresh.dengtaIdle), loadDengta);
-  if (LIVE_POLL) liveLoop();
+  dtLast = Date.now();
+  every('灯塔', CONFIG.refresh.tick, dengtaTick);
+  liveLoop();
   every('央视节目单', CONFIG.refresh.epg, loadEpg);
   every('档案', CONFIG.refresh.file, async () => {
     await loadAllFiles();
