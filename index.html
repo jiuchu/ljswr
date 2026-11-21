@@ -542,6 +542,7 @@ footer a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(25
     <div class="panel">
       <div class="p-head"><div class="p-title"><i></i>抖音指数</div></div>
       <div class="p-note" id="dyNote">—</div>
+      <div class="chart-box short"><canvas id="dyChart"></canvas><div class="empty" id="dyEmpty">—</div></div>
       <div class="rows" id="dyRows"></div>
       <div class="sub-label" id="dyWin">—</div>
     </div>
@@ -1534,16 +1535,18 @@ function wxFlucRow(x) {
       <span class="delta ${up ? 'up' : 'down'}">${up ? '+' : '−'}${Math.abs(x.gain_pct).toFixed(2)}%</span></span></div>`;
 }
 /* 抖音指数：一次请求回 32 天，窗口尾落在 T-2，所以最新那格永远比今天晚两天。
-   综合指数与搜索指数量纲差着一到两个数量级，各印一行，不画在同一条线上。 */
+   搜索指数稳在综合指数的 2.96–3.22 倍，同一条轴装得下两条线。 */
 function renderDouyin() {
   const j = F('douyin');
   const note = document.getElementById('dyNote'), box = document.getElementById('dyRows');
-  const winEl = document.getElementById('dyWin');
+  const winEl = document.getElementById('dyWin'), empty = document.getElementById('dyEmpty');
   if (!j || !j.days || !j.days.length) {
     note.textContent = '—'; winEl.textContent = '—';
-    box.innerHTML = '<div class="p-note">档案未到</div>';
+    empty.style.display = 'grid'; empty.textContent = j ? '档案里没有一天有数' : '档案未到';
+    box.innerHTML = '';
     return;
   }
+  empty.style.display = 'none';
   const all = j.days, last = all[all.length - 1], prev = all[all.length - 2];
   const dfmt = s => String(s).slice(0, 4) + '-' + String(s).slice(4, 6) + '-' + String(s).slice(6, 8);
   note.textContent = `最新 ${dfmt(last.d)} · 档案抓到于 ${bjClock(new Date(j.fetchedAt))}`;
@@ -1557,6 +1560,10 @@ function renderDouyin() {
   box.innerHTML = row('综合指数', 'comp', '#4f9dff') + row('搜索指数', 'search', '#3ddc97');
   const win = all.slice(-30), first = win[0];
   const ds = s => dfmt(s).slice(2);
+  lineChart('dyChart', 'dy', win.map(x => ds(x.d)),
+    [{ label: '综合指数', data: win.map(x => x.comp == null ? null : Number(x.comp)), color: '#4f9dff' },
+     { label: '搜索指数', data: win.map(x => x.search == null ? null : Number(x.search)), color: '#3ddc97' }],
+    { ticks: 8 });
   const known = win.map(x => x.comp == null ? null : Number(x.comp)).filter(v => v != null);
   const avg = known.length ? known.reduce((a, v) => a + v, 0) / known.length : null;
   const r0 = first.comp == null ? null : Number(first.comp);
