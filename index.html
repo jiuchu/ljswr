@@ -665,7 +665,10 @@ const CONFIG = {
              surge: 60e3, idleSurge: 600e3, rank: 600e3, dengta: 600e3, dengtaIdle: 1800e3,
              heat: 600e3, file: 900e3, pollGuest: 60e3,
              vvLive: 10e3, vvWait: 30e3, tick: 30e3 },
-  liveWindow: [19.3, 23.5]
+  liveWindow: [19.3, 23.5],
+  /* 灯塔实时单独一条门，尾到次日 8 点：Cloudflare 的当日请求数是 08:00（北京）重置的，
+     夜里那 8.5 小时花的是已经翻篇的那一份额度。跨零点所以写成 a > b。 */
+  vvWindow: [19.3, 8]
 };
 
 /* ============================================================
@@ -706,8 +709,8 @@ function yi(v) {
 function vv2(v) {
   if (v == null || !isFinite(v)) return { t: '—', u: '' };
   const n = Number(v);
-  if (Math.abs(n) >= 1e8) return { t: (n / 1e8).toFixed(2), u: '亿' };
-  if (Math.abs(n) >= 1e4) return { t: (n / 1e4).toFixed(2), u: '万' };
+  if (Math.abs(n) >= 1e8) return { t: (n / 1e8).toFixed(1), u: '亿' };
+  if (Math.abs(n) >= 1e4) return { t: (n / 1e4).toFixed(1), u: '万' };
   return { t: num(Math.round(n)), u: '' };
 }
 const clean = s => String(s == null ? '' : s).replace(/[　​-‏]/g, '').trim();
@@ -806,6 +809,8 @@ function deltaTag(d, unit, digits) {
   return `<span class="delta ${cls}">${d > 0 ? '+' : '−'}${t}${unit || ''}</span>`;
 }
 function inLiveWindow() { const f = bjNow().f; const [a, b] = CONFIG.liveWindow; return f >= a && f <= b; }
+/* 尾小于头就是跨零点的写法（19.3 → 次日 8） */
+function inVvWindow() { const f = bjNow().f; const [a, b] = CONFIG.vvWindow; return a <= b ? (f >= a && f <= b) : (f >= a || f <= b); }
 function cadence(kLive, kIdle) { return inLiveWindow() ? kLive : kIdle; }
 /* 实时那趟对所有人都是 10 秒，请求按打开页面的人数乘；?live=1 只决定
    爱奇艺热度和酷云要不要从 60 秒抬回 20/15 秒，那是他自己在盯放量时的档。 */
@@ -1136,9 +1141,10 @@ async function loadDengta() {
   if (!ok) throw new Error('四个口都空');
   renderDengta(); renderKPI(); mark('灯塔', true);
 }
-/* 实时播放量单敲 DAY 这一发，其余三发（分时/热度/榜单）仍走 10 分钟那趟。
-   11-21 实测这个口每 20 秒挪 1.9 万，10 分钟一轮就是「十分钟纹丝不动、然后一次跳 58 万」。
-   节拍照嫁金钗：窗口内有焦点 3 秒、窗口内失焦 6 秒、窗口外 15 秒、连不上按 3 倍退避到最长 30 秒；
+/* 实时播放量单敲 DAY 这一发，其余三发（分时/热度/榜单）走 dengtaTick 那一档：
+   播出窗口内 10 分钟、窗口外 30 分钟，所以夜里「分时峰值」「累计」两张卡是半小时一跳。
+   11-22 实测这个口凌晨每 20 秒挪 7 千，白天挪 1.9 万。
+   节拍：vvWindow 内有焦点 10 秒、失焦 20 秒、失败按 3 倍退避封顶 300 秒；
    切到别的标签页（document.hidden）一发都不敲，回到前台第一拍就补上。 */
 async function applyDengtaLive() {
   try {
@@ -1173,8 +1179,9 @@ async function liveLoop() {
   let dwell = CONFIG.refresh.vvLive;
   for (;;) {
     if (document.hidden || !S.live) { await sleep(1e3); continue; }
-    /* 窗口外一发不敲：这页访客多，空转那 19.8 小时按人头乘起来比窗口内还贵。 */
-    if (!inLiveWindow()) { await sleep(CONFIG.refresh.vvWait); continue; }
+    /* 实时这一趟的门是 vvWindow（19:18 → 次日 08:00），比播出窗口长：
+       凌晨 0–1 点实测还有 66.8 万 VV，卡在 23:30 关门会让人以为这页不是实时的。 */
+    if (!inVvWindow()) { await sleep(CONFIG.refresh.vvWait); continue; }
     const ok = await applyDengtaLive();
     dwell = !ok ? Math.min(300e3, dwell * 3)
                 : CONFIG.refresh.vvLive * (document.hasFocus() ? 1 : 2);
@@ -1811,8 +1818,10 @@ function renderKPI() {
     ? `${prevDay.d === bjShiftDay(bjDay(), -1) ? '昨日' : prevDay.d.slice(5)}全天 ` +
       `${yi(prevDay.vv).t}${yi(prevDay.vv).u}` : '';
   if (lastDay || S.dtLive) {
-    const dayKey = lastDay ? lastDay.d : S.dtLive.d;
-    const live = S.dtLive && S.dtLive.d === dayKey ? S.dtLive : null;
+    /* 零点后头半小时：实时那趟已经翻到新一行，10 分钟档的 S.dtDay 还停在昨天全天终值。
+       比日期取新的那行，否则卡片会先跳回 3,199.6 万再掉回七十万。 */
+    const live = S.dtLive && (!lastDay || S.dtLive.d >= lastDay.d) ? S.dtLive : null;
+    const dayKey = live ? live.d : lastDay.d;
     const vvNow = live ? live.vv : lastDay.vv;
     const shNow = (live ? live.share : lastDay.share) || '';
     const rkNow = live ? live.rank : lastDay.rank;
