@@ -1,50 +1,77 @@
 {
   "name": "两京十五日",
-  "nameId": null,
-  "at": "2026-11-21 12:30",
+  "nameId": 8757221,
+  "at": "2026-11-21 16:27",
   "atDay": "2026-11-21",
-  "fetchedAt": "2026-11-21T04:30:39.779Z",
-  "runs": 3,
+  "fetchedAt": "2026-11-21T08:27:57.717Z",
+  "runs": 4,
   "board": {
-    "date": "2026-11-19",
+    "date": "2026-11-20",
     "size": 30,
-    "inBoard": false
+    "inBoard": true
   },
-  "inBoard": false,
-  "latest": null,
-  "days": [],
-  "fixes": [],
+  "inBoard": true,
+  "latest": {
+    "date": "2026-11-20",
+    "rank": 6,
+    "share": 8,
+    "level": "",
+    "occurDays": 1,
+    "dayPlatform": "iqiyi",
+    "nameId": 8757221,
+    "ep": {
+      "max": 26,
+      "notvip": 4
+    }
+  },
   "stage": {
-    "date": "2026-11-19",
+    "date": "2026-11-20",
     "bands": {
       "A": {
-        "min": 764582,
-        "max": 2982895
+        "min": 768735,
+        "max": 3233672
       },
       "A+": {
-        "min": 3100224,
-        "max": 9171672
+        "min": 3235416,
+        "max": 9231431
       },
       "B": {
         "min": 43600,
-        "max": 240321
+        "max": 244984
       },
       "B+": {
-        "min": 244984,
-        "max": 763971
+        "min": 247544,
+        "max": 768571
       },
       "C": {
         "min": 10,
         "max": 42371
       },
       "S": {
-        "min": 9231431,
-        "max": 14250771
+        "min": 9694499,
+        "max": 14555477
       },
       "S+": {
-        "min": 14555477,
+        "min": 15084600,
         "max": 75723941
       }
     }
-  }
+  },
+  "days": [
+    {
+      "date": "2026-11-20",
+      "rank": 6,
+      "share": 8,
+      "level": "",
+      "occurDays": 1,
+      "dayPlatform": "iqiyi",
+      "nameId": 8757221,
+      "ep": {
+        "max": 26,
+        "notvip": 4
+      },
+      "at": "2026-11-21 16:27"
+    }
+  ],
+  "fixes": []
 }
