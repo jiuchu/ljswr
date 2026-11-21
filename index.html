@@ -841,7 +841,7 @@ function renderHeat() {
    酷云 —— CCTV-8 实时收视
    ============================================================ */
 async function loadKuyun() {
-  if (!inLiveWindow()) { mark('酷云', false, '非播出时段'); renderKuyun(); return; }
+  if (!inLiveWindow()) { mark('酷云', false, '不在播出时段'); renderKuyun(); return; }
   const j = await pjson('https://www.ky.live/api/rtepg?tv_type=0&ca_type=0&area=-1&end=0&rt=1');
   const list = j.data || [];
   /* 酷云写「两京十五日 2」，央视写「两京十五日第2集」；startsWith 同时躲掉别人的重名片段 */
@@ -851,21 +851,26 @@ async function loadKuyun() {
               time: hit.rt_time, tvn: hit.tvn, epg: hit.epg, start: hit.start_time, end: hit.end_time, size: list.length };
   renderKuyun(); renderKPI(); mark('酷云', true);
 }
+/* 窗口外不敲接口：实时口只有 CCTV-8 正播本剧那两个小时有意义。
+   酷云按天的历史榜（/api/oldepg，11-20 那播平均 1.8275%）匿名也取得到，
+   但它要整天播完才落库、名次分母和实时口径不是一回事，11-21 试过接进来，
+   按「没播就不请求」撤掉了——这里只留状态，不留数。 */
 function renderKuyun() {
   const rows = document.getElementById('kyRows'), note = document.getElementById('kyNote');
-  const tag = document.getElementById('kyTag').querySelector('span');
+  const box = document.getElementById('kyTag');
+  const tag = box.querySelector('span');
   const st = src['酷云'];
+  const row = (k, v) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
   if (!S.kuyun) {
     rows.innerHTML = '';
     note.innerHTML = `<span class="warn">${esc(st && st.msg || '等待第一拍')}</span>`;
-    tag.textContent = st && st.msg === '非播出时段' ? '窗口外' : '未取到';
-    document.getElementById('kyTag').className = 'src-tag lag';
+    tag.textContent = st && st.msg === '不在播出时段' ? '窗口外' : '未取到';
+    box.className = 'src-tag lag';
     return;
   }
-  document.getElementById('kyTag').className = 'src-tag live';
+  box.className = 'src-tag live';
   tag.textContent = '实时';
   note.textContent = esc(S.kuyun.tvn) + ' · ' + esc((S.kuyun.time || '').slice(11, 19));
-  const row = (k, v) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
   rows.innerHTML =
     row('在播', esc(S.kuyun.epg) + '（' + esc(S.kuyun.start || '?').slice(11) + '–' + esc(S.kuyun.end || '?').slice(11) + '）') +
     row('实时收视率', `<b style="color:var(--gold)">${(S.kuyun.rating * 100).toFixed(4)}%</b>`) +
@@ -1502,8 +1507,13 @@ function renderKPI() {
     items.push(kpiItem('dl', '灯塔 · 集均播放量', yi(epRow.epAvg).t, yi(epRow.epAvg).u,
       `截至 ${esc(epRow.d)}`, '#ffc861', ''));
   }
-  if (S.kuyun) items.push(kpiItem('tv', '酷云 · CCTV-8 收视率', (S.kuyun.rating * 100).toFixed(4), '%',
-    `同时段第 ${S.kuyun.rank} 名 · ${esc(S.kuyun.epg)}`, '#ffc861', ''));
+  /* 酷云这张卡常驻，但没在播的时候不敲接口、也不摆数：值位留空，第二行直接报酷云那侧的状态。
+     窗口内 15 秒一轮，窗口外 300 秒一轮但那轮只判时段就返回，请求数是零。 */
+  const kySt = src['酷云'];
+  items.push(kpiItem('tv', '酷云 · CCTV-8 收视率',
+    S.kuyun ? (S.kuyun.rating * 100).toFixed(4) : '—', S.kuyun ? '%' : '',
+    S.kuyun ? `实时 · 全国第 ${S.kuyun.rank} · ${esc((S.kuyun.time || '').slice(11, 19))}`
+      : esc((kySt && kySt.msg) || '等待第一拍'), '#ffc861', ''));
   if (dq && dq.mine) items.push(kpiItem('chart', '德塔文 · 景气指数', dq.mine.idx, '',
     `${dq.mine.board === 'onair' ? '已播榜' : '待播榜'}第 ${dq.mine.rank} 名 · ${esc(dq.stamp.real_date || '')}`, '#ffc861', ''));
 
@@ -1567,7 +1577,7 @@ function renderStatus() {
   const names = Object.keys(src);
   document.getElementById('status').innerHTML = names.map(n => {
     const s = src[n];
-    const cls = s.ok ? 'ok' : (s.msg === '非播出时段' ? 'idle' : 'bad');
+    const cls = s.ok ? 'ok' : (s.msg === '不在播出时段' ? 'idle' : 'bad');
     return `<div class="st-row ${cls}"><div class="n">${esc(n)}</div>
       <div class="m">${s.ok ? '最后一次回话 ' + new Date(s.at).toLocaleTimeString('zh-CN', { hour12: false })
                              : esc(s.msg || '未回话')}</div></div>`;
