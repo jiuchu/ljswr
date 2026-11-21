@@ -704,13 +704,26 @@ function yi(v) {
   if (Math.abs(n) >= 1e4) return { t: sig3(n / 1e4), u: '万' };
   return { t: num(Math.round(n)), u: '' };
 }
-/* 当天就在涨的播放量不能走 yi 的三位有效：734.46 万会被抹成 734 万，
-   要涨满 1 万才跳一格，实时变化看不出来。这里固定两位小数，涨 100 就动。 */
+/* 当天就在涨的播放量：固定两位小数、四舍五入。这里不能截断，也不能只留一位——
+   112.287 万截成 112.2 之后，要涨满 1000 次才动一格，看着就像这页不死。 */
 function vv2(v) {
   if (v == null || !isFinite(v)) return { t: '—', u: '' };
   const n = Number(v);
-  if (Math.abs(n) >= 1e8) return { t: (n / 1e8).toFixed(1), u: '亿' };
-  if (Math.abs(n) >= 1e4) return { t: (n / 1e4).toFixed(1), u: '万' };
+  if (Math.abs(n) >= 1e8) return { t: (n / 1e8).toFixed(2), u: '亿' };
+  if (Math.abs(n) >= 1e4) return { t: (n / 1e4).toFixed(2), u: '万' };
+  return { t: num(Math.round(n)), u: '' };
+}
+/* 灯塔印数用的是截断、不是四舍五入：拿同一发回包里的 raw 整数和它自己那份 `*WithUnit`
+   串逐字段对过，5 发判别性样本全是截断（3860647→386.0、48561736→4856.1、1122870→112.2），
+   0 例反证。集均是灯塔的收盘快照、一整个统计日都不动，所以这张卡要跟它逐字一样、连末尾那个 0
+   也要在（`Math.floor(n/1e3)/10` 出来是 386，得靠 toFixed(1) 补回来）。
+   正在涨的那几张不归这个函数管——截断会把涨的那点抹平。
+   ⚠百分比不在这条规矩里：灯塔的市占是四舍五入（0.154658→15.47），市占那些 toFixed(2) 别跟着改。 */
+function dtTrunc(v) {
+  if (v == null || !isFinite(v)) return { t: '—', u: '' };
+  const n = Number(v);
+  if (Math.abs(n) >= 1e8) return { t: (Math.floor(n / 1e6) / 100).toFixed(2), u: '亿' };
+  if (Math.abs(n) >= 1e4) return { t: (Math.floor(n / 1e3) / 10).toFixed(1), u: '万' };
   return { t: num(Math.round(n)), u: '' };
 }
 const clean = s => String(s == null ? '' : s).replace(/[　​-‏]/g, '').trim();
@@ -1849,7 +1862,7 @@ function renderKPI() {
   }
   const epRow = S.dtDay.slice().reverse().find(x => x.epAvg != null);
   if (epRow) {
-    items.push(kpiItem('dl', '灯塔 · 集均播放量', vv2(epRow.epAvg).t, vv2(epRow.epAvg).u,
+    items.push(kpiItem('dl', '灯塔 · 集均播放量', dtTrunc(epRow.epAvg).t, dtTrunc(epRow.epAvg).u,
       `截至 ${esc(epRow.d)}`, '#ffc861', ''));
   }
   /* 酷云这张卡常驻，但没在播的时候不敲接口、也不摆数：值位留空，第二行直接报酷云那侧的状态。
