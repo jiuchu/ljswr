@@ -1,8 +1,8 @@
 {
   "title": "两京十五日",
-  "at": "2026-11-22 00:30",
-  "fetchedAt": "2026-11-21T16:30:51.636Z",
-  "runs": 5,
+  "at": "2026-11-22 01:00",
+  "fetchedAt": "2026-11-21T17:00:32.756Z",
+  "runs": 6,
   "dy": [
     {
       "id": "dyRealTime",
@@ -14,8 +14,8 @@
       "size": 20,
       "rank": 1,
       "score": 157927230,
-      "wannaSee": 52202,
-      "comments": 44200,
+      "wannaSee": 52273,
+      "comments": 44507,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -45,8 +45,8 @@
       "size": 20,
       "rank": 1,
       "score": 114959642,
-      "wannaSee": 52202,
-      "comments": 44200,
+      "wannaSee": 52273,
+      "comments": 44508,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -100,18 +100,31 @@
   ],
   "xhs": {
     "name": "小红书剧集榜",
-    "statDate": "",
-    "size": 0,
-    "rank": null,
-    "score": null,
-    "discuss": null,
-    "totalView": null,
-    "totalDiscuss": null,
-    "trend": "",
-    "rankDelta": null,
-    "actors": "",
-    "tags": "",
-    "top": []
+    "statDate": "2026-11-22",
+    "size": 10,
+    "rank": 1,
+    "score": 30441653,
+    "discuss": 192811,
+    "totalView": 193868340,
+    "totalDiscuss": 1752013,
+    "trend": "FLAT",
+    "rankDelta": 0,
+    "actors": "成毅",
+    "tags": "古装/剧情",
+    "top": [
+      {
+        "title": "两京十五日",
+        "score": 30441653
+      },
+      {
+        "title": "今天是太阳雨",
+        "score": 45897348
+      },
+      {
+        "title": "主角",
+        "score": 15294608
+      }
+    ]
   },
   "hourly": [
     {
@@ -128,7 +141,7 @@
     },
     {
       "hour": "小时榜 22:00 - 23:00",
-      "at": "2026-11-21T16:30:51.636Z",
+      "at": "2026-11-21T17:00:32.756Z",
       "rank": 1,
       "score": 157927230
     }
@@ -143,8 +156,8 @@
     },
     {
       "date": "2026-11-22",
-      "xhsRank": null,
-      "xhsScore": null,
+      "xhsRank": 1,
+      "xhsScore": 30441653,
       "dyDailyRank": 1,
       "dyDailyScore": 114959642
     }
