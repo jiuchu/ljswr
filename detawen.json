@@ -1,11 +1,11 @@
 {
  "title": "两京十五日",
- "captured_at": "2026-11-20T14:51:33.969Z",
+ "captured_at": "2026-11-21T00:30:39.747Z",
  "stamp": {
-  "real_date": "2026-11-20",
-  "real_time": "2026-11-20 22:51",
+  "real_date": "2026-11-21",
+  "real_time": "2026-11-21 08:30",
   "db_date": "2026-11-20",
-  "update_time": "2026-11-20 22:51"
+  "update_time": "2026-11-21 08:30"
  },
  "archive": {
   "earliest": "2018-08-06",
@@ -108,13 +108,13 @@
    },
    {
     "rank": 6,
-    "name": "红舞鞋",
+    "name": "不为人知的故事",
     "idx": 0.396,
     "trend": "up"
    },
    {
     "rank": 7,
-    "name": "不为人知的故事",
+    "name": "红舞鞋",
     "idx": 0.396,
     "trend": "up"
    },
@@ -900,6 +900,52 @@
   },
   {
    "d": "2026-11-20",
+   "board": "onair",
+   "rank": 4,
+   "idx": 1.626,
+   "trend": "flat",
+   "platform": "爱奇艺",
+   "tv": [
+    "CCTV8"
+   ],
+   "web": [
+    "爱奇艺"
+   ],
+   "roles": [
+    {
+     "actor": "成毅",
+     "role": "朱瞻基",
+     "contribute": 0.4443,
+     "yiren": 0.5027
+    },
+    {
+     "actor": "林更新",
+     "role": "吴定缘",
+     "contribute": 0.1953,
+     "yiren": 0.6305
+    },
+    {
+     "actor": "吴幸键",
+     "role": "于谦",
+     "contribute": 0.1062,
+     "yiren": 0.2581
+    },
+    {
+     "actor": "姜佩瑶",
+     "role": "苏荆溪",
+     "contribute": 0.0691,
+     "yiren": 0.4513
+    },
+    {
+     "actor": "陈数",
+     "role": "张皇后",
+     "contribute": 0.0418,
+     "yiren": 0.4175
+    }
+   ]
+  },
+  {
+   "d": "2026-11-21",
    "board": "onair",
    "rank": 4,
    "idx": 1.626,
