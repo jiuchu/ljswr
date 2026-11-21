@@ -1,0 +1,147 @@
+{
+  "title": "两京十五日",
+  "at": "2026-11-21 19:10",
+  "fetchedAt": "2026-11-21T11:10:06.361Z",
+  "runs": 1,
+  "dy": [
+    {
+      "id": "dyRealTime",
+      "name": "抖音剧集实时榜",
+      "label": "小时榜 17:00 - 18:00",
+      "range": "2026-11-21 周六 — 2026-11-21 周六",
+      "active": "2026-11-21 18:00",
+      "version": 25491,
+      "size": 20,
+      "rank": 1,
+      "score": 149315691,
+      "wannaSee": 50582,
+      "comments": 39557,
+      "episodes": 26,
+      "actors": "成毅 / 王和 / 张凯莹",
+      "tags": "古装",
+      "releaseDate": "2026-11-20",
+      "top": [
+        {
+          "title": "两京十五日",
+          "score": 149315691
+        },
+        {
+          "title": "今天是太阳雨",
+          "score": 115564740
+        },
+        {
+          "title": "多喜一家人",
+          "score": 65402314
+        }
+      ]
+    },
+    {
+      "id": "dyDaily",
+      "name": "抖音剧集日榜",
+      "label": "日榜 11-20",
+      "range": "2026-11-20 周五 — 2026-11-21 周六",
+      "active": "2026-11-21 14:00",
+      "version": 1076,
+      "size": 20,
+      "rank": 1,
+      "score": 114959642,
+      "wannaSee": 50582,
+      "comments": 39559,
+      "episodes": 26,
+      "actors": "成毅 / 王和 / 张凯莹",
+      "tags": "古装",
+      "releaseDate": "2026-11-20",
+      "top": [
+        {
+          "title": "两京十五日",
+          "score": 114959642
+        },
+        {
+          "title": "今天是太阳雨",
+          "score": 148758993
+        },
+        {
+          "title": "多喜一家人",
+          "score": 97751038
+        }
+      ]
+    },
+    {
+      "id": "dyWeekly",
+      "name": "抖音剧集周榜",
+      "label": "周榜 11-09 - 11-15",
+      "range": "2026-11-09 周一 — 2026-11-15 周日",
+      "active": "2026-11-16 14:00",
+      "version": 153,
+      "size": 20,
+      "rank": null,
+      "score": null,
+      "wannaSee": null,
+      "comments": null,
+      "episodes": null,
+      "actors": "",
+      "tags": "",
+      "releaseDate": "",
+      "top": [
+        {
+          "title": "今天是太阳雨",
+          "score": 259969336
+        },
+        {
+          "title": "多喜一家人",
+          "score": 20708621
+        },
+        {
+          "title": "十万狂花入梦来",
+          "score": 21406309
+        }
+      ]
+    }
+  ],
+  "xhs": {
+    "name": "小红书剧集榜",
+    "statDate": "2026-11-21",
+    "size": 10,
+    "rank": 1,
+    "score": 13617194,
+    "discuss": 131078,
+    "totalView": 163426687,
+    "totalDiscuss": 1559202,
+    "trend": "UP",
+    "rankDelta": 1,
+    "actors": "成毅",
+    "tags": "古装/剧情",
+    "top": [
+      {
+        "title": "两京十五日",
+        "score": 13617194
+      },
+      {
+        "title": "今天是太阳雨",
+        "score": 47151954
+      },
+      {
+        "title": "甄嬛传",
+        "score": 9364419
+      }
+    ]
+  },
+  "hourly": [
+    {
+      "hour": "小时榜 17:00 - 18:00",
+      "at": "2026-11-21T11:10:06.361Z",
+      "rank": 1,
+      "score": 149315691
+    }
+  ],
+  "daily": [
+    {
+      "date": "2026-11-21",
+      "xhsRank": 1,
+      "xhsScore": 13617194,
+      "dyDailyRank": 1,
+      "dyDailyScore": 114959642
+    }
+  ],
+  "lastError": ""
+}
