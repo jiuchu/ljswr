@@ -182,6 +182,7 @@ h1{font-size:clamp(2.3rem,5.4vw,3.6rem);font-weight:800;letter-spacing:.06em;lin
 .row:last-child{border-bottom:none}
 .row .k{color:var(--dim)}
 .row .v{font-weight:700;font-variant-numeric:tabular-nums;color:var(--txt)}
+.row .sm{font-size:.72rem;color:var(--dimmer);font-weight:400;margin-left:7px}
 .board{margin-top:12px;display:flex;flex-direction:column;gap:5px}
 .bd-row{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;
   padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.035);font-size:.85rem}
@@ -227,6 +228,14 @@ h1{font-size:clamp(2.3rem,5.4vw,3.6rem);font-weight:800;letter-spacing:.06em;lin
 .rc-no b{font-size:2.3rem;font-weight:900;letter-spacing:-1px;margin-left:6px;
   font-family:'Times New Roman',serif;font-style:italic;line-height:1}
 .rc-tip{font-size:.7rem;opacity:.7;margin-top:7px;letter-spacing:.03em}
+
+/* ---------- 里程碑 ---------- */
+.honor{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-top:14px}
+.honor-item{display:flex;gap:11px;align-items:flex-start;padding:12px 14px;border-radius:12px;
+  background:rgba(255,255,255,.04);border:1px solid var(--line);border-left:3px solid var(--gold)}
+.honor-item .hg{font-size:1.05rem;line-height:1.3}
+.honor-item .tx{font-size:.87rem;color:#dbe1f0}
+.honor-item .dt{font-size:.72rem;color:var(--dimmer);margin-top:3px}
 
 /* ---------- 排播表 ---------- */
 .sch-tbl{width:100%;border-collapse:collapse;margin-top:14px;font-size:.85rem}
@@ -531,14 +540,9 @@ footer a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(25
       <div class="sub-label" id="wxWin">—</div>
     </div>
     <div class="panel">
-      <div class="p-head"><div class="p-title"><i></i>抖音指数</div>
-        <div class="tabs" id="dyTabs">
-          <button class="tab on" data-d="comp">综合指数</button>
-          <button class="tab" data-d="search">搜索指数</button>
-        </div>
-      </div>
+      <div class="p-head"><div class="p-title"><i></i>抖音指数</div></div>
       <div class="p-note" id="dyNote">—</div>
-      <div class="chart-box short"><canvas id="dyChart"></canvas><div class="empty" id="dyEmpty">—</div></div>
+      <div class="rows" id="dyRows"></div>
       <div class="sub-label" id="dyWin">—</div>
     </div>
     <div class="panel">
@@ -551,6 +555,25 @@ footer a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(25
       <div class="p-note" id="qmNote">—</div>
       <div class="chart-box short"><canvas id="qmChart"></canvas><div class="empty" id="qmEmpty">—</div></div>
       <div class="rows" id="qmRows"></div>
+    </div>
+  </section>
+
+  <div class="sec-title">平台剧集榜 <span>· 抖音 / 小红书</span></div>
+  <section class="grid2">
+    <div class="panel">
+      <div class="p-head"><div class="p-title"><i></i>抖音剧集榜</div></div>
+      <div class="p-note" id="ddbNote">—</div>
+      <div class="rows" id="ddbRows"></div>
+    </div>
+    <div class="panel">
+      <div class="p-head"><div class="p-title"><i></i>小红书剧集榜</div></div>
+      <div class="p-note" id="xhsNote">—</div>
+      <div class="rows" id="xhsRows"></div>
+    </div>
+    <div class="panel wide">
+      <div class="p-head"><div class="p-title"><i></i>里程碑与排名</div>
+        <div class="p-note">取各榜当前格子</div></div>
+      <div id="honor"><div class="p-note">—</div></div>
     </div>
   </section>
 
@@ -772,10 +795,10 @@ function cadence(kLive, kIdle) { return inLiveWindow() ? kLive : kIdle; }
 /* ============================================================
    档案：Actions 落进仓库的那几份 JSON
    ============================================================ */
-const FILES = ['iqiyi.json', 'detawen.json', 'yunhe.json', 'baidu-index.json', 'wxindex.json', 'qimai.json', 'cvb.json', 'douyin.json'];
+const FILES = ['iqiyi.json', 'detawen.json', 'yunhe.json', 'baidu-index.json', 'wxindex.json', 'qimai.json', 'cvb.json', 'douyin.json', 'doudou.json'];
 const FILE_CN = { 'iqiyi.json': '爱奇艺档案', 'detawen.json': '德塔文档案', 'yunhe.json': '云合档案',
   'baidu-index.json': '百度指数档案', 'wxindex.json': '微信指数档案', 'qimai.json': '七麦档案',
-  'cvb.json': 'CVB 日榜档案', 'douyin.json': '抖音指数档案' };
+  'cvb.json': 'CVB 日榜档案', 'douyin.json': '抖音指数档案', 'doudou.json': '剧集榜档案' };
 async function loadFile(name) {
   try {
     const r = await fetch(name + '?cb=' + bjYmd(), { cache: 'no-store' });
@@ -1434,51 +1457,113 @@ function wxFlucRow(x) {
       <span class="delta ${up ? 'up' : 'down'}">${up ? '+' : '−'}${Math.abs(x.gain_pct).toFixed(2)}%</span></span></div>`;
 }
 /* 抖音指数：一次请求回 32 天，窗口尾落在 T-2，所以最新那格永远比今天晚两天。
-   综合指数与搜索指数量纲差着一到两个数量级，一格之内切换着看，不并排画。 */
+   综合指数与搜索指数量纲差着一到两个数量级，各印一行，不画在同一条线上。 */
 function renderDouyin() {
   const j = F('douyin');
-  const note = document.getElementById('dyNote'), empty = document.getElementById('dyEmpty');
+  const note = document.getElementById('dyNote'), box = document.getElementById('dyRows');
   const winEl = document.getElementById('dyWin');
   if (!j || !j.days || !j.days.length) {
-    empty.style.display = 'grid'; empty.textContent = '档案未到';
     note.textContent = '—'; winEl.textContent = '—';
-    if (CH.dyChart) { CH.dyChart.destroy(); delete CH.dyChart; }
+    box.innerHTML = '<div class="p-note">档案未到</div>';
     return;
   }
-  empty.style.display = 'none';
-  const all = j.days, last = all[all.length - 1];
+  const all = j.days, last = all[all.length - 1], prev = all[all.length - 2];
   const dfmt = s => String(s).slice(0, 4) + '-' + String(s).slice(4, 6) + '-' + String(s).slice(6, 8);
-  const M = S.tab.dy === 'search'
-    ? { k: 'search', name: '搜索指数', color: '#3ddc97' }
-    : { k: 'comp', name: '综合指数', color: '#4f9dff' };
-  const val = x => x[M.k] == null ? null : Number(x[M.k]);
-  const win = all.slice(-30);
-  const first = win[0];
-  const cross = String(first.d).slice(0, 4) !== String(last.d).slice(0, 4);
-  const ds = s => cross ? dfmt(s).slice(2) : dfmt(s).slice(5);
-  const series = win.map(x => val(x));
-  const known = series.filter(v => v != null);
-  const peak = win.reduce((a, x) => (val(x) != null && (a == null || val(x) > val(a))) ? x : a, null);
+  note.textContent = `最新 ${dfmt(last.d)} · 档案抓到于 ${bjClock(new Date(j.fetchedAt))}`;
+  const row = (name, k, color) => {
+    const v = last[k] == null ? null : Number(last[k]);
+    const pv = prev && prev[k] != null ? Number(prev[k]) : null;
+    return `<div class="row"><span class="k">${name}</span><span class="v">`
+      + `<b style="color:${color}">${v == null ? '—' : yi(v).t + yi(v).u}</b>`
+      + deltaTag(v != null && pv != null ? v - pv : null, '', 0) + '</span></div>';
+  };
+  box.innerHTML = row('综合指数', 'comp', '#4f9dff') + row('搜索指数', 'search', '#3ddc97');
+  const win = all.slice(-30), first = win[0];
+  const ds = s => dfmt(s).slice(2);
+  const known = win.map(x => x.comp == null ? null : Number(x.comp)).filter(v => v != null);
   const avg = known.length ? known.reduce((a, v) => a + v, 0) / known.length : null;
-  note.innerHTML = `最新 ${esc(dfmt(last.d))} · <b style="color:var(--gold)">${M.name} `
-    + (val(last) == null ? '—' : `${yi(val(last)).t}${yi(val(last)).u}`) + '</b>'
-    + (peak ? ` · 档案里最高 ${esc(ds(peak.d))} ${yi(val(peak)).t}${yi(val(peak)).u}` : '')
-    + ` · 档案抓到于 ${esc(bjClock(new Date(j.fetchedAt)))}`;
-  const ma = win.map((x, i) => {
-    const s = win.slice(Math.max(0, i - 6), i + 1).map(val).filter(v => v != null);
-    return s.length ? Math.round(s.reduce((a, v) => a + v, 0) / s.length) : null;
-  });
-  lineChart('dyChart', 'dy', win.map(x => ds(x.d)),
-    [{ label: M.name, data: series, color: M.color },
-     { label: '7 日均值', data: ma, color: '#ffc861', fill: false }],
-    { ticks: cross ? 5 : 8, gaps: true });
-  const r0 = val(first), r1 = val(last);
+  const r0 = first.comp == null ? null : Number(first.comp);
+  const r1 = last.comp == null ? null : Number(last.comp);
   const ratio = r0 && r1 ? r1 / r0 : null;
   const mag = ratio == null ? '' : ratio >= 1
     ? `${ratio >= 10 ? Math.round(ratio) : ratio.toFixed(1)} 倍` : `${((1 - ratio) * 100).toFixed(0)}%`;
   winEl.innerHTML = `${win.length} 天 ${esc(ds(first.d))} → ${esc(ds(last.d))}`
-    + (avg == null ? '' : ` · 平均值 ${yi(avg).t}${yi(avg).u}`)
+    + (avg == null ? '' : ` · 综合指数平均 ${yi(avg).t}${yi(avg).u}`)
     + (ratio == null ? '' : ` · 窗口内 <span class="delta ${ratio >= 1 ? 'up' : 'down'}">${ratio >= 1 ? '涨' : '跌'} ${esc(mag)}</span>`);
+}
+/* 平台剧集榜：榜名、时段字样、名次全部照抄回包 —— 抖音那三档给的是官方名次，
+   小红书给的是 rank。名次为空就写「不在榜」，不自己数下标、也不补官方没给的位次。 */
+function renderBoards() {
+  const j = F('doudou');
+  const dNote = document.getElementById('ddbNote'), dBox = document.getElementById('ddbRows');
+  const xNote = document.getElementById('xhsNote'), xBox = document.getElementById('xhsRows');
+  const heat = v => v == null ? '—' : yi(v).t + yi(v).u;
+  if (!j) {
+    dNote.textContent = '—'; xNote.textContent = '—';
+    dBox.innerHTML = xBox.innerHTML = '<div class="p-note">档案未到</div>';
+    return;
+  }
+  dNote.textContent = j.at ? `最后一次更新 ${j.at}` : '—';
+  const ws = (j.dy || []).map(b => b.wannaSee).find(v => v != null);
+  dBox.innerHTML = (j.dy || []).map(b => `<div class="row"><span class="k">${esc(b.name)}`
+    + `<span class="sm">${esc(b.label || '')}</span></span>`
+    + `<span class="v">${b.rank == null ? '不在榜'
+      : `第 ${b.rank} 名<span class="sm">热度 ${heat(b.score)}</span>`}</span></div>`).join('')
+    + (ws == null ? '' : `<div class="row"><span class="k">想看</span>`
+      + `<span class="v">${heat(ws)}</span></div>`)
+    || '<div class="p-note">档案里还没有榜格</div>';
+  const x = j.xhs;
+  if (!x) {
+    xNote.textContent = '—';
+    xBox.innerHTML = '<div class="p-note">档案里还没有这张榜</div>';
+    return;
+  }
+  xNote.textContent = x.statDate ? `统计日 ${x.statDate}` : '—';
+  const dir = x.trend === 'UP' ? 1 : x.trend === 'DOWN' ? -1 : 0;
+  const chg = dir && x.rankDelta
+    ? `<span class="delta ${dir > 0 ? 'up' : 'down'}">${dir > 0 ? '↑' : '↓'}${x.rankDelta}</span>` : '';
+  xBox.innerHTML = `<div class="row"><span class="k">名次</span>
+      <span class="v">${x.rank == null ? '不在榜' : '第 ' + x.rank + ' 名'}${chg}</span></div>`
+    + `<div class="row"><span class="k">当日浏览</span><span class="v">${heat(x.score)}</span></div>`
+    + `<div class="row"><span class="k">当日讨论</span><span class="v">${heat(x.discuss)}</span></div>`;
+}
+/* 里程碑与排名：每项只从本看板已有的档案抄当前那一格，名次与评级用接口自己给的字段。 */
+function renderHonor() {
+  const host = document.getElementById('honor');
+  const dd = F('doudou'), dq = F('detawen'), yh = F('yunhe'), cvb = F('cvb');
+  const heat = v => v == null ? '—' : yi(v).t + yi(v).u;
+  const items = [];
+  ((dd && dd.dy) || []).forEach(b => {
+    if (b.rank == null) return;
+    items.push({ g: '🎬', t: `${b.name}第 ${b.rank} 名`,
+      d: [b.label, `热度 ${heat(b.score)}`].filter(Boolean).join(' · ') });
+  });
+  const x = dd && dd.xhs;
+  if (x && x.rank != null) items.push({ g: '📕', t: `${x.name || '小红书剧集榜'}第 ${x.rank} 名`,
+    d: ['当日浏览 ' + heat(x.score), '当日讨论 ' + heat(x.discuss), x.statDate].filter(Boolean).join(' · ') });
+  const lastDay = S.dtDay[S.dtDay.length - 1];
+  if (lastDay && lastDay.rank) items.push({ g: '📊', t: `灯塔 · 网剧榜第 ${lastDay.rank} 名`,
+    d: `${lastDay.d} · 播放量 ${heat(lastDay.vv)}`
+      + ` · 市占 ${(parseFloat(String(lastDay.share)) || 0).toFixed(2)}%` });
+  if (dq && dq.mine && dq.mine.rank != null) items.push({ g: '🔥',
+    t: `德塔文 · ${dq.mine.board === 'onair' ? '已播榜' : '待播榜'}第 ${dq.mine.rank} 名`,
+    d: `景气指数 ${dq.mine.idx} · ${esc((dq.stamp && dq.stamp.real_date) || '')}` });
+  if (S.surge && S.surge.mine) items.push({ g: '📈', t: `爱奇艺 · 电视剧飙升榜第 ${S.surge.mine.no} 名`,
+    d: `升幅 ${(parseFloat(String(S.surge.mine.rise)) || 0)}%`
+      + ` · 爱奇艺侧更新 ${esc(S.surge.head || '—')}` });
+  if (cvb && cvb.latest && cvb.latest.rank != null) items.push({ g: '📺',
+    t: `CVB 黄金时段电视剧日榜第 ${cvb.latest.rank} 名`,
+    d: [cvb.latest.rating != null ? cvb.latest.rating.toFixed(3) + '%' : '',
+        cvb.latest.share != null ? '份额 ' + cvb.latest.share.toFixed(3) + '%' : '',
+        esc(cvb.latest.channel || ''), esc(cvb.latest.date || '')].filter(Boolean).join(' · ') });
+  const yhLast = yh && yh.days && yh.days.length ? yh.days[yh.days.length - 1] : null;
+  if (yhLast && yhLast.level) items.push({ g: '⭐', t: `云合 · 评级 ${yhLast.level}`,
+    d: [yhLast.share != null ? '有效播放市占 ' + esc(yhLast.share) + '%' : '', esc(yhLast.date || '')]
+      .filter(Boolean).join(' · ') });
+  host.innerHTML = items.length ? `<div class="honor">` + items.map(i =>
+    `<div class="honor-item"><div class="hg">${i.g}</div><div>`
+    + `<div class="tx">${esc(i.t)}</div><div class="dt">${esc(i.d)}</div></div></div>`).join('') + '</div>'
+    : '<div class="p-note">各榜还没给出这一剧的名次</div>';
 }
 function renderQimai() {
   const j = F('qimai');
@@ -1719,15 +1804,24 @@ function renderKPI() {
       esc(l.d.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')), '#3ddc97',
       pv ? deltaTag(l.s - pv.s, '', 0) : ''));
   }
-  const dy = F('douyin');
-  const dyDays = dy && dy.days && dy.days.length ? dy.days : null;
-  if (dyDays) {
-    const l = dyDays[dyDays.length - 1], pv = dyDays[dyDays.length - 2];
-    const dstr = esc(String(l.d).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'));
-    items.push(kpiItem('film', '抖音 · 综合指数', yi(l.comp).t, yi(l.comp).u, dstr, '#25f4ee',
-      pv ? deltaTag(l.comp - pv.comp, '', 0) : ''));
-    items.push(kpiItem('search', '抖音 · 搜索指数', yi(l.search).t, yi(l.search).u, dstr, '#7c5cff',
-      pv ? deltaTag(l.search - pv.search, '', 0) : ''));
+  /* 两张剧集榜卡：榜名与时段字样照抄回包，名次是官方给的那一格。
+     抖音综合指数不占卡片，只在「抖音指数」那一格里印数值。 */
+  const dd = F('doudou');
+  const dyRt = dd && dd.dy ? dd.dy.find(b => b.id === 'dyRealTime') : null;
+  if (dyRt) {
+    items.push(kpiItem('flame', dyRt.name, dyRt.score == null ? '—' : yi(dyRt.score).t,
+      dyRt.score == null ? '' : yi(dyRt.score).u,
+      `${esc(dyRt.label || '')} · ${dyRt.rank == null ? '不在榜' : '第 ' + dyRt.rank + ' 名'}`,
+      '#25f4ee', ''));
+  }
+  const xh = dd && dd.xhs;
+  if (xh) {
+    items.push(kpiItem('star', xh.name || '小红书剧集榜',
+      xh.score == null ? '—' : yi(xh.score).t, xh.score == null ? '' : yi(xh.score).u,
+      `${xh.rank == null ? '不在榜' : '第 ' + xh.rank + ' 名'}`
+        + ` · 当日讨论 ${xh.discuss == null ? '—' : yi(xh.discuss).t + yi(xh.discuss).u}`
+        + ` · ${esc(xh.statDate || '')}`,
+      '#ff5000', ''));
   }
 
   document.getElementById('kpi').innerHTML = items.map((x, i) => `
@@ -1738,6 +1832,7 @@ function renderKPI() {
       <div class="c-sub">${x.sub}</div>
       ${x.foot || ''}
     </div>`).join('') || '<div class="p-note">第一拍还没回话</div>';
+  renderHonor();
 }
 function renderStatus() {
   const names = Object.keys(src);
@@ -1856,7 +1951,6 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') dm.classList
   wireTabs('epgTabs', 'epg', () => safe('央视节目单', loadEpg));
   wireTabs('dwTabs', 'dw', () => renderDetawen());
   wireTabs('wxTabs', 'wx', () => renderWx());
-  wireTabs('dyTabs', 'dy', () => renderDouyin());
   document.getElementById('refreshBtn').addEventListener('click', async () => {
     const b = document.getElementById('refreshBtn');
     b.disabled = true; b.innerHTML = '<span class="spin"></span> 重算中';
@@ -1887,7 +1981,7 @@ async function loadAllFiles() { await Promise.all(FILES.map(loadFile)); }
 function renderAll() {
   renderHero(); renderDetawen(); renderYunhe(); renderCvb(); renderIqiyi();
   renderBaidu(); renderWx(); renderDouyin(); renderQimai(); renderKuyun(); renderEpg(); renderSurge();
-  renderHeat(); renderKPI(); renderVvHour(); renderStatus();
+  renderHeat(); renderKPI(); renderVvHour(); renderBoards();
 }
 let pollingStarted = false;
 function startPolling() {
@@ -1903,7 +1997,7 @@ function startPolling() {
     await loadAllFiles();
     renderDetawen(); renderYunhe(); renderCvb(); renderIqiyi(); renderBaidu(); renderWx(); renderDouyin(); renderQimai();
     await loadVvHourly();
-    renderKPI(); renderHero();
+    renderKPI(); renderHero(); renderBoards();
   });
 }
 </script>
