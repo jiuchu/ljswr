@@ -1,12 +1,13 @@
-# 爱奇艺 / 德塔文 / 云合 / CVB / 抖音指数 —— 两京十五日
+# 爱奇艺 / 德塔文 / 云合 / 抖音指数 —— 两京十五日（CVB 那家在青龙跑，理由见步骤里那段注释）
 #
 # 前置（一次性，都在 GitHub 网页上设）：
 #   1. Settings → Actions → General → Workflow permissions → Read and write
 #   2. 本文件放 .github/workflows/ 下，fetch_iqiyi.mjs、fetch_detawen.mjs、fetch_yunhe.mjs、
-#      fetch_cvb.mjs、fetch_douyin.mjs 和 index.html 放同一个仓库根（脚本把 json 写在**自己旁边**，挪目录要一起挪）
-#   3. 前四个口全匿名、不要 secret。抖音指数那一口要一个 secret：DY_COOKIE ——
+#      fetch_douyin.mjs 和 index.html 放同一个仓库根（脚本把 json 写在**自己旁边**，挪目录要一起挪）；
+#      fetch_cvb.mjs 也在仓库根，但这条工作流不跑它 —— 它是手机不在家时在电脑上手补 cvb.json 的那份
+#   3. 前三家全匿名、不要 secret。抖音指数那一口要一个 secret：DY_COOKIE ——
 #      抖音创作者中心（creator.douyin.com）登录状态下的 cookie，整串贴进去。
-#      没建这个 secret 时那一步会红，但不拖另外四家（continue-on-error）。
+#      没建这个 secret 时那一步会红，但不拖另外三家（continue-on-error）。
 #
 # 为什么四个源挤一条工作流、一个 job：它们都是「读一发、写一份档案」，没有谁需要
 # 无头浏览器；拆成四个 job 就是四次 checkout、四份档案各自往 main 推，同仓并发推送
@@ -18,19 +19,16 @@
 # 拿 repository_dispatch 叫这条。
 #
 # 一天两拍（北京 09:30 / 21:30）的理由：德塔文当日榜是傍晚之后才落的，09:30 那拍
-# 拿到的是昨天的收盘；云合榜 T+1，早上那拍正好接住它新出的一天；CVB 日榜也是次日发
-# （档案里的落库时刻见到过 09:14，是观察不是承诺），同样归 09:30 那拍接；爱奇艺更新时间表
+# 拿到的是昨天的收盘；云合榜 T+1，早上那拍正好接住它新出的一天；爱奇艺更新时间表
 # 一天里会改口（改档、加更），两拍够看住它。抖音指数的尾巴固定在 T-2，一天之内不会
 # 变两次，所以两拍对它只是「早拍到就晚拍当重试」，请求数 2 发/天。
 #
-# ⚠ 第一次跑带着实验性质，五家各自可能红：
+# ⚠ 第一次跑带着实验性质，各家各自可能红：
 #   爱奇艺那条接口带的是脚本里写死的假 device_id，机房 IP 认不认没验过 —— 红了先看
 #     日志里那句是「接口回 code」还是 HTTP 层；
 #   德塔文那台站点只有 http、HTTPS 握手不通，Actions 里同样走 http，被运营商或
 #     GitHub 网络侧拦下来的话是 HTTP 层报错，不是数据问题；
 #   云合榜 T+1，开播当天必然「榜内没有本剧」，那是它自己没出，脚本按未收录写、rc=0；
-#   CVB 那台（cavbd.cn）对浏览器是跨站 Origin 直接 403，所以只能这么绕档案读；机房 IP
-#     能不能通没验过，红了是 HTTP 层，不是数据问题。它的日榜只留最近 7 天，更旧的要自己攒。
 #   抖音指数那一口只认登录 cookie：过期会回 401/403，日志印「登录态不认」，那是凭证的事，
 #     要重新贴一次 DY_COOKIE；机房 IP 会不会被风控同样没验过，红了先分清是 HTTP 层还是
 #     「回的是页面」（后者多半是被跳去登录或人机）。钥匙表若被换，日志印
@@ -65,7 +63,7 @@ jobs:
       # 采完之后那发 commit 挂在旧树上，而 main 这中间已经往前走了（本机推送 + 别的闹钟），
       # 四个档案两边都改过 → rebase 必冲突。11-21 16:12 那次红叉就是这么来的：
       # 那条 run 的 created_at 还是 12:30，attempt=2，head_sha 是 12:30 的树，
-      # 所以日志里连 CVB 那一步都没有（14:03 才加进这个文件）。
+      # 所以日志里连当天中午才加进来的那一步都没有。
       # 先把本地分支挪到 main 最新，再开始采，重新运行和手点就等价了。
       - name: 跟着 main 最新档案
         env:
@@ -90,9 +88,10 @@ jobs:
         continue-on-error: true
         run: node fetch_yunhe.mjs
 
-      - name: CVB · 黄金时段电视剧收视日榜
-        continue-on-error: true
-        run: node fetch_cvb.mjs
+      # CVB 不在这里跑：www.cavbd.cn 只回境内 IP，机房 IP 是连接超时（11-21 实测
+      # UND_ERR_CONNECT_TIMEOUT，Cloudflare 出口 522）。它搬到了青龙 —— 脚本 cvb_ljswr.js、
+      # cron「两京十五日 · CVB 日榜（境内出口）」一天六拍，档案同样写这份 cvb.json。
+      # 本机那份 fetch_cvb.mjs 留着，是手机不在家时在电脑上手补 cvb.json 的那份（读写本地文件）。
 
       # 抖音指数的回包是密文，钥匙写死在脚本里（两把 AES 钥匙按响应头 x-encrypted 选）。
       # 它只吃登录 cookie，不要 msToken / a_bogus —— 11-21 拿他登录着的页面真密文实测解通过。
@@ -109,9 +108,10 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A iqiyi.json detawen.json yunhe.json cvb.json douyin.json
+          # cvb.json 不在清单里：那一份现在只有青龙写，这条工作流不碰它，两个写者不撞。
+          git add -A iqiyi.json detawen.json yunhe.json douyin.json
           if git diff --cached --quiet; then
-            echo "::notice::五份档案都没变化（多半是上游今天没出数），这一轮不提交"
+            echo "::notice::四份档案都没变化（多半是上游今天没出数），这一轮不提交"
             exit 0
           fi
           git commit -m "两京十五日档案 $(TZ=Asia/Shanghai date '+%F %H:%M')"
