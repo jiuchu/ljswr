@@ -1,22 +1,42 @@
 {
   "name": "两京十五日",
-  "at": "2026-11-21 13:41",
+  "at": "2026-11-21 22:27",
   "atDay": "2026-11-21",
-  "fetchedAt": "2026-11-21T05:41:57.123Z",
-  "runs": 3,
+  "fetchedAt": "2026-11-21T14:27:31.123Z",
+  "runs": 4,
   "available": {
-    "from": "2026-11-13",
-    "to": "2026-11-19",
+    "from": "2026-11-14",
+    "to": "2026-11-20",
     "days": 7
   },
   "board": {
-    "date": "2026-11-19",
-    "size": 10,
-    "inBoard": false,
-    "top": "多喜一家人"
+    "date": "2026-11-20",
+    "size": 11,
+    "inBoard": true,
+    "top": "两京十五日"
   },
-  "inBoard": false,
-  "latest": null,
-  "days": [],
+  "inBoard": true,
+  "latest": {
+    "date": "2026-11-20",
+    "rank": 1,
+    "name": "两京十五日",
+    "rating": 1.585,
+    "share": 6.852,
+    "episode": "1-2集",
+    "channel": "CCTV8",
+    "at": "2026-11-21 22:27"
+  },
+  "days": [
+    {
+      "date": "2026-11-20",
+      "rank": 1,
+      "name": "两京十五日",
+      "rating": 1.585,
+      "share": 6.852,
+      "episode": "1-2集",
+      "channel": "CCTV8",
+      "at": "2026-11-21 22:27"
+    }
+  ],
   "fixes": []
 }
