@@ -1,18 +1,25 @@
 // 云合（enlightent）市占率 + 评级采集 —— 两京十五日。
 //
-// 一家口两个数，全匿名、无 cookie、无签名：
+// 一家口三个数，全匿名、无 cookie、无签名：
 //   POST https://www.enlightent.cn/research/top/getReboTop.do  type=1&pageNo=1&pageSize=50
 //   → 30 行（type/pageNo/pageSize 改了不给更多），每行
 //     {reboRank,name,nameID,marketShare,releaseTime,dayPlatform,network,date,occurDays,status,
 //      episodeUpdated:{maxIndex,notvipIndex,memberIndex},yunheLevel:[{date,level,minValue,diff,position,maxValue}]}
 //   市占率在 marketShare，评级在 yunheLevel[].level —— 同一行，所以不需要反查 nameId。
 //
+//   POST /research/video/getLastLevel.do  nameId=<id>   → 本剧最近 1~2 天的档位（见下面 nameId 那段）
+//   POST /research/top/getLevelStage.do   空 body        → 7 条 {date,level,minValue,maxValue}，
+//     即各档「集均30天有效播放」的晋级线。这一发未打散（连敲两次全同、date 参数被忽略恒回最新），
+//     是云合在匿名条件下唯一肯给的绝对数，存进档案的 stage 字段。
+//
 // 本剧 2026-11-20 首播，11-20 这拍跑还在 30 行外（榜是 T+1，11-19 那天的榜里没有它）。
 // 榜外不等于采集坏了，所以档案里单独存 inBoard，页面要说得出这两件事的差别。
 //
 // nameID 一旦进榜就顺手记下来，之后 /research/video/getLastLevel.do?nameId= 能用它补档位历史。
 // 那三个 minValue/maxValue/position 是未登录打散过的随机数（10-21 用《兰香如故》连测三次，
-// level 三次全同、那三个数三次全不一样），所以一个都不存。
+// level 三次全同、那三个数三次全不一样；11-21 在同一发榜里看到 C 档行的 minValue 是负数
+// —— 播放量不可能为负，所以那是噪声不是低值），所以一个都不存。页面只拿字母去 stage 里查
+// 晋级线，印的是「集均30天有效播放 ≥ X」这一句下界，不印点值。
 //
 // 日序列自己攒：接口只回最近 1~2 天，没有更深历史。读旧-追加-写新，和 billboard.json 一样。
 //
@@ -26,6 +33,7 @@ import { fileURLToPath } from 'node:url';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REBO = 'https://www.enlightent.cn/research/top/getReboTop.do';
 const LEVEL = 'https://www.enlightent.cn/research/video/getLastLevel.do';
+const STAGE = 'https://www.enlightent.cn/research/top/getLevelStage.do';
 const OUT = process.env.YUNHE_OUT || path.join(HERE, 'yunhe.json');
 const NAME = process.env.YUNHE_NAME || '两京十五日';
 const KEEP = Number(process.env.YUNHE_KEEP || 400);
@@ -131,6 +139,31 @@ if (nameId) {
 }
 
 const m = mergeDays(old?.days, [...extra, ...fresh], at);
+
+/* 定级线：云合工具箱「定级线」那一页背后的口，匿名、未打散（同一发回包两次全同）。
+   它给的是各档「集均30天有效播放」的区间，minValue 就是官方那句「各评级最后一名」那条晋级线。
+   榜里那三个数（minValue/maxValue/position）是加过随机噪声的（C 档行会出负数），一个都不存；
+   能存的只有这个口——所以它只用来把字母翻译成一句下界，不用来编点值。 */
+let stage = null;
+try {
+  const s = await post(STAGE, '');
+  const bands = {};
+  for (const x of (Array.isArray(s) ? s : [])) {
+    const lv = String(x.level || '').trim().toUpperCase();
+    if (!/^[A-Z][+]?$/.test(lv)) continue;
+    if (!Number.isFinite(+x.minValue) || !Number.isFinite(+x.maxValue)) continue;
+    bands[lv] = { min: +x.minValue, max: +x.maxValue };
+  }
+  if (Object.keys(bands).length) {
+    stage = { date: String(Array.isArray(s) && s[0] ? s[0].date : ''), bands };
+  }
+} catch (e) { console.log(`定级线没取到（不影响榜那一行）：${e.message}`); }
+if (!stage && old && old.stage) stage = old.stage;   // 留上一份好的，页面那行会自己报它是哪天取的
+
+const lvNow = fresh[0] && fresh[0].level ? fresh[0].level : (m.days.length ? m.days[m.days.length - 1].level : '');
+const line = stage && lvNow && stage.bands[lvNow] ? stage.bands[lvNow].min : null;
+if (line != null) console.log(`定级线 ${stage.date}：${lvNow} 级晋级线 ${line.toLocaleString('en-US')}（集均30天有效播放下界）`);
+
 const gate = needWrite(old, now, m.changed || !!fresh.length, HEARTBEAT);
 const body = {
   name: NAME, nameId, at, atDay: bjDay(now), fetchedAt: now.toISOString(),
@@ -138,6 +171,7 @@ const body = {
   board: { date: String(Array.isArray(rows) && rows[0] ? rows[0].date : ''), size: found.size, inBoard: !!found.row },
   inBoard: !!found.row,
   latest: fresh[0] || (m.days.length ? m.days[m.days.length - 1] : null),
+  stage,
   days: m.days,
   fixes: (Array.isArray(old?.fixes) ? old.fixes : []).concat(m.fixes),
 };
