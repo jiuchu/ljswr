@@ -1,30 +1,33 @@
-# 爱奇艺 / 德塔文 / 云合 —— 两京十五日
+# 爱奇艺 / 德塔文 / 云合 / CVB —— 两京十五日
 #
 # 前置（一次性，都在 GitHub 网页上设）：
 #   1. Settings → Actions → General → Workflow permissions → Read and write
-#   2. 本文件放 .github/workflows/ 下，fetch_iqiyi.mjs、fetch_detawen.mjs、fetch_yunhe.mjs
-#      和 index.html 放同一个仓库根（脚本把 json 写在**自己旁边**，挪目录要一起挪）
-#   3. 这三个口全匿名、不要 secret —— 挂了就是挂了，不用去查凭证。
+#   2. 本文件放 .github/workflows/ 下，fetch_iqiyi.mjs、fetch_detawen.mjs、fetch_yunhe.mjs、
+#      fetch_cvb.mjs 和 index.html 放同一个仓库根（脚本把 json 写在**自己旁边**，挪目录要一起挪）
+#   3. 这四个口全匿名、不要 secret —— 挂了就是挂了，不用去查凭证。
 #
-# 为什么三个源挤一条工作流、一个 job：它们都是「读一发、写一份档案」，没有谁需要
-# 无头浏览器；拆成三个 job 就是三次 checkout、三份档案各自往 main 推，同仓并发推送
+# 为什么四个源挤一条工作流、一个 job：它们都是「读一发、写一份档案」，没有谁需要
+# 无头浏览器；拆成四个 job 就是四次 checkout、四份档案各自往 main 推，同仓并发推送
 # 那个 1~4 秒的撞车窗口（嫁金钗 10-20 21:31 那次红叉）会被我自己造出来。一个 job
-# 里顺序跑三步、最后一次 commit 推三个文件，从根上不会撞自己。
+# 里顺序跑四步、最后一次 commit 推四个文件，从根上不会撞自己。
 #
 # 节拍不在这里，在 Worker 的 Settings → Triggers 页上（cron 是 UTC）。下面这两格
 # schedule 只当备份：GitHub 的定时事件从他这个账号整个停了，真正敲门的是 Worker
 # 拿 repository_dispatch 叫这条。
 #
 # 一天两拍（北京 09:30 / 21:30）的理由：德塔文当日榜是傍晚之后才落的，09:30 那拍
-# 拿到的是昨天的收盘；云合榜 T+1，早上那拍正好接住它新出的一天；爱奇艺更新时间表
+# 拿到的是昨天的收盘；云合榜 T+1，早上那拍正好接住它新出的一天；CVB 日榜也是次日发
+# （档案里的落库时刻见到过 09:14，是观察不是承诺），同样归 09:30 那拍接；爱奇艺更新时间表
 # 一天里会改口（改档、加更），两拍够看住它。
 #
-# ⚠ 第一次跑带着实验性质，三家各自可能红：
+# ⚠ 第一次跑带着实验性质，四家各自可能红：
 #   爱奇艺那条接口带的是脚本里写死的假 device_id，机房 IP 认不认没验过 —— 红了先看
 #     日志里那句是「接口回 code」还是 HTTP 层；
 #   德塔文那台站点只有 http、HTTPS 握手不通，Actions 里同样走 http，被运营商或
 #     GitHub 网络侧拦下来的话是 HTTP 层报错，不是数据问题；
-#   云合榜 T+1，开播当天必然「榜内没有本剧」，那是它自己没出，脚本按未收录写、rc=0。
+#   云合榜 T+1，开播当天必然「榜内没有本剧」，那是它自己没出，脚本按未收录写、rc=0；
+#   CVB 那台（cavbd.cn）对浏览器是跨站 Origin 直接 403，所以只能这么绕档案读；机房 IP
+#     能不能通没验过，红了是 HTTP 层，不是数据问题。它的日榜只留最近 7 天，更旧的要自己攒。
 
 name: lj-fetch
 
@@ -54,7 +57,7 @@ jobs:
           node-version: '22'
 
       # continue-on-error：德塔文那台站点自己不稳定（HTTPS 握手不通、只能走 http），
-      # 它红了不该让爱奇艺和云合的档案一起停更。每一步各自把结果写在日志里。
+      # 它红了不该让另外三家的档案一起停更。每一步各自把结果写在日志里。
       - name: 爱奇艺 · 更新时间表 + 预约
         continue-on-error: true
         run: node fetch_iqiyi.mjs
@@ -67,15 +70,19 @@ jobs:
         continue-on-error: true
         run: node fetch_yunhe.mjs
 
+      - name: CVB · 黄金时段电视剧收视日榜
+        continue-on-error: true
+        run: node fetch_cvb.mjs
+
       - name: 提交档案
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A iqiyi.json detawen.json yunhe.json
+          git add -A iqiyi.json detawen.json yunhe.json cvb.json
           if git diff --cached --quiet; then
-            echo "::notice::三份档案都没变化（多半是上游今天没出数），这一轮不提交"
+            echo "::notice::四份档案都没变化（多半是上游今天没出数），这一轮不提交"
             exit 0
           fi
           git commit -m "两京十五日档案 $(TZ=Asia/Shanghai date '+%F %H:%M')"
