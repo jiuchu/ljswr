@@ -698,6 +698,15 @@ function yi(v) {
   if (Math.abs(n) >= 1e4) return { t: sig3(n / 1e4), u: '万' };
   return { t: num(Math.round(n)), u: '' };
 }
+/* 当天就在涨的播放量不能走 yi 的三位有效：734.46 万会被抹成 734 万，
+   要涨满 1 万才跳一格，实时变化看不出来。这里固定两位小数，涨 100 就动。 */
+function vv2(v) {
+  if (v == null || !isFinite(v)) return { t: '—', u: '' };
+  const n = Number(v);
+  if (Math.abs(n) >= 1e8) return { t: (n / 1e8).toFixed(2), u: '亿' };
+  if (Math.abs(n) >= 1e4) return { t: (n / 1e4).toFixed(2), u: '万' };
+  return { t: num(Math.round(n)), u: '' };
+}
 const clean = s => String(s == null ? '' : s).replace(/[　​-‏]/g, '').trim();
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -1728,7 +1737,7 @@ function renderKPI() {
       `${yi(prevDay.vv).t}${yi(prevDay.vv).u}` : '';
   if (lastDay) {
     const sh = (parseFloat(String(lastDay.share)) || 0).toFixed(2);
-    items.push(kpiItem('film', '灯塔 · 今日实时播放量', yi(lastDay.vv).t, yi(lastDay.vv).u,
+    items.push(kpiItem('film', '灯塔 · 今日实时播放量', vv2(lastDay.vv).t, vv2(lastDay.vv).u,
       `实时市占 ${sh}%` + (lastDay.rank ? ` · 网剧榜第 ${lastDay.rank}` : ''),
       '#ff5f43', deltaTag(pulse('dtd.' + lastDay.d, lastDay.vv), '', 0)));
   }
@@ -1745,7 +1754,7 @@ function renderKPI() {
   }
   const epRow = S.dtDay.slice().reverse().find(x => x.epAvg != null);
   if (epRow) {
-    items.push(kpiItem('dl', '灯塔 · 集均播放量', yi(epRow.epAvg).t, yi(epRow.epAvg).u,
+    items.push(kpiItem('dl', '灯塔 · 集均播放量', vv2(epRow.epAvg).t, vv2(epRow.epAvg).u,
       `截至 ${esc(epRow.d)}`, '#ffc861', ''));
   }
   /* 酷云这张卡常驻，但没在播的时候不敲接口、也不摆数：值位留空，第二行直接报酷云那侧的状态。
