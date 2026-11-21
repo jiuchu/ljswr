@@ -811,6 +811,17 @@ function deltaTag(d, unit, digits) {
 function inLiveWindow() { const f = bjNow().f; const [a, b] = CONFIG.liveWindow; return f >= a && f <= b; }
 /* 尾小于头就是跨零点的写法（19.3 → 次日 8） */
 function inVvWindow() { const f = bjNow().f; const [a, b] = CONFIG.vvWindow; return a <= b ? (f >= a && f <= b) : (f >= a || f <= b); }
+/* 距下一次会员更新还剩多少：从墙上时钟算，不碰档案，所以一秒一跳不需要任何请求。
+   北京时刻用「加 8 小时后读 UTC 字段」那一套，本机时区参与不进来。 */
+function cdownText() {
+  const h = +CONFIG.vipTime.slice(0, 2), mi = +CONFIG.vipTime.slice(3, 5);
+  const now = Date.now(), bj = new Date(now + 8 * 36e5);
+  let target = Date.UTC(bj.getUTCFullYear(), bj.getUTCMonth(), bj.getUTCDate(), h, mi, 0) - 8 * 36e5;
+  if (target <= now) target += 864e5;
+  const s = Math.floor((target - now) / 1000), p2 = n => String(n).padStart(2, '0');
+  const hh = Math.floor(s / 3600), mm = Math.floor(s % 3600 / 60);
+  return (hh ? hh + ' 小时 ' : '') + p2(mm) + ' 分 ' + p2(s % 60) + ' 秒';
+}
 function cadence(kLive, kIdle) { return inLiveWindow() ? kLive : kIdle; }
 /* 实时那趟对所有人都是 10 秒，请求按打开页面的人数乘；?live=1 只决定
    爱奇艺热度和酷云要不要从 60 秒抬回 20/15 秒，那是他自己在盯放量时的档。 */
@@ -1737,10 +1748,7 @@ function renderHero() {
   document.getElementById('byline').innerHTML =
     `原著 <b>马伯庸</b> · 作者 <a href="https://weibo.com/u/2136166244" target="_blank" rel="noopener">九处</a>`;
   const pct = now == null ? 0 : Math.min(100, now / total * 100);
-  const t = bjNow();
-  const vipF = +CONFIG.vipTime.slice(0, 2) + +CONFIG.vipTime.slice(3) / 60;
-  // 恒取"下一次"：19:30 那格过了就要滚到明天，直接相减会在夜里印出负数。
-  const mins = ((vipF - t.f + 24) % 24) * 60;
+  S.epDone = now != null && now >= total;
   /* 总集数本来就写在这句的分母里，chip 那格「共 26 集」是重复，删了；
      单集时长是同一件事的另一半，跟着排在这句后面。 */
   document.getElementById('marchTxt').innerHTML = `已播 <b>${now == null ? '—' : now}</b> / ${total} 集`
@@ -1748,9 +1756,7 @@ function renderHero() {
   document.getElementById('marchFill').style.width = pct + '%';
   document.getElementById('marchHead').style.left = pct + '%';
   document.getElementById('marchCdown').textContent =
-    now != null && now >= total ? '已收官'
-      : mins < 60 ? `距下一次会员更新约 ${Math.round(mins)} 分钟`
-        : `距下一次会员更新约 ${(mins / 60).toFixed(1)} 小时`;
+    S.epDone ? '已收官' : '距下一次会员更新 ' + cdownText();
   const cal = (j && j.calendar && j.calendar.rows) || [];
   const calTail = ((j && j.calendar && j.calendar.tail) || '').replace(/[<>]/g, '').trim();
   const seg = [];
@@ -2094,6 +2100,12 @@ function startPolling() {
   every('爱奇艺热播榜', CONFIG.refresh.rank, loadRank);
   dtLast = Date.now();
   every('灯塔', CONFIG.refresh.tick, dengtaTick);
+  /* 倒计时自己一秒醒一次，只改那一行字：它算的是墙上时钟，跟档案多久刷新没关系，
+     所以不用请求，也不受上面那些节拍影响。 */
+  setInterval(() => {
+    if (S.epDone || document.hidden) return;
+    document.getElementById('marchCdown').textContent = '距下一次会员更新 ' + cdownText();
+  }, 1000);
   liveLoop();
   every('央视节目单', CONFIG.refresh.epg, loadEpg);
   every('档案', CONFIG.refresh.file, async () => {
