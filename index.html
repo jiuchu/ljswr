@@ -1389,13 +1389,11 @@ function renderHero() {
   document.getElementById('chips').innerHTML = [
     `<span class="chip chip-theatre"><img referrerpolicy="no-referrer" src="${CONFIG.theatre.logo}" alt="${esc(CONFIG.theatre.name)}"></span>`,
     genre ? `<span class="chip">${esc(genre)}</span>` : '',
-    `<span class="chip">共 <b>${total}</b> 集</span>`,
     `<span class="chip">首播 <b>${esc(CONFIG.premiereDate)}</b> ${esc(CONFIG.vipTime)}</span>`,
     `<span class="chip">会员 <b>${esc((p.update_notification || '每日' + CONFIG.vipTime + '更新2集')).replace('VIP会员', '')}</b></span>`,
     `<span class="chip">电视 <b>CCTV-8</b></span>`,
     `<span class="chip">导演 <b>张黎</b></span>`,
-    `<span class="chip">领衔主演 <b>傅诗淇（成毅）</b></span>`,
-    epMin ? `<span class="chip">单集 <b>${epMin[0]}</b> 分钟</span>` : ''
+    `<span class="chip">领衔主演 <b>傅诗淇（成毅）</b></span>`
   ].filter(Boolean).join('');
   document.getElementById('byline').innerHTML =
     `原著 <b>马伯庸</b> · 作者 <a href="https://weibo.com/u/2136166244" target="_blank" rel="noopener">九处</a>`;
@@ -1404,7 +1402,10 @@ function renderHero() {
   const vipF = +CONFIG.vipTime.slice(0, 2) + +CONFIG.vipTime.slice(3) / 60;
   // 恒取"下一次"：19:30 那格过了就要滚到明天，直接相减会在夜里印出负数。
   const mins = ((vipF - t.f + 24) % 24) * 60;
-  document.getElementById('marchTxt').innerHTML = `已播 <b>${now == null ? '—' : now}</b> / ${total} 集`;
+  /* 总集数本来就写在这句的分母里，chip 那格「共 26 集」是重复，删了；
+     单集时长是同一件事的另一半，跟着排在这句后面。 */
+  document.getElementById('marchTxt').innerHTML = `已播 <b>${now == null ? '—' : now}</b> / ${total} 集`
+    + (epMin ? ` · 单集 <b>${epMin[0]}</b> 分钟` : '');
   document.getElementById('marchFill').style.width = pct + '%';
   document.getElementById('marchHead').style.left = pct + '%';
   document.getElementById('marchCdown').textContent =
