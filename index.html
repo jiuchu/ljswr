@@ -1317,7 +1317,6 @@ function renderHero() {
     `<span class="chip">共 <b>${total}</b> 集</span>`,
     `<span class="chip">首播 <b>${esc(CONFIG.premiereDate)}</b> ${esc(CONFIG.vipTime)}</span>`,
     `<span class="chip">会员 <b>${esc((p.update_notification || '每日' + CONFIG.vipTime + '更新2集')).replace('VIP会员', '')}</b></span>`,
-    `<span class="chip">免费 <b>${esc((p.display_update_notification || CONFIG.freeTime + '转免').replace('非会员', ''))}</b></span>`,
     `<span class="chip">电视 <b>CCTV-8</b></span>`,
     `<span class="chip">导演 <b>张黎</b></span>`,
     `<span class="chip">领衔主演 <b>傅诗淇（成毅）</b></span>`
