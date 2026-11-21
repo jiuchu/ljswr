@@ -904,7 +904,6 @@ function parseSurge(j) {
     const g = cls => (b.metas || []).find(m => m.meta_class === cls) || {};
     return { no: i + 1, aid: String((b.statistics || {}).aid || ''),
              name: txt(g('b823_1_meta1')), rise: txt(g('b823_1_meta5')),
-             info: txt(g('b823_1_meta6')),
              tags: (b.metas || []).map(m => txt(m)).filter(t => /弹幕|讨论|上新/.test(t)).join(' ') };
   });
   const rule = JSON.stringify(((cards.find(c => c.card_class === 'card_rank_rule') || {}).blocks) || []);
@@ -942,8 +941,7 @@ function renderSurge() {
   const val = r => parseFloat(String(r.rise)) || 0;
   const m = S.surge.mine;
   mineBox.innerHTML = m ? `<div class="sg-big"><b>${esc(String(val(m)))}</b><span>% · 飙升幅度</span></div>
-    <div class="sg-tags"><em>本剧 · 榜内第 ${m.no} 名</em>${(m.tags || '').split(' ').filter(Boolean).map(t => `<em>${esc(t)}</em>`).join('')}</div>
-    <div class="p-note">${esc(m.info)}</div>`
+    <div class="sg-tags"><em>本剧 · 榜内第 ${m.no} 名</em>${(m.tags || '').split(' ').filter(Boolean).map(t => `<em>${esc(t)}</em>`).join('')}</div>`
     : `<div class="p-note"><span class="warn">此刻榜内 ${S.surge.rows.length} 行没有本剧那一行 —— 飙升榜只收当日有涨幅的条目，掉出榜不等于热度掉了。</span></div>`;
   rule.innerHTML = '飙升幅度是爱奇艺自己算的相对涨幅，它没公布口径，这里照抄页面上那句话、不做二次换算。'
     + (S.surge.head ? ` <b>「按飙升幅度排行 · 最近更新 ${esc(S.surge.head)}」</b>` : '');
@@ -1042,7 +1040,7 @@ function renderDengta() {
 function renderDetawen() {
   const j = F('detawen');
   const note = document.getElementById('dwNote'), empty = document.getElementById('dwEmpty');
-  if (!j) { empty.style.display = 'grid'; empty.textContent = 'detawen.json 还没进仓库'; return; }
+  if (!j) { empty.style.display = 'grid'; empty.textContent = '德塔文档案还没进仓库'; return; }
   empty.style.display = 'none';
   const series = j.series || [];
   const mine = j.mine;
@@ -1118,7 +1116,7 @@ function renderCvb() {
   const j = F('cvb');
   const note = document.getElementById('cvbNote'), rows = document.getElementById('cvbRows');
   if (!note || !rows) return;
-  if (!j) { note.innerHTML = '<span class="warn">cvb.json 还没进仓库</span>'; rows.innerHTML = ''; return; }
+  if (!j) { note.innerHTML = '<span class="warn">CVB 日榜档案还没进仓库</span>'; rows.innerHTML = ''; return; }
   note.innerHTML = j.inBoard
     ? '榜内最新一期 ' + esc(j.board.date || '')
     : esc(j.board.date || '') + ' 那期 ' + j.board.size + ' 行里没有本剧 · 最后一次检查 ' + esc(j.at || '');
@@ -1136,7 +1134,7 @@ function renderIqiyi() {
   const rule = document.getElementById('iqyRule'), note = document.getElementById('iqyCalNote');
   const liveRows = document.getElementById('iqyLiveRows'), liveNote = document.getElementById('iqyLiveNote');
   if (!j) {
-    note.innerHTML = '<span class="warn">iqiyi.json 还没进仓库</span>';
+    note.innerHTML = '<span class="warn">爱奇艺档案还没进仓库</span>';
     cal.innerHTML = ''; return;
   }
   note.textContent = '最后一次回话 ' + (j.captured_at ? bjClock(new Date(j.captured_at)) : '—');
@@ -1303,7 +1301,8 @@ async function loadDouban() {
     row('剧评', num(d.review_count)) +
     row('豆瓣热门电视榜', hot.rank ? '第 ' + hot.rank + ' 名 · ' + yi(hot.score).t + yi(hot.score).u : '—') +
     row('更新时间', at ? bjHM(at) : '—');
-  renderKPI();
+  // 类型与单集时长读的是豆瓣那两个字段，所以豆瓣回话后版头要重铺一次。
+  renderHero(); renderKPI();
 }
 
 /* ============================================================
@@ -1313,17 +1312,21 @@ function renderHero() {
   const j = F('iqiyi'), p = (j && j.progress) || {};
   const total = p.ep_total || p.total_episode || CONFIG.episodes;
   const now = p.ep_now == null ? null : p.ep_now;
+  const db = S.douban || {};
+  const genre = (db.genres || []).join(' / ');
+  const epMin = String((db.durations || [])[0] || '').match(/\d+/);
   document.getElementById('chips').innerHTML = [
+    genre ? `<span class="chip">${esc(genre)}</span>` : '',
     `<span class="chip">共 <b>${total}</b> 集</span>`,
     `<span class="chip">首播 <b>${esc(CONFIG.premiereDate)}</b> ${esc(CONFIG.vipTime)}</span>`,
     `<span class="chip">会员 <b>${esc((p.update_notification || '每日' + CONFIG.vipTime + '更新2集')).replace('VIP会员', '')}</b></span>`,
     `<span class="chip">电视 <b>CCTV-8</b></span>`,
     `<span class="chip">导演 <b>张黎</b></span>`,
-    `<span class="chip">领衔主演 <b>傅诗淇（成毅）</b></span>`
-  ].join('');
+    `<span class="chip">领衔主演 <b>傅诗淇（成毅）</b></span>`,
+    epMin ? `<span class="chip">单集 <b>${epMin[0]}</b> 分钟</span>` : ''
+  ].filter(Boolean).join('');
   document.getElementById('byline').innerHTML =
-    `原著 <b>马伯庸</b> · 爱奇艺 ${esc((S.douban && S.douban.card_subtitle) || '全网独播')}`
-    + ` · 作者 <a href="https://weibo.com/u/2136166244" target="_blank" rel="noopener">九处</a>`;
+    `原著 <b>马伯庸</b> · 作者 <a href="https://weibo.com/u/2136166244" target="_blank" rel="noopener">九处</a>`;
   const pct = now == null ? 0 : Math.min(100, now / total * 100);
   const t = bjNow();
   const vipF = +CONFIG.vipTime.slice(0, 2) + +CONFIG.vipTime.slice(3) / 60;
