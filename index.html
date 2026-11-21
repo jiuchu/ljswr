@@ -128,6 +128,8 @@ h1{font-size:clamp(2.3rem,5.4vw,3.6rem);font-weight:800;letter-spacing:.06em;lin
 .c-val{font-size:2.15rem;font-weight:800;letter-spacing:-.5px;line-height:1.1;
   font-variant-numeric:tabular-nums;color:var(--txt);display:flex;align-items:baseline;gap:5px}
 .c-val .u{font-size:.85rem;font-weight:500;color:var(--dim);letter-spacing:0}
+/* 差值后面那句说明是 flex item，中文能逐字断行、又被压窄，会竖着排；这里锁成一行不缩 */
+.c-val .cap{font-size:.72rem;white-space:nowrap;flex-shrink:0}
 .c-sub{margin-top:9px;font-size:.78rem;color:var(--dimmer);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 /* 数据滞后提示用琥珀，别用红——红在这页面上是"涨" */
 .c-sub .warn,.p-note .warn{color:#ffbe6a}
@@ -705,7 +707,7 @@ function jsonp(url, timeout = 18000) {
    状态
    ============================================================ */
 const S = {
-  jy: {}, heat: {}, kuyun: null, epg: null,
+  jy: {}, heat: {}, kuyun: null, epg: null, epgToday: null,
   douban: null, dbInterest: null, dbStats: null,
   dtDay: [], dtHour: [], dtRank: null, dtHot: null, dtMarket: null, dtMine: null,
   surge: null,
@@ -863,8 +865,10 @@ async function epgOf(dayStr) {
               '&serviceId=tvcctv&d=' + dayStr.replace(/-/g, '') + '&t=json';
   const r = await fetch(url, { cache: 'no-store' });
   const c = (((await r.json()) || {}).data || {})[CONFIG.cctv.channel] || {};
+  /* st/et 是给进度条下面那枚「正在播出第 N 集」用的：同一发回包白送，不用多敲一次接口。 */
   return (c.list || []).filter(x => x && x.showTime).map(x => ({
-    t: x.showTime, n: (x.title || '').trim()
+    t: x.showTime, n: (x.title || '').trim(),
+    st: x.startTime * 1000, et: x.endTime * 1000
   }));
 }
 async function loadEpg() {
@@ -872,7 +876,29 @@ async function loadEpg() {
   if (S.epg && S.epg.day === day && Date.now() - S.epg.at < 5 * 60e3) { renderEpg(); return; }
   const list = await epgOf(day);
   S.epg = { day, at: Date.now(), list };
-  renderEpg(); mark('央视节目单', list.length > 0, list.length ? '' : '节目单为空');
+  if (day === bjDay()) S.epgToday = { at: S.epg.at, list };
+  renderEpg(); renderHero(); mark('央视节目单', list.length > 0, list.length ? '' : '节目单为空');
+}
+/* CCTV 那两档的形状：正片写「两京十五日第3集」，「本集提要-两京十五日-第3集」不算在播。 */
+function epNo(title) {
+  const s = clean(title);
+  if (/前情|提要|看点|花絮/.test(s)) return 0;
+  const i = s.indexOf(CONFIG.title);
+  if (i < 0) return 0;
+  const m = /第?\s*(\d+)\s*集/.exec(s.slice(i + CONFIG.title.length));
+  return m ? +m[1] : 0;
+}
+function tvLine() {
+  const e = S.epgToday;
+  if (!e) return '';
+  const now = Date.now();
+  const eps = e.list.filter(x => epNo(x.n));
+  if (!eps.length) return 'CCTV-8 今日未排播本剧';
+  const onAir = eps.find(x => x.st <= now && x.et > now);
+  if (onAir) return 'CCTV-8 正在播出第 ' + epNo(onAir.n) + ' 集';
+  const next = eps.filter(x => x.st > now).sort((a, b) => a.st - b.st)[0];
+  if (next) return `CCTV-8 ${bjHM(next.st)} 播出第 ${epNo(next.n)} 集`;
+  return 'CCTV-8 今日已播至第 ' + Math.max(...eps.map(x => epNo(x.n))) + ' 集';
 }
 function renderEpg() {
   const box = document.getElementById('epgList'), note = document.getElementById('epgNote');
@@ -1341,10 +1367,14 @@ function renderHero() {
         : `距下一次会员更新约 ${(mins / 60).toFixed(1)} 小时`;
   const cal = (j && j.calendar && j.calendar.rows) || [];
   const calTail = ((j && j.calendar && j.calendar.tail) || '').replace(/[<>]/g, '').trim();
-  document.getElementById('marchSub').innerHTML = cal.length
+  const seg = [];
+  const tv = tvLine();
+  if (tv) seg.push(tv);
+  seg.push(cal.length
     ? `未来七天：${cal.map(r => `${esc(r.label)} ${esc(r.vip || '—')}`).join(' · ')}` +
       (calTail ? ` · 「${esc(calTail)}」` : '')
-    : '更新时间表档案未到';
+    : '更新时间表档案未到');
+  document.getElementById('marchSub').innerHTML = seg.join(' ｜ ');
 }
 /* stats 是升序的 1星→5星占比，页面上从上往下画要翻过来 */
 const STAR_NAMES = ['1星', '2星', '3星', '4星', '5星'];
@@ -1389,7 +1419,7 @@ function renderKPI() {
     (S.jy.curAt ? `采样于 ${esc(String(S.jy.curAt).slice(11, 16))}` : '热度读取中')
       + (S.jy.max != null ? ` · 历史最高 ${num(S.jy.max)} · ${esc(S.jy.maxDay || '')}` : ''),
     '#00d98a',
-    yPeak == null ? '' : deltaTag(S.jy.cur - yPeak, '', 0) + '<span class="u">对昨日峰值</span>'));
+    yPeak == null ? '' : deltaTag(S.jy.cur - yPeak, '', 0) + '<span class="u cap">对昨日峰值</span>'));
   if (S.surge && S.surge.mine) items.push(kpiItem('up', '爱奇艺 · 飙升幅度',
     parseFloat(String(S.surge.mine.rise)) || 0, '%',
     `榜内第 ${S.surge.mine.no} 名 · 爱奇艺侧更新 ${esc(S.surge.head || '—')}`, '#ff5f43', ''));
