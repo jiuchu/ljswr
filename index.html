@@ -661,7 +661,9 @@ const CONFIG = {
      Cloudflare 免费档 10 万请求/天是整个账号共享的，两个面板加所有轮询都算在里面，
      所以窗口外一律降到慢档，窗口内也只有剧云录按 20 秒、酷云 15 秒。 */
   refresh: { live: 20e3, idle: 300e3, kuyun: 15e3, idleKuyun: 300e3, epg: 60e3,
-             surge: 60e3, idleSurge: 600e3, rank: 600e3, dengta: 600e3, heat: 600e3, file: 900e3 },
+             surge: 60e3, idleSurge: 600e3, rank: 600e3, dengta: 600e3, dengtaIdle: 1800e3,
+             heat: 600e3, file: 900e3, pollGuest: 60e3,
+             vvLive: 10e3, vvBlur: 30e3, vvWait: 30e3 },
   liveWindow: [19.3, 23.5]
 };
 
@@ -770,6 +772,7 @@ const S = {
   jy: {}, heat: {}, kuyun: null, epg: null, epgToday: null,
   douban: null, dbInterest: null, dbStats: null,
   dtDay: [], dtHour: [], dtRank: null, dtHot: null, dtMarket: null, dtMine: null,
+  dtLive: null, dtLiveErr: '',
   surge: null, rank: null,
   file: {}, tab: { heat: '0', epg: '0', dw: 'onair', dy: 'comp' },
   bootAt: Date.now(), live: true
@@ -779,17 +782,20 @@ function mark(name, ok, msg) {
   src[name] = { ok: !!ok, msg: msg || '', at: ok ? Date.now() : (src[name] && src[name].at || 0) };
   renderStatus();
 }
-/* 上一次同键读数存本机，用来算「较上一拍」——只有本机看得见的差值，不冒充平台口径 */
+/* 上一次同键读数存本机，用来算「较上一拍」——只有本机看得见的差值，不冒充平台口径。
+   实时那趟改成 3 秒一轮后，「较上一拍」只剩几千、每轮都闪；传 gap 就让基准至少攒够这么久再挪，
+   差值就变成「近 gap 涨了多少」，chip 一分钟才换一次。 */
 const PREV_KEY = 'lj_prev_v1';
-function pulse(key, v) {
+function pulse(key, v, gap) {
   if (v == null || !isFinite(v)) return null;
   let o = {};
   try { o = JSON.parse(localStorage.getItem(PREV_KEY) || '{}'); } catch (e) {}
-  const p = o[key];
-  o[key] = { v, at: Date.now() };
-  try { localStorage.setItem(PREV_KEY, JSON.stringify(o)); } catch (e) {}
-  if (!p || Date.now() - p.at > 6 * 3600e3 || p.v === v) return null;
-  return v - p.v;
+  const p = o[key], now = Date.now();
+  if (!p || now - p.at > 6 * 3600e3 || !gap || now - p.at >= gap) {
+    o[key] = { v, at: now, d: p && p.v !== v ? v - p.v : null };
+    try { localStorage.setItem(PREV_KEY, JSON.stringify(o)); } catch (e) {}
+  }
+  return o[key].d == null ? null : o[key].d;
 }
 function deltaTag(d, unit, digits) {
   if (d == null || Math.abs(d) < 1e-9) return '';
@@ -800,6 +806,9 @@ function deltaTag(d, unit, digits) {
 }
 function inLiveWindow() { const f = bjNow().f; const [a, b] = CONFIG.liveWindow; return f >= a && f <= b; }
 function cadence(kLive, kIdle) { return inLiveWindow() ? kLive : kIdle; }
+/* 秒级实时只有敲的人自己看得见，请求却按打开页面的人数乘，所以默认关：
+   链接带 ?live=1 才开（他自己的书签存这条），访客吃的是 loadDengta 那趟慢档。 */
+const LIVE_POLL = new URLSearchParams(location.search).get('live') === '1';
 
 /* ============================================================
    档案：Actions 落进仓库的那几份 JSON
@@ -1111,6 +1120,42 @@ async function loadDengta() {
   const ok = S.dtDay.length || S.dtHour.length || !!S.dtRank;
   if (!ok) throw new Error('四个口都空');
   renderDengta(); renderKPI(); mark('灯塔', true);
+}
+/* 实时播放量单敲 DAY 这一发，其余三发（分时/热度/榜单）仍走 10 分钟那趟。
+   11-21 实测这个口每 20 秒挪 1.9 万，10 分钟一轮就是「十分钟纹丝不动、然后一次跳 58 万」。
+   节拍照嫁金钗：窗口内有焦点 3 秒、窗口内失焦 6 秒、窗口外 15 秒、连不上按 3 倍退避到最长 30 秒；
+   切到别的标签页（document.hidden）一发都不敲，回到前台第一拍就补上。 */
+async function applyDengtaLive() {
+  try {
+    const d = await mtop('mtop.alipictures.gravitywave.media.vv.detail.list',
+      { mediaId: CONFIG.mediaId, platform: 'ALL', dateType: 'DAY' });
+    const rows = ((((d || {}).dataList) || []).filter(x => /^\d{8}$/.test(String(x.showDate))))
+      .sort((a, b) => String(a.showDate) < String(b.showDate) ? 1 : -1);
+    const row = rows[0];                     // 取最新那天，不写死今天：零点后当天行还没建时不会一直报错
+    if (!row || row.vvCnt == null) throw new Error('当日行没回');
+    S.dtLive = { d: String(row.showDate).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'),
+                 vv: +row.vvCnt, total: row.totalVv == null ? null : +row.totalVv,
+                 share: row.marketShare, rank: row.vvRank, at: Date.now() };
+    S.dtLiveErr = '';
+    mark('灯塔', true);
+  } catch (e) {
+    S.dtLiveErr = String(e.message || e).slice(0, 30);
+    mark('灯塔', false, S.dtLiveErr);
+  }
+  renderKPI();
+  return !S.dtLiveErr;
+}
+async function liveLoop() {
+  let dwell = CONFIG.refresh.vvLive;
+  for (;;) {
+    if (document.hidden || !S.live) { await sleep(1e3); continue; }
+    /* 窗口外一发不敲：这页访客多，空转那 19.8 小时按人头乘起来比窗口内还贵。 */
+    if (!inLiveWindow()) { await sleep(CONFIG.refresh.vvWait); continue; }
+    const ok = await applyDengtaLive();
+    dwell = !ok ? Math.min(CONFIG.refresh.vvBlur, dwell * 3)
+                : document.hasFocus() ? CONFIG.refresh.vvLive : CONFIG.refresh.vvBlur;
+    await sleep(dwell);
+  }
 }
 function renderDengta() {
   /* 当日位次 */
@@ -1735,11 +1780,16 @@ function renderKPI() {
   const prevTxt = prevDay
     ? `${prevDay.d === bjShiftDay(bjDay(), -1) ? '昨日' : prevDay.d.slice(5)}全天 ` +
       `${yi(prevDay.vv).t}${yi(prevDay.vv).u}` : '';
-  if (lastDay) {
-    const sh = (parseFloat(String(lastDay.share)) || 0).toFixed(2);
-    items.push(kpiItem('film', '灯塔 · 今日实时播放量', vv2(lastDay.vv).t, vv2(lastDay.vv).u,
-      `实时市占 ${sh}%` + (lastDay.rank ? ` · 网剧榜第 ${lastDay.rank}` : ''),
-      '#ff5f43', deltaTag(pulse('dtd.' + lastDay.d, lastDay.vv), '', 0)));
+  if (lastDay || S.dtLive) {
+    const dayKey = lastDay ? lastDay.d : S.dtLive.d;
+    const live = S.dtLive && S.dtLive.d === dayKey ? S.dtLive : null;
+    const vvNow = live ? live.vv : lastDay.vv;
+    const shNow = (live ? live.share : lastDay.share) || '';
+    const rkNow = live ? live.rank : lastDay.rank;
+    const sh = (parseFloat(String(shNow)) || 0).toFixed(2);
+    items.push(kpiItem('film', '灯塔 · 今日实时播放量', vv2(vvNow).t, vv2(vvNow).u,
+      `实时市占 ${sh}%` + (rkNow ? ` · 网剧榜第 ${rkNow}` : ''),
+      '#ff5f43', deltaTag(pulse('dtd.' + dayKey, vvNow, 60e3), '', 0)));
   }
   if (S.dtHour.length) {
     const pk = S.dtHour.reduce((a, x) => x.vv > a.vv ? x : a, S.dtHour[0]);
@@ -1996,11 +2046,14 @@ let pollingStarted = false;
 function startPolling() {
   if (pollingStarted) return;
   pollingStarted = true;
-  every('爱奇艺热度', () => cadence(CONFIG.refresh.live, CONFIG.refresh.idle), loadHeat);
-  every('酷云', () => cadence(CONFIG.refresh.kuyun, CONFIG.refresh.idleKuyun), loadKuyun);
+  every('爱奇艺热度', () => cadence(LIVE_POLL ? CONFIG.refresh.live : CONFIG.refresh.pollGuest,
+                                   CONFIG.refresh.idle), loadHeat);
+  every('酷云', () => cadence(LIVE_POLL ? CONFIG.refresh.kuyun : CONFIG.refresh.pollGuest,
+                             CONFIG.refresh.idleKuyun), loadKuyun);
   every('爱奇艺飙升榜', () => cadence(CONFIG.refresh.surge, CONFIG.refresh.idleSurge), loadSurge);
   every('爱奇艺热播榜', CONFIG.refresh.rank, loadRank);
-  every('灯塔', CONFIG.refresh.dengta, loadDengta);
+  every('灯塔', () => cadence(CONFIG.refresh.dengta, CONFIG.refresh.dengtaIdle), loadDengta);
+  if (LIVE_POLL) liveLoop();
   every('央视节目单', CONFIG.refresh.epg, loadEpg);
   every('档案', CONFIG.refresh.file, async () => {
     await loadAllFiles();
