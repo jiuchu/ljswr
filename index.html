@@ -769,7 +769,7 @@ function jsonp(url, timeout = 18000) {
    状态
    ============================================================ */
 const S = {
-  jy: {}, heat: {}, kuyun: null, epg: null, epgToday: null,
+  jy: {}, heat: {}, kuyun: null, epg: null, epgToday: null, epgFocus: null,
   douban: null, dbInterest: null, dbStats: null,
   dtDay: [], dtHour: [], dtRank: null, dtHot: null, dtMarket: null, dtMine: null,
   dtLive: null, dtLiveErr: '',
@@ -988,6 +988,20 @@ function renderEpg() {
     return `<div class="tv-row ${me ? 'me' : ''} ${past ? 'past' : ''}">
       <span class="tm">${esc(x.t.slice(0, 5))}</span><span class="pg">${esc(x.n)}</span></div>`;
   }).join('') || '<div class="p-note">这一天的节目单是空的</div>';
+  /* 40 档一屏装不下，本剧那两档沉在下面。这一天头一回铺列表时把列表停在
+     本剧第一档的上一行（多半是它的「本集提要」），留着上下文。*/
+  if (S.epgFocus !== S.epg.day && focusEpgRow(box)) S.epgFocus = S.epg.day;
+}
+function focusEpgRow(box) {
+  const rows = Array.from(box.children);
+  const i = rows.findIndex(r => r.classList.contains('me'));
+  if (i < 0) return false;
+  /* 手机上整表铺开（.tv-list 那档 max-height:none），滚容器等于滚页面，不滚。
+     这一拍没滚成就不记日子，下一拍列表铺开了照样补一次。 */
+  if (box.scrollHeight <= box.clientHeight + 4) return false;
+  const anchor = rows[Math.max(0, i - 1)];
+  box.scrollTop += anchor.getBoundingClientRect().top - box.getBoundingClientRect().top - 4;
+  return true;
 }
 
 /* ============================================================
