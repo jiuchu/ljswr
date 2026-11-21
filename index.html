@@ -607,6 +607,9 @@ const CONFIG = {
     name: '大家剧场',
     logo: 'https://pic2.iqiyipic.com/lequ/20261110/06b4ac1f21a042bd9d11334104611ae4.png'
   },
+  /* 同一行里爱奇艺自己给的两枚分类标签：页上 data-ai-entity 写着「TVG题材筛选标签」=男性传奇、
+     「TVG类型筛选标签」=古装。豆瓣那对「剧情 / 古装」不再进版头——同一个位置只留一家说法。 */
+  iqiyiTags: ['男性传奇', '古装'],
   premiereDate: '2026-11-20',        // 首播日
   anchorDate: '2026-11-18',          // 定档日，下载量统计窗口的左端
   episodes: 26,
@@ -1372,7 +1375,7 @@ async function loadDouban() {
     row('剧评', num(d.review_count)) +
     row('豆瓣热门电视榜', hot.rank ? '第 ' + hot.rank + ' 名 · ' + yi(hot.score).t + yi(hot.score).u : '—') +
     row('更新时间', at ? bjHM(at) : '—');
-  // 类型与单集时长读的是豆瓣那两个字段，所以豆瓣回话后版头要重铺一次。
+  // 单集时长读的是豆瓣那个字段，所以豆瓣回话后版头要重铺一次。
   renderHero(); renderKPI();
 }
 
@@ -1384,11 +1387,10 @@ function renderHero() {
   const total = p.ep_total || p.total_episode || CONFIG.episodes;
   const now = p.ep_now == null ? null : p.ep_now;
   const db = S.douban || {};
-  const genre = (db.genres || []).join(' / ');
   const epMin = String((db.durations || [])[0] || '').match(/\d+/);
   document.getElementById('chips').innerHTML = [
     `<span class="chip chip-theatre"><img referrerpolicy="no-referrer" src="${CONFIG.theatre.logo}" alt="${esc(CONFIG.theatre.name)}"></span>`,
-    genre ? `<span class="chip">${esc(genre)}</span>` : '',
+    `<span class="chip">${CONFIG.iqiyiTags.map(esc).join(' / ')}</span>`,
     `<span class="chip">首播 <b>${esc(CONFIG.premiereDate)}</b> ${esc(CONFIG.vipTime)}</span>`,
     `<span class="chip">会员 <b>${esc((p.update_notification || '每日' + CONFIG.vipTime + '更新2集')).replace('VIP会员', '')}</b></span>`,
     `<span class="chip">电视 <b>CCTV-8</b></span>`,
