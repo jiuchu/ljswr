@@ -1,0 +1,22 @@
+{
+  "name": "两京十五日",
+  "at": "2026-11-21 13:41",
+  "atDay": "2026-11-21",
+  "fetchedAt": "2026-11-21T05:41:57.123Z",
+  "runs": 3,
+  "available": {
+    "from": "2026-11-13",
+    "to": "2026-11-19",
+    "days": 7
+  },
+  "board": {
+    "date": "2026-11-19",
+    "size": 10,
+    "inBoard": false,
+    "top": "多喜一家人"
+  },
+  "inBoard": false,
+  "latest": null,
+  "days": [],
+  "fixes": []
+}
