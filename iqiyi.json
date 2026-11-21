@@ -1,7 +1,7 @@
 {
  "title": "两京十五日",
  "qipuId": "3190714930072901",
- "captured_at": "2026-11-21T14:24:10.967Z",
+ "captured_at": "2026-11-21T08:30:29.164Z",
  "calendar": {
   "rows": [
    {
@@ -71,16 +71,16 @@
   "tail": "高能继续，敬请期待"
  },
  "progress": {
-  "update_status": "更新至6集/共26集",
+  "update_status": "更新至4集/共26集",
   "update_notification": "VIP会员每日19:30更新2集",
-  "display_update_notification": "非会员明日19:30更新",
-  "extra_tip": "7-26集待更新",
-  "ep_now": 6,
+  "display_update_notification": "非会员每日19:30更新",
+  "extra_tip": "5-26集待更新",
+  "ep_now": 4,
   "ep_total": 26,
   "total_episode": 26,
-  "heat": 9324,
+  "heat": 8761,
   "publish_date": "2026-11-20 21:45"
  },
- "reserve": 2937058,
+ "reserve": 2937915,
  "errors": []
 }
