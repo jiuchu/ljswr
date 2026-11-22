@@ -154,6 +154,10 @@ h1{font-size:clamp(2.3rem,5.4vw,3.6rem);font-weight:800;letter-spacing:.06em;lin
 .grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:16px}
 .grid2 .wide{grid-column:1 / -1}
 @media(max-width:1024px){.grid2{grid-template-columns:1fr}}
+.grid3{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:16px}
+.grid3 .wide{grid-column:1 / -1}
+@media(max-width:1240px){.grid3{grid-template-columns:1fr 1fr}}
+@media(max-width:1024px){.grid3{grid-template-columns:1fr}}
 .panel{padding:22px;border-radius:var(--r);background:var(--glass);border:1px solid var(--line);
   backdrop-filter:blur(14px);box-shadow:var(--shadow)}
 .p-head{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
@@ -539,8 +543,8 @@ footer a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(25
     </div>
   </section>
 
-  <div class="sec-title">平台剧集榜 <span>· 抖音 / 小红书</span></div>
-  <section class="grid2">
+  <div class="sec-title">平台剧集榜 <span>· 抖音 / 小红书 / 猫眼</span></div>
+  <section class="grid3">
     <div class="panel">
       <div class="p-head"><div class="p-title"><i></i>抖音剧集榜</div></div>
       <div class="p-note" id="ddbNote">—</div>
@@ -550,6 +554,11 @@ footer a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(25
       <div class="p-head"><div class="p-title"><i></i>小红书剧集榜</div></div>
       <div class="p-note" id="xhsNote">—</div>
       <div class="rows" id="xhsRows"></div>
+    </div>
+    <div class="panel">
+      <div class="p-head"><div class="p-title"><i></i>猫眼剧集榜</div></div>
+      <div class="p-note" id="myNote">—</div>
+      <div class="rows" id="myRows"></div>
     </div>
     <div class="panel wide">
       <div class="p-head"><div class="p-title"><i></i>里程碑与排名</div>
@@ -806,10 +815,11 @@ const LIVE_POLL = new URLSearchParams(location.search).get('live') === '1';
 /* ============================================================
    档案：Actions 落进仓库的那几份 JSON
    ============================================================ */
-const FILES = ['iqiyi.json', 'detawen.json', 'yunhe.json', 'baidu-index.json', 'wxindex.json', 'qimai.json', 'cvb.json', 'douyin.json', 'doudou.json'];
+const FILES = ['iqiyi.json', 'detawen.json', 'yunhe.json', 'baidu-index.json', 'wxindex.json', 'qimai.json', 'cvb.json', 'douyin.json', 'doudou.json', 'maoyan.json'];
 const FILE_CN = { 'iqiyi.json': '爱奇艺档案', 'detawen.json': '德塔文档案', 'yunhe.json': '云合档案',
   'baidu-index.json': '百度指数档案', 'wxindex.json': '微信指数档案', 'qimai.json': '七麦档案',
-  'cvb.json': 'CVB 日榜档案', 'douyin.json': '抖音指数档案', 'doudou.json': '剧集榜档案' };
+  'cvb.json': 'CVB 日榜档案', 'douyin.json': '抖音指数档案', 'doudou.json': '剧集榜档案',
+  'maoyan.json': '猫眼档案' };
 async function loadFile(name) {
   try {
     const r = await fetch(name + '?cb=' + bjYmd(), { cache: 'no-store' });
@@ -1549,6 +1559,19 @@ function renderBoards() {
     + `<div class="row"><span class="k">当日浏览</span><span class="v">${heat(x.score)}</span></div>`
     + `<div class="row"><span class="k">当日讨论</span><span class="v">${heat(x.discuss)}</span></div>`;
 }
+/* 猫眼这一格只抄回包：名次 = 榜单列表里本剧的下标 +1，热度 = 同一行的 barValue 原值。
+   页面上那串大字是 PUA 字形、读出来是空串，所以不对着页面 OCR、也不从别的字段反推。 */
+function renderMao() {
+  const j = F('maoyan');
+  const note = document.getElementById('myNote'), box = document.getElementById('myRows');
+  if (!j) { note.textContent = '—'; box.innerHTML = '<div class="p-note">档案未到</div>'; return; }
+  note.textContent = j.at ? `最后一次更新 ${j.at}` : '—';
+  const n = v => (v == null || !isFinite(v)) ? '—'
+    : Number(v).toLocaleString('zh-CN', { maximumFractionDigits: 2 });
+  box.innerHTML = `<div class="row"><span class="k">名次</span>`
+    + `<span class="v">${j.rank == null ? '不在榜' : '第 ' + j.rank + ' 名'}</span></div>`
+    + `<div class="row"><span class="k">实时热度</span><span class="v">${n(j.heat)}</span></div>`;
+}
 /* 里程碑与排名：每项只从本看板已有的档案抄当前那一格，名次与评级用接口自己给的字段。 */
 function renderHonor() {
   const host = document.getElementById('honor');
@@ -1563,6 +1586,11 @@ function renderHonor() {
   const x = dd && dd.xhs;
   if (x && x.rank != null) items.push({ g: '📕', t: `${x.name || '小红书剧集榜'}第 ${x.rank} 名`,
     d: ['当日浏览 ' + heat(x.score), '当日讨论 ' + heat(x.discuss), x.statDate].filter(Boolean).join(' · ') });
+  const my = F('maoyan');
+  if (my && my.rank != null) items.push({ g: '🎥', t: `猫眼 · 剧集榜第 ${my.rank} 名`,
+    d: ['实时热度 ' + (my.heat == null ? '—'
+        : Number(my.heat).toLocaleString('zh-CN', { maximumFractionDigits: 2 })), my.at]
+      .filter(Boolean).join(' · ') });
   const lastDay = S.dtDay[S.dtDay.length - 1];
   if (lastDay && lastDay.rank) items.push({ g: '📊', t: `灯塔 · 网剧榜第 ${lastDay.rank} 名`,
     d: `${lastDay.d} · 播放量 ${heat(lastDay.vv)}`
@@ -1773,6 +1801,14 @@ function renderKPI() {
     dbOpen ? [num(dbr.count) + ' 人评价', starSummary(S.dbStats)].filter(Boolean).join(' · ')
       : dbCnt,
     '#ffc861', '', dbOpen ? `<div class="c-foot">${starBars(S.dbStats)}</div>` : ''));
+  /* 豆瓣热门电视榜：同一发豆瓣回包的 realtime_hot_honor_infos[0]，名次与数值都照抄，
+     数值走同一套三位有效数字（2,883,860 → 288万，跟豆瓣面板那行逐字一致）。 */
+  const dHonor = (S.douban && (S.douban.realtime_hot_honor_infos || [])[0]) || null;
+  items.push(kpiItem('chart', '豆瓣热门电视榜',
+    !S.douban ? '—' : dHonor && dHonor.rank != null ? yi(dHonor.score).t : '不在榜',
+    !S.douban ? '' : dHonor && dHonor.rank != null ? yi(dHonor.score).u : '',
+    !S.douban ? '豆瓣没回话' : dHonor && dHonor.rank != null ? `第 ${dHonor.rank} 名` : '',
+    '#ffc861', ''));
 
   const cvb = F('cvb');
   if (cvb && cvb.latest) {
@@ -1836,6 +1872,16 @@ function renderKPI() {
         + ` · 当日讨论 ${xh.discuss == null ? '—' : yi(xh.discuss).t + yi(xh.discuss).u}`
         + ` · ${esc(xh.statDate || '')}`,
       '#ff5000', ''));
+  }
+  /* 猫眼剧集榜：与下面那张面板同源（名次 = 榜单下标 +1、热度 = 同一行的 barValue 原值），
+     副行只报名次与这份档案的时刻。 */
+  const my = F('maoyan');
+  if (my) {
+    const myAt = String(my.at || '').slice(11, 16);
+    items.push(kpiItem('flame', '猫眼剧集榜',
+      my.heat == null ? '—' : Number(my.heat).toLocaleString('zh-CN', { maximumFractionDigits: 2 }), '',
+      (my.rank == null ? '不在榜' : '第 ' + my.rank + ' 名') + (myAt ? ` · 采样于 ${myAt}` : ''),
+      '#ff5f43', ''));
   }
 
   document.getElementById('kpi').innerHTML = items.map((x, i) => `
@@ -2026,7 +2072,7 @@ async function loadAllFiles() { await Promise.all(FILES.map(loadFile)); }
 function renderAll() {
   renderHero(); renderDetawen(); renderYunhe(); renderCvb(); renderIqiyi();
   renderBaidu(); renderWx(); renderDouyin(); renderQimai(); renderKuyun(); renderEpg(); renderSurge();
-  renderHeat(); renderKPI(); renderVvHour(); renderBoards();
+  renderHeat(); renderKPI(); renderVvHour(); renderBoards(); renderMao();
 }
 let pollingStarted = false;
 function startPolling() {
@@ -2051,7 +2097,7 @@ function startPolling() {
     await loadAllFiles();
     renderDetawen(); renderYunhe(); renderCvb(); renderIqiyi(); renderBaidu(); renderWx(); renderDouyin(); renderQimai();
     await loadVvHourly();
-    renderKPI(); renderHero(); renderBoards();
+    renderKPI(); renderHero(); renderBoards(); renderMao();
   });
 }
 </script>
