@@ -1950,9 +1950,19 @@ function lineChart(id, key, labels, sets, opt = {}) {
     scales.y1 = { position: 'right', ticks: { color: '#00d98a' }, grid: { drawOnChartArea: false },
                   title: { display: !!opt.y1Title, text: opt.y1Title, color: '#8e97b0' } };
   }
+  /* 折线的点半径是 0，默认的 nearest + intersect 要求鼠标压到点上才弹提示，
+     细线上基本点不中。改成 index + 不要求相交：落在图里就按横轴就近那一格出数。
+     label 走整数的千分位，保留小数的照原样（景气指数 1.96 这种不能被四舍五入）。 */
+  const ft = v => typeof v !== 'number' ? v
+    : Number.isInteger(v) ? v.toLocaleString('zh-CN') : String(v);
   mkChart(id, { type: 'line', data: { labels, datasets: ds },
     options: { responsive: true, maintainAspectRatio: false, animation: { duration: 500 },
-               plugins: { legend: { labels: { color: '#adb6cd', boxWidth: 10 } } }, scales } });
+               interaction: { mode: 'index', intersect: false },
+               plugins: { legend: { labels: { color: '#adb6cd', boxWidth: 10 } },
+                 tooltip: { mode: 'index', intersect: false,
+                   callbacks: { label: c => c.raw == null ? null
+                     : `${c.dataset.label || c.label} ${ft(c.raw)}` } } },
+               scales } });
 }
 function barChart(id, key, labels, vals, color) {
   mkChart(id, { type: 'bar', data: { labels, datasets: [{ data: vals, backgroundColor: color + 'aa', borderRadius: 5 }] },
