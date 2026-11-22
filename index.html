@@ -1298,7 +1298,7 @@ function renderDetawen() {
   note.innerHTML = (mine ? `本剧 ${mine.board === 'onair' ? '已播榜' : '待播榜'}第 ${mine.rank} 名 · 指数 <b style="color:var(--gold)">${mine.idx}</b>`
                         : '两张榜都没对上本剧那一行')
     + ` · 最后一次回话 ${esc(j.stamp && j.stamp.real_time || '—')}`
-    + ` · 序列 ${series.length} 天（档案最早 ${esc(j.archive && j.archive.earliest || '—')}）`;
+    + ` · 序列 ${series.length} 天`;
   lineChart('dwChart', 'dw', series.map(x => x.d.slice(5)),
     [{ label: '景气指数', data: series.map(x => x.idx), color: '#ffc861' }],
     { yTitle: '景气指数', gaps: true });
