@@ -501,12 +501,6 @@ footer a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(25
       </table>
       <div class="p-note" style="margin-top:6px">注：1、黄金时段电视剧指在19:30～21:50内开播的电视剧。 2、榜单只留最近 7 天，更早的要自己攒。</div>
     </div>
-    <div class="panel wide">
-      <div class="p-head"><div class="p-title"><i></i>当日位次</div></div>
-      <div class="p-note" id="dtRankNote">—</div>
-      <div id="dtRankCard"></div>
-      <div class="rows two" id="dtRows"></div>
-    </div>
   </section>
 
   <div class="sec-title">正片播放量 <span>· 灯塔</span></div>
@@ -770,7 +764,7 @@ function jsonp(url, timeout = 18000) {
 const S = {
   jy: {}, heat: {}, kuyun: null, epg: null, epgToday: null, epgFocus: null,
   douban: null, dbInterest: null, dbStats: null,
-  dtDay: [], dtRank: null, dtHot: null, dtMarket: null, dtMine: null,
+  dtDay: [],
   dtLive: null, dtLiveErr: '',
   surge: null, rank: null,
   file: {}, tab: { heat: '0', epg: '0', dw: 'onair', dy: 'comp' },
@@ -1107,39 +1101,17 @@ function renderSurge() {
    灯塔 —— 正片播放量 / 市占 / 榜单 / 平台热度
    ============================================================ */
 async function loadDengta() {
-  const today = bjYmd();
-  const [vvDay, hot, rk] = await Promise.all([
-    mtop('mtop.alipictures.gravitywave.media.vv.detail.list',
-         { mediaId: CONFIG.mediaId, platform: 'ALL', dateType: 'DAY' }).catch(() => null),
-    mtop('mtop.alipictures.gravitywave.media.hot.newdetail',
-         { mediaId: CONFIG.mediaId, platform: 'iqiyi', dateType: 'DAY' }).catch(() => null),
-    mtop('mtop.alipictures.gravitywave.media.rank.list',
-         { configCode: '1', typeCode: '1', platformCode: 'iqiyi', showDate: today,
-           dateType: '0', marketShareType: 1, isLoop: 'false' }, '3.0').catch(() => null)
-  ]);
+  const vvDay = await mtop('mtop.alipictures.gravitywave.media.vv.detail.list',
+    { mediaId: CONFIG.mediaId, platform: 'ALL', dateType: 'DAY' }).catch(() => null);
   const dayRows = (vvDay && vvDay.dataList) || [];
   if (dayRows.length) S.dtDay = dayRows.map(x => ({
     d: String(x.showDate).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'),
-    vv: x.vvCnt, total: x.totalVv, share: x.marketShare, rank: x.vvRank, hot: x.hotIndex,
+    vv: x.vvCnt, total: x.totalVv, share: x.marketShare, rank: x.vvRank,
     epAvg: x.avgEpVv == null || x.avgEpVv === '' ? null : +x.avgEpVv
   })).sort((a, b) => a.d < b.d ? -1 : 1);
-  const hotList = ((hot && hot.dataList && hot.dataList[0] && hot.dataList[0].mediaVVHotDetailVOList) || [])
-    .map(x => ({ d: String(x.showDate).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'),
-                 avg: (x.vvCntList.find(y => y.hotKey === '当日平均') || {}).hotValue,
-                 max: (x.vvCntList.find(y => y.hotKey === '当日最高') || {}).hotValue,
-                 min: (x.vvCntList.find(y => y.hotKey === '当日最低') || {}).hotValue }))
-    .reverse();                                  // 接口是新的在前，翻成升序再画
-  if (hotList.length) S.dtHot = hotList;
-  const rm = rk && rk.rankMap;
-  if (rm) {
-    const rows = rm.rankList || [];
-    S.dtRank = rows.map(x => ({ name: x.name || x.showName, id: x.mediaId, cnt: x.cnt, vv: x.vvCnt }));
-    S.dtMarket = rm.market ? rm.market.vvCnt : null;
-    S.dtMine = rows.find(x => String(x.mediaId) === String(CONFIG.mediaId)) || null;
-  }
-  const ok = S.dtDay.length || !!S.dtRank;
-  if (!ok) throw new Error('三个口都空');
-  renderDengta(); renderKPI(); mark('灯塔', true);
+  const ok = S.dtDay.length;
+  if (!ok) throw new Error('正片播放量那个口没回话');
+  renderKPI(); mark('灯塔', true);
 }
 /* 实时播放量单敲 DAY 这一发，其余两发（热度/榜单）走 dengtaTick 那一档：
    播出窗口内 10 分钟、窗口外 30 分钟，所以「累计」那张卡在窗口外是半小时一跳。
@@ -1187,33 +1159,10 @@ async function liveLoop() {
     await sleep(dwell);
   }
 }
-function renderDengta() {
-  /* 当日位次 */
-  const rn = document.getElementById('dtRankNote'), card = document.getElementById('dtRankCard');
-  const rowsBox = document.getElementById('dtRows');
-  if (S.dtRank) {
-    const mine = S.dtMine;
-    rn.innerHTML = mine
-      ? `爱奇艺网剧榜 ${bjDay()} · 第 ${S.dtRank.findIndex(x => String(x.id) === String(CONFIG.mediaId)) + 1} / ${S.dtRank.length} 名（榜内口径）`
-      : `榜内 ${S.dtRank.length} 行，此刻没有本剧那一行`;
-    const last = S.dtDay[S.dtDay.length - 1] || null;
-    card.innerHTML = `<div class="rank-card">
-      <div class="rc-name">当日正片播放量 · 全网口径</div>
-      <div class="rc-no">${last ? yi(last.vv).t : '—'}<b style="font-size:1rem;font-style:normal;margin-left:4px">${last ? yi(last.vv).u : ''}</b></div>
-      <div class="rc-tip">${last ? esc(last.d) + ' 市占 ' + esc(last.share) + ' · 累计 ' + yi(last.total).t + yi(last.total).u : '灯塔还没出当日格'}</div></div>`;
-    const row = (k, v) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
-    rowsBox.innerHTML =
-      row('大盘当日 VV', S.dtMarket == null ? '—' : yi(S.dtMarket).t + yi(S.dtMarket).u) +
-      row('本剧当日热度指数', last && last.hot ? num(last.hot) : '—') +
-      row('平台热度（今日）', S.dtHot && S.dtHot.length ? `${S.dtHot[S.dtHot.length - 1].max} 峰值 / ${S.dtHot[S.dtHot.length - 1].avg} 均值` : '—') +
-      row('爱奇艺网剧榜', mine ? '榜内第 ' + (S.dtRank.findIndex(x => String(x.id) === String(CONFIG.mediaId)) + 1) + ' 名' : '未上榜');
-  } else { rn.textContent = '榜单口未回话'; rowsBox.innerHTML = ''; card.innerHTML = ''; }
-  /* 逐日那张图 11-21 删掉了：灯塔的逐日 VV 口只回有播放的那几天（此刻 2 行），
-     而平台热度那个口一回就是 30 天，两条长度不同的序列塞进同一组横轴标签，
-     热度只有头两个点被画到 11-20/11-21 上、其余掉出轴外，右轴却按全部 30 个点定标，
-     看着就成了一条贴地的假直线。逐日的数没丢：顶部「灯塔累计 / 集均」两张卡读的还是 S.dtDay。
-     分时那条曲线改读 vv-hourly.json，在下面的「正片播放量 · 分时」那一格。 */
-}
+/* 逐日那张图和「当日位次」那节都删了（11-21、11-22）。数没丢：顶部「灯塔累计 / 集均」
+   两张卡读的还是 S.dtDay，分时那条曲线读 vv-hourly.json，在下面「正片播放量 · 分时」那一格。
+   别照旧样子把两条长度不同的序列塞进同一组横轴标签——逐日 VV 口只回有播放的那几天，
+   平台热度口一回就是 30 天，右轴按 30 个点定标，画出来就是一条贴地的假直线。 */
 
 /* ============================================================
    正片播放量 · 分时（灯塔全网口径，读自己攒的 vv-hourly.json）
