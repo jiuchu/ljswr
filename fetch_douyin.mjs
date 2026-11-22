@@ -15,9 +15,13 @@
 // 口径（页面自己写的）：
 //   搜索指数 = 关键词及其相关内容的搜索量加权，页面明写「并不等于实际搜索量」；
 //   综合指数 = 内容量 + 搜索 + 观看 + 互动加权。两个都是绝对量级，不是 0–100 归一化。
-//   窗口尾到 T-2：11-21 跑，最新一天是 11-19。
+//   窗口尾到 T-1：11-22 他在那页上把窗口拉到 2026-10-21~2026-11-21，11-21 那天
+//   搜索指数已经给到 3,970,784，而脚本这边一直按 T-2 请求，所以档案停在 11-20。
+//   ⚠旧注释那句「窗口尾到 T-2：11-21 跑，最新一天是 11-19」是拿 09:30 那一拍的
+//   回包当成接口上限写的——它只说明那天早上 T-1 还没出，而脚本又从没按 T-1 请求过。
+//   T-1 到底几点出数仍未测；早拍要是没拿到，回包就只到 T-2，档案按天累加不会丢、也不会凑假数。
 //
-// 一次请求给 32 天，比窗口长，所以档案只按天累加、不重刷历史。
+// 回包只给请求窗口里已有的那些天（11-22 那次窗口 30 天、回 30 天），档案只按天累加、不重刷历史。
 // 拉不到就不动旧档案，只把原因印出来。
 //
 // 环境变量：DY_COOKIE(必需) DY_OUT(默认 douyin.json) DY_KEYWORD(默认 两京十五日)
@@ -51,9 +55,9 @@ const bjStamp = d => { const p = bjParts(d); return `${p.year}-${p2(p.month)}-${
 const bjDay = d => bjStamp(d).slice(0, 10);
 const ymd8 = d => bjDay(d).replaceAll('-', '');
 
-// 窗口尾落在 T-2；万一那天还没出数，回包给到哪一天就以哪一天为尾。
+// 窗口尾落在 T-1；那天还没出数时回包就只到 T-2，档案按天累加、不凑假数。
 function windowEnd(now) {
-  const d = new Date(now.getTime() - 2 * 86400000);
+  const d = new Date(now.getTime() - 86400000);
   return ymd8(d);
 }
 function shift8(s, n) {
@@ -132,7 +136,8 @@ async function main() {
   const t0 = new Date();
   const { body, mode } = await trend(cookie, start, end);
   const { days, period } = toDays(body);
-  console.log(`窗口 ${start}~${end} · encrypted=${mode ?? '明文'} · 回 ${days.length} 天`);
+  const tail = days.length ? String(days[days.length - 1].d) : '';
+  console.log(`窗口 ${start}~${end} · encrypted=${mode ?? '明文'} · 回 ${days.length} 天 · 尾到 ${tail || '无'}${tail === end ? '' : `（${end} 这一天的数还没出）`}`);
   if (PROBE) { days.forEach(x => console.log(`  ${x.d} 综合 ${x.comp} 搜索 ${x.search}`)); return; }
 
   let old = null;
