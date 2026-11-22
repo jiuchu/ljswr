@@ -578,14 +578,6 @@ footer a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(25
     </div>
   </section>
 
-  <div class="sec-title">指数变化记录 <span>· 来自微信指数</span></div>
-  <section class="grid2">
-    <div class="panel wide">
-      <div class="p-note" id="wxFlucNote">—</div>
-      <div class="rows" id="wxFluc"></div>
-    </div>
-  </section>
-
   <div class="status" id="status"></div>
 
   <div class="toolbar">
@@ -1497,8 +1489,6 @@ function renderWx() {
   const df = s => cross ? fmt(s) : fmt(s).slice(5);
   const peak = win.reduce((a, x) => x.s > a.s ? x : a, win[0]);
   const avg = win.reduce((a, x) => a + x.s, 0) / win.length;
-  const flAll = j.fluctuations || [];
-  const flIn = flAll.filter(x => String(x.d) >= String(first.d));
   note.innerHTML = `最新 ${esc(fmt(last.d))} · <b style="color:var(--gold)">${yi(last.s).t}${yi(last.s).u}</b>`
     + ` · ${esc(wName)}最高 ${esc(df(peak.d))} ${yi(peak.s).t}${yi(peak.s).u}`
     + ` · 档案抓到于 ${esc(bjClock(new Date(j.captured_at)))}`;
@@ -1536,17 +1526,6 @@ function renderWx() {
       <span class="hb-tr"><i style="width:${(mean[k] / tot * 100).toFixed(1)}%"></i></span>
       <span class="hb-v">${(mean[k] / tot * 100).toFixed(1)}%</span></div>`).join('')
     || '<div class="p-note">渠道那一份是空的</div>';
-
-  document.getElementById('wxFlucNote').innerHTML = `整份档案 ${flAll.length} 条 · ${esc(wName)} ${flIn.length} 条`;
-  document.getElementById('wxFluc').innerHTML = (flIn.length ? flIn : flAll).map(wxFlucRow).join('')
-    || '<div class="p-note">档案里没有变化记录</div>';
-}
-function wxFlucRow(x) {
-  const up = x.gain_pct > 0;
-  const fmt = s => String(s).slice(0, 4) + '-' + String(s).slice(4, 6) + '-' + String(s).slice(6, 8);
-  return `<div class="row"><span class="k">${esc(fmt(x.d))} ${up ? '↑' : '↓'}</span>
-    <span class="v">${yi(x.today).t}${yi(x.today).u}
-      <span class="delta ${up ? 'up' : 'down'}">${up ? '+' : '−'}${Math.abs(x.gain_pct).toFixed(2)}%</span></span></div>`;
 }
 /* 抖音指数：一次请求回 32 天，窗口尾落在 T-2，所以最新那格永远比今天晚两天。
    搜索指数稳在综合指数的 2.96–3.22 倍，同一条轴装得下两条线。 */
@@ -1795,9 +1774,7 @@ const ICO = {
   search: '<path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14m5 12 4 4"/>',
   chat: '<path d="M4 5h16v11H8l-4 4z"/>',
   dl: '<path d="M12 4v10m0 0 4-4m-4 4-4-4M5 19h14"/>',
-  up: '<path d="M4 17 10 11l4 4 6-8m0 0h-6m6 0v6"/>',
-  star: '<path d="m12 3 2.6 5.6 6 .7-4.4 4.1 1.2 5.9L12 16.9 6.6 19.3l1.2-5.9L3.4 9.3l6-.7z"/>',
-  clock: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>'
+  star: '<path d="m12 3 2.6 5.6 6 .7-4.4 4.1 1.2 5.9L12 16.9 6.6 19.3l1.2-5.9L3.4 9.3l6-.7z"/>'
 };
 function renderKPI() {
   const dq = F('detawen'), yh = F('yunhe');
@@ -1808,9 +1785,6 @@ function renderKPI() {
       + (S.jy.max != null ? ` · 历史最高 ${num(S.jy.max)} · ${esc(S.jy.maxDay || '')}` : ''),
     '#00d98a',
     yPeak == null ? '' : deltaTag(S.jy.cur - yPeak, '', 0) + '<span class="u cap">对昨日峰值</span>'));
-  if (S.surge && S.surge.mine) items.push(kpiItem('up', '爱奇艺 · 飙升幅度',
-    parseFloat(String(S.surge.mine.rise)) || 0, '%',
-    `榜内第 ${S.surge.mine.no} 名 · 爱奇艺侧更新 ${esc(S.surge.head || '—')}`, '#ff5f43', ''));
 
   const lastDay = S.dtDay[S.dtDay.length - 1];
   const prevDay = S.dtDay[S.dtDay.length - 2];
