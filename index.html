@@ -645,7 +645,7 @@ const CONFIG = {
      vvLive（实时播放量）和 heat（爱奇艺热度）不归这对管：它们不看几点钟，只看这页在不在前台。 */
   refresh: { live: 20e3, kuyun: 15e3, idleKuyun: 300e3, epg: 60e3,
              surge: 60e3, idleSurge: 600e3, rank: 600e3, dengta: 600e3, dengtaIdle: 1800e3,
-             heat: 60e3, heatHist: 300e3, file: 900e3, pollGuest: 60e3,
+             heat: 60e3, heatHist: 300e3, file: 900e3, pollGuest: 60e3, douban: 600e3,
              vvLive: 10e3, tick: 30e3 },
   liveWindow: [19.3, 23.5]
 };
@@ -1820,12 +1820,14 @@ function renderKPI() {
 
   const dbr = S.douban && S.douban.rating;
   const dbOpen = dbr && dbr.value > 0;
+  /* 豆瓣这两格只在开页时采一次，副行带上采样时刻，免得看的人当成死数据。 */
+  const dbTime = src['豆瓣'] && src['豆瓣'].at ? '采样于 ' + bjHM(new Date(src['豆瓣'].at)) : '';
   const dbCnt = S.douban
-    ? ['短评 ' + num(S.douban.comment_count || 0), '剧评 ' + num(S.douban.review_count || 0)].join(' · ')
+    ? ['短评 ' + num(S.douban.comment_count || 0), '剧评 ' + num(S.douban.review_count || 0), dbTime].filter(Boolean).join(' · ')
     : '豆瓣没回话';
   items.push(kpiItem('star', '豆瓣评分', !S.douban ? '—' : dbOpen ? dbr.value.toFixed(1) : '未出',
     dbOpen ? '/ ' + (dbr.max || 10) : '',
-    dbOpen ? [num(dbr.count) + ' 人评价', starSummary(S.dbStats)].filter(Boolean).join(' · ')
+    dbOpen ? [num(dbr.count) + ' 人评价', starSummary(S.dbStats), dbTime].filter(Boolean).join(' · ')
       : dbCnt,
     '#ffc861', '', dbOpen ? `<div class="c-foot">${starBars(S.dbStats)}</div>` : ''));
   /* 豆瓣热门电视榜：同一发豆瓣回包的 realtime_hot_honor_infos[0]，名次与数值都照抄，
@@ -1834,7 +1836,8 @@ function renderKPI() {
   items.push(kpiItem('chart', '豆瓣热门电视榜',
     !S.douban ? '—' : dHonor && dHonor.rank != null ? yi(dHonor.score).t : '不在榜',
     !S.douban ? '' : dHonor && dHonor.rank != null ? yi(dHonor.score).u : '',
-    !S.douban ? '豆瓣没回话' : dHonor && dHonor.rank != null ? `第 ${dHonor.rank} 名` : '',
+    !S.douban ? '豆瓣没回话'
+      : [dHonor && dHonor.rank != null ? `第 ${dHonor.rank} 名` : '', dbTime].filter(Boolean).join(' · '),
     '#ffc861', ''));
 
   const cvb = F('cvb');
@@ -2120,6 +2123,9 @@ function startPolling() {
                              CONFIG.refresh.idleKuyun), loadKuyun);
   every('爱奇艺飙升榜', () => cadence(CONFIG.refresh.surge, CONFIG.refresh.idleSurge), loadSurge);
   every('爱奇艺热播榜', CONFIG.refresh.rank, loadRank);
+  /* 豆瓣走浏览器直连 JSONP，不过 Worker，不占 Cloudflare 额度；
+     仍按页面可见性停：切走就一发不敲，跟热度那趟同一套。 */
+  everyVisible('豆瓣', CONFIG.refresh.douban, loadDouban);
   dtLast = Date.now();
   every('灯塔', CONFIG.refresh.tick, dengtaTick);
   /* 倒计时自己一秒醒一次，只改那一行字：它算的是墙上时钟，跟档案多久刷新没关系，
