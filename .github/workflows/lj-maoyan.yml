@@ -1,0 +1,84 @@
+name: 两京十五日 · 猫眼热度
+
+# 猫眼那份回包要真浏览器过签名闸，单独一条工作流，十分钟一拍。
+# 脚本自己还有 6 分钟的最小间隔闸门：手点重跑、或排队晚了连着起两次，都不会把档案写频繁。
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lj-maoyan-writer
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 「重新运行」会把那一拍原来的 commit 整份重放，先挪到 main 最新再采，
+      # 免得采完挂在旧树上、rebase 撞车（lj-fetch.yml 里同样的做法）。
+      - name: 跟着 main 最新档案
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: git pull --rebase origin "$GITHUB_REF_NAME"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # 十分钟一拍，浏览器没必要每拍重新下一次：按 playwright 自己的版本号做键，
+      # 版本不变就命中缓存，只补 apt 依赖；版本变了键也变，自动下新的。
+      - name: 装包
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm i playwright --no-audit --no-fund
+
+      - name: 取 playwright 版本
+        id: pw
+        run: echo "ver=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: 缓存浏览器
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-${{ runner.os }}-${{ steps.pw.outputs.ver }}
+
+      - name: 装浏览器
+        run: npx playwright install --with-deps chromium
+
+      - name: 采猫眼
+        run: node fetch_maoyan.mjs
+
+      # 失败时 lastError 也要落进档案（跑红了照样提交，页面上的数值不动）。
+      - name: 提交档案
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add maoyan.json
+          if git diff --cached --quiet; then
+            echo "::notice::maoyan.json 没变化，这一轮不提交"
+            exit 0
+          fi
+          git commit -m "猫眼热度 $(TZ=Asia/Shanghai date '+%F %H:%M')"
+          n=0
+          while [ "$n" -lt 4 ]; do
+            n=$((n+1))
+            if git pull --rebase origin "$GITHUB_REF_NAME" && git push; then
+              echo "第 $n 次尝试推上去了"; exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((RANDOM % 6 + 3))
+          done
+          echo "::error::四次都没挤进 main，这一轮不推（下一格接着试）"
+          exit 1
