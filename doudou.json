@@ -1,8 +1,8 @@
 {
   "title": "两京十五日",
-  "at": "2026-11-23 00:00",
-  "fetchedAt": "2026-11-22T16:00:55.451Z",
-  "runs": 49,
+  "at": "2026-11-23 00:30",
+  "fetchedAt": "2026-11-22T16:30:28.422Z",
+  "runs": 50,
   "dy": [
     {
       "id": "dyRealTime",
@@ -14,8 +14,8 @@
       "size": 20,
       "rank": 1,
       "score": 174275114,
-      "wannaSee": 55887,
-      "comments": 58713,
+      "wannaSee": 55959,
+      "comments": 59042,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -45,8 +45,8 @@
       "size": 20,
       "rank": 1,
       "score": 173990436,
-      "wannaSee": 55887,
-      "comments": 58715,
+      "wannaSee": 55959,
+      "comments": 59043,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -100,13 +100,13 @@
   ],
   "xhs": {
     "name": "小红书剧集榜",
-    "statDate": "2026-11-22",
+    "statDate": "2026-11-23",
     "size": 10,
     "rank": 1,
-    "score": 30441653,
-    "discuss": 192811,
-    "totalView": 193868340,
-    "totalDiscuss": 1752013,
+    "score": 33448331,
+    "discuss": 186064,
+    "totalView": 227316671,
+    "totalDiscuss": 1938077,
     "trend": "FLAT",
     "rankDelta": 0,
     "actors": "成毅",
@@ -114,15 +114,15 @@
     "top": [
       {
         "title": "两京十五日",
-        "score": 30441653
+        "score": 33448331
       },
       {
         "title": "今天是太阳雨",
-        "score": 45897348
+        "score": 47072860
       },
       {
         "title": "主角",
-        "score": 15294608
+        "score": 16014112
       }
     ]
   },
@@ -255,7 +255,7 @@
     },
     {
       "hour": "小时榜 22:00 - 23:00",
-      "at": "2026-11-22T16:00:55.451Z",
+      "at": "2026-11-22T16:30:28.422Z",
       "rank": 1,
       "score": 174275114
     }
@@ -272,6 +272,13 @@
       "date": "2026-11-22",
       "xhsRank": 1,
       "xhsScore": 30441653,
+      "dyDailyRank": 1,
+      "dyDailyScore": 173990436
+    },
+    {
+      "date": "2026-11-23",
+      "xhsRank": 1,
+      "xhsScore": 33448331,
       "dyDailyRank": 1,
       "dyDailyScore": 173990436
     }
