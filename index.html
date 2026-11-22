@@ -636,7 +636,7 @@ const CONFIG = {
      vvLive（实时播放量）和 heat（爱奇艺热度）不归这对管：它们不看几点钟，只看这页在不在前台。 */
   refresh: { live: 20e3, kuyun: 15e3, idleKuyun: 300e3, epg: 60e3,
              surge: 60e3, idleSurge: 600e3, rank: 600e3, dengta: 600e3, dengtaIdle: 1800e3,
-             heat: 300e3, file: 900e3, pollGuest: 60e3,
+             heat: 60e3, heatHist: 300e3, file: 900e3, pollGuest: 60e3,
              vvLive: 10e3, tick: 30e3 },
   liveWindow: [19.3, 23.5]
 };
@@ -748,7 +748,7 @@ function jsonp(url, timeout = 18000) {
    状态
    ============================================================ */
 const S = {
-  jy: {}, heat: {}, kuyun: null, epg: null, epgToday: null, epgFocus: null,
+  jy: {}, heat: {}, heatAt: {}, kuyun: null, epg: null, epgToday: null, epgFocus: null,
   douban: null, dbInterest: null, dbStats: null,
   dtDay: [],
   dtLive: null, dtLiveErr: '',
@@ -796,9 +796,11 @@ function cdownText() {
   return (hh ? hh + ' 小时 ' : '') + p2(mm) + ' 分 ' + p2(s % 60) + ' 秒';
 }
 function cadence(kLive, kIdle) { return inLiveWindow() ? kLive : kIdle; }
-/* 实时那趟（vvLive 10 秒）和热度那趟（heat 5 分钟）只看这页在不在前台：在就按档敲，切走一发不敲，
+/* 实时那趟（vvLive 10 秒）和热度那趟（heat 60 秒）只看这页在不在前台：在就按档敲，切走一发不敲，
    所以请求数＝同时开着这页的人数 × 那一档的频次，页面不在就是 0。
-   ?live=1 是他自己盯放量时的把手：把热度从 5 分钟抬回 20 秒（酷云照旧 15 秒，不归这把管）。 */
+   heat 定 60 秒是上游的地板：剧云录那个 `get_current_heat` 自己一分钟才换一个点
+   （11-22 实测连打两发，record_time 从 11:39:05 走到 11:40:06），敲得比一分钟更快只会拿到同一个数。
+   ?live=1 是他自己盯放量时的把手：把热度从 60 秒抬到 20 秒（酷云照旧 15 秒，不归这把管）。 */
 const LIVE_POLL = new URLSearchParams(location.search).get('live') === '1';
 
 /* ============================================================
@@ -835,7 +837,13 @@ async function heatHistory(dateStr) {
 async function loadHeat() {
   const today = bjDay(), yest = bjShiftDay(today, -1);
   const want = S.tab.heat === 'peak' ? [] : (S.tab.heat === '-1' ? [yest] : [today]);
-  for (const d of want) if (!S.heat[d]) S.heat[d] = await heatHistory(d).catch(() => null);
+  /* 分时点上游 3 分钟才落一个 ⇒ 曲线按 heatHist 那一档重取。
+     旧写法是 `if (!S.heat[d])`＝一天只取一次，页面整开着曲线右端就冻在打开那一刻。 */
+  for (const d of want) {
+    if (S.heat[d] && Date.now() - (S.heatAt[d] || 0) < CONFIG.refresh.heatHist) continue;
+    const rows = await heatHistory(d).catch(() => null);
+    if (rows) { S.heat[d] = rows; S.heatAt[d] = Date.now(); }
+  }
   const [cur, mx, pk] = await Promise.all([
     pjson(JYL('get_current_heat')).catch(() => null),
     S.jy.max == null ? pjson(JYL('get_max_heat')).catch(() => null) : null,
