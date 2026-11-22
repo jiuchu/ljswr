@@ -216,18 +216,6 @@ h1{font-size:clamp(2.3rem,5.4vw,3.6rem);font-weight:800;letter-spacing:.06em;lin
 .pp-lv{display:inline-block;min-width:52px;color:var(--txt);font-weight:700}
 .pp-blocks{display:flex;gap:2px}
 .pp-blocks i{width:9px;height:14px;border-radius:2px;background:rgba(255,255,255,.12)}
-.rank-card{position:relative;overflow:hidden;padding:16px 18px;border-radius:14px;
-  background:linear-gradient(135deg,#ffe9b8 0%,#ffc861 46%,#4fd8a6 100%);
-  color:#12241a;box-shadow:0 10px 30px -12px rgba(255,180,80,.5)}
-.rank-card::after{content:'';position:absolute;top:-60%;left:-30%;width:55%;height:220%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);
-  transform:rotate(18deg);animation:sheen 5.5s ease-in-out infinite}
-@keyframes sheen{0%,72%{left:-40%}100%{left:130%}}
-.rc-name{font-size:.82rem;font-weight:700;letter-spacing:.04em;line-height:1.4;opacity:.86}
-.rc-no{font-size:1.05rem;font-weight:700;letter-spacing:.06em;margin-top:2px}
-.rc-no b{font-size:2.3rem;font-weight:900;letter-spacing:-1px;margin-left:6px;
-  font-family:'Times New Roman',serif;font-style:italic;line-height:1}
-.rc-tip{font-size:.7rem;opacity:.7;margin-top:7px;letter-spacing:.03em}
 
 /* ---------- 里程碑 ---------- */
 .honor{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-top:14px}
@@ -343,8 +331,6 @@ footer a{color:var(--gold);text-decoration:none;border-bottom:1px dashed rgba(25
   .src-tag{font-size:.6rem;padding:3px 8px}
   .btn{font-size:.82rem;padding:9px 16px}
   footer{font-size:.72rem;padding-bottom:20px}
-  .rc-name{font-size:.76rem}
-  .rc-no b{font-size:1.9rem}
   .hbar{grid-template-columns:74px 1fr 48px;font-size:.76rem}
   .stbar{grid-template-columns:30px 1fr 42px;gap:7px;font-size:.7rem}
   .tv-list{max-height:none}
@@ -1098,7 +1084,7 @@ function renderSurge() {
 }
 
 /* ============================================================
-   灯塔 —— 正片播放量 / 市占 / 榜单 / 平台热度
+   灯塔 —— 正片播放量 / 市占 / 累计
    ============================================================ */
 async function loadDengta() {
   const vvDay = await mtop('mtop.alipictures.gravitywave.media.vv.detail.list',
@@ -1113,8 +1099,10 @@ async function loadDengta() {
   if (!ok) throw new Error('正片播放量那个口没回话');
   renderKPI(); mark('灯塔', true);
 }
-/* 实时播放量单敲 DAY 这一发，其余两发（热度/榜单）走 dengtaTick 那一档：
-   播出窗口内 10 分钟、窗口外 30 分钟，所以「累计」那张卡在窗口外是半小时一跳。
+/* 实时播放量单敲 DAY 这一发；同一个 DAY 口还由 dengtaTick 按窗口内 10 分钟、窗口外 30 分钟再敲一次，
+   那一趟填的是 S.dtDay——「灯塔累计 / 集均 / 昨日」那几张卡读它，所以窗口外那几张是半小时一跳。
+   11-22 之前这里还并着热度、榜单两发（`hot.newdetail`、`rank.list`），它们只喂「当日位次」那一节，
+   那节按他截图删掉之后两发一起摘了。
    11-22 上午实测这个口每 48 秒挪 1.1~1.4 万，约 1.9 万/分钟。
    节拍只看这页在不在前台：在就 10 秒一发（不分焦点），切走（document.hidden）一发不敲、
    每秒空转等回来，回来 ≤1 秒补上第一拍（靠 visibilitychange 把睡下的循环叫醒，不是等那个在后台被
