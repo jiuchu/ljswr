@@ -665,7 +665,7 @@ const CONFIG = {
   refresh: { live: 20e3, idle: 300e3, kuyun: 15e3, idleKuyun: 300e3, epg: 60e3,
              surge: 60e3, idleSurge: 600e3, rank: 600e3, dengta: 600e3, dengtaIdle: 1800e3,
              heat: 600e3, file: 900e3, pollGuest: 60e3,
-             vvLive: 60e3, tick: 30e3 },
+             vvLive: 10e3, tick: 30e3 },
   liveWindow: [19.3, 23.5]
 };
 
@@ -702,20 +702,12 @@ function yi(v) {
   if (Math.abs(n) >= 1e4) return { t: sig3(n / 1e4), u: '万' };
   return { t: num(Math.round(n)), u: '' };
 }
-/* 当天就在涨的播放量：固定两位小数、四舍五入。这里不能截断，也不能只留一位——
-   112.287 万截成 112.2 之后，要涨满 1000 次才动一格，看着就像这页不死。 */
-function vv2(v) {
-  if (v == null || !isFinite(v)) return { t: '—', u: '' };
-  const n = Number(v);
-  if (Math.abs(n) >= 1e8) return { t: (n / 1e8).toFixed(2), u: '亿' };
-  if (Math.abs(n) >= 1e4) return { t: (n / 1e4).toFixed(2), u: '万' };
-  return { t: num(Math.round(n)), u: '' };
-}
 /* 灯塔印数用的是截断、不是四舍五入：拿同一发回包里的 raw 整数和它自己那份 `*WithUnit`
    串逐字段对过，5 发判别性样本全是截断（3860647→386.0、48561736→4856.1、1122870→112.2），
    0 例反证。集均是灯塔的收盘快照、一整个统计日都不动，所以这张卡要跟它逐字一样、连末尾那个 0
    也要在（`Math.floor(n/1e3)/10` 出来是 386，得靠 toFixed(1) 补回来）。
-   正在涨的那几张不归这个函数管——截断会把涨的那点抹平。
+   实时那张 11-22 也挪进来了（他要一位小数）：10 秒一拍、约 1.9 万/分钟 ⇒ 0.1 万那一格
+   三秒左右就动一次，截断抹不平；旧稿那句「一位小数看着像这页不死」是 30 分钟一跳时的账。
    ⚠百分比不在这条规矩里：灯塔的市占是四舍五入（0.154658→15.47），市占那些 toFixed(2) 别跟着改。 */
 function dtTrunc(v) {
   if (v == null || !isFinite(v)) return { t: '—', u: '' };
@@ -832,8 +824,8 @@ function cdownText() {
   return (hh ? hh + ' 小时 ' : '') + p2(mm) + ' 分 ' + p2(s % 60) + ' 秒';
 }
 function cadence(kLive, kIdle) { return inLiveWindow() ? kLive : kIdle; }
-/* 实时那趟对所有人都是 1 分钟，请求按打开页面的人数乘；?live=1 只决定
-   爱奇艺热度和酷云要不要从 60 秒抬回 20/15 秒，那是他自己在盯放量时的档。 */
+/* 实时那趟对所有人都是 10 秒（6 发/分钟，请求按同时打开这页的人数乘，窗口关了就是 0）；
+   ?live=1 只决定爱奇艺热度和酷云要不要从 60 秒抬回 20/15 秒，那是他自己在盯放量时的档。 */
 const LIVE_POLL = new URLSearchParams(location.search).get('live') === '1';
 
 /* ============================================================
@@ -1159,7 +1151,7 @@ async function loadDengta() {
 /* 实时播放量单敲 DAY 这一发，其余两发（热度/榜单）走 dengtaTick 那一档：
    播出窗口内 10 分钟、窗口外 30 分钟，所以「累计」那张卡在窗口外是半小时一跳。
    11-22 上午实测这个口每 48 秒挪 1.1~1.4 万，约 1.9 万/分钟。
-   节拍只看这页在不在前台：在就 1 分钟一发（不分焦点），切走（document.hidden）一发不敲、
+   节拍只看这页在不在前台：在就 10 秒一发（不分焦点），切走（document.hidden）一发不敲、
    每秒空转等回来，回来 ≤1 秒补上第一拍；失败按 3 倍退避封顶 300 秒。
    11-22 之前这里还套着一条时段门（19:18 → 次日 08:00），白天 30 分钟才跳一格、被当成页面死了；
    按他的口径拆了——省额度靠"不在页面就不请求"，不靠几点钟。 */
@@ -1834,7 +1826,7 @@ function renderKPI() {
     const shNow = (live ? live.share : lastDay.share) || '';
     const rkNow = live ? live.rank : lastDay.rank;
     const sh = (parseFloat(String(shNow)) || 0).toFixed(2);
-    items.push(kpiItem('film', '灯塔 · 今日实时播放量', vv2(vvNow).t, vv2(vvNow).u,
+    items.push(kpiItem('film', '灯塔 · 今日实时播放量', dtTrunc(vvNow).t, dtTrunc(vvNow).u,
       `实时市占 ${sh}%` + (rkNow ? ` · 网剧榜第 ${rkNow}` : ''),
       '#ff5f43', deltaTag(pulse('dtd.' + dayKey, vvNow, 60e3), '', 0)));
   }
