@@ -604,7 +604,9 @@ const CONFIG = {
   mediaId: 1394197,                  // 灯塔专业版 mediaId
   doubanId: '35235320',              // 豆瓣条目号
   qipuId: '3190714930072901',        // 爱奇艺专辑号（采集侧用，页面只读档案）
-  juyunlu: { iqiyi: 'uu6qr7xu7d' },  // 剧云录 video_id
+  /* 剧风向：爱奇艺热度。11-22 从剧云录换过来——那边站点没死，但一发要 12–40 秒、
+     经常跳过页面 14 秒的超时线，等于取不到数；这边一发 1～2 秒，且回包带 ACAO:*。 */
+  jfx: { base: 'https://heat.971014.xyz', id: 'd_0ad04b704cb0ddaf' },
   kuyun: { channel: 'CCTV-8' },      // 酷云 /api/rtepg 按剧名匹配，这里只是备注
   cctv: { channel: 'cctv8' },        // 央视节目单 api.cntv.cn 的频道号，浏览器直连免代理
   qimaiAppid: '393765873',           // 爱奇艺 iPhone 版
@@ -645,7 +647,7 @@ const CONFIG = {
      vvLive（实时播放量）和 heat（爱奇艺热度）不归这对管：它们不看几点钟，只看这页在不在前台。 */
   refresh: { live: 20e3, kuyun: 15e3, idleKuyun: 300e3, epg: 60e3,
              surge: 60e3, idleSurge: 600e3, rank: 600e3, dengta: 600e3, dengtaIdle: 1800e3,
-             heat: 60e3, heatHist: 300e3, file: 900e3, pollGuest: 60e3, douban: 600e3,
+             heat: 180e3, file: 900e3, pollGuest: 60e3, douban: 600e3,
              vvLive: 10e3, tick: 30e3 },
   liveWindow: [19.3, 23.5]
 };
@@ -757,7 +759,7 @@ function jsonp(url, timeout = 18000) {
    状态
    ============================================================ */
 const S = {
-  jy: {}, heat: {}, heatAt: {}, kuyun: null, epg: null, epgToday: null, epgFocus: null,
+  jy: {}, heat: {}, kuyun: null, epg: null, epgToday: null, epgFocus: null,
   douban: null, dbInterest: null, dbStats: null,
   dtDay: [],
   dtLive: null, dtLiveErr: '',
@@ -805,11 +807,11 @@ function cdownText() {
   return (hh ? hh + ' 小时 ' : '') + p2(mm) + ' 分 ' + p2(s % 60) + ' 秒';
 }
 function cadence(kLive, kIdle) { return inLiveWindow() ? kLive : kIdle; }
-/* 实时那趟（vvLive 10 秒）和热度那趟（heat 60 秒）只看这页在不在前台：在就按档敲，切走一发不敲，
+/* 实时那趟（vvLive 10 秒）和热度那趟（heat 180 秒）只看这页在不在前台：在就按档敲，切走一发不敲，
    所以请求数＝同时开着这页的人数 × 那一档的频次，页面不在就是 0。
-   heat 定 60 秒是上游的地板：剧云录那个 `get_current_heat` 自己一分钟才换一个点
-   （11-22 实测连打两发，record_time 从 11:39:05 走到 11:40:06），敲得比一分钟更快只会拿到同一个数。
-   ?live=1 是他自己盯放量时的把手：把热度从 60 秒抬到 20 秒（酷云照旧 15 秒，不归这把管）。 */
+   heat 定 180 秒是剧风向的地板：它约 3 分钟才落一个点（11-22 实测 12:24→12:27→12:30），
+   敲得再快只是把同一份全量回包重拿一遍；它回包带 ACAO:*，页面直连、不过代理不占额度。
+   ?live=1 仍只管酷云那趟（15 秒），热度这趟它不再提速。 */
 const LIVE_POLL = new URLSearchParams(location.search).get('live') === '1';
 
 /* ============================================================
@@ -834,40 +836,62 @@ async function loadFile(name) {
 const F = n => S.file[n + '.json'] || null;
 
 /* ============================================================
-   剧云录 —— 分时热度
+   剧风向 —— 分时热度
    ============================================================ */
-const JYL = a => 'https://juyunlu.top/heat?action=' + a +
-  '&video_id=' + encodeURIComponent(CONFIG.juyunlu.iqiyi) + '&platform=iqiyi';
-async function heatHistory(dateStr) {
-  const j = await pjson(JYL('get_history') + '&date=' + dateStr + '&max_points=288');
-  if (!j.success) throw new Error('api fail');
-  return (j.records || []).filter(r => (r.record_time || '').startsWith(dateStr))
-    .map(r => ({ hhmm: r.record_time.slice(11, 16), v: +r.heat_value }));
-}
+/* 一发 `window=7d` 就把开播以来全部点带回来（现在三天 972 点，约 49 KB），
+   当天的、昨天的、逐日峰值都从这一份里切，分时不再单独发请求。
+   回包 ACAO:*，浏览器直连；这条路上没有代理、也不占 Worker 额度。
+   window 只认 h/d：48h 回 400，7d 和 30d 给的是同一段（自开播起）。 */
+const JFX_URL = CONFIG.jfx.base + '/api/dramas/' + CONFIG.jfx.id + '?window=7d';
+const pickPl = (arr, pl) => { const a = Array.isArray(arr) ? arr : []; return a.find(x => x && x.platform === pl) || a[0] || null; };
+
 async function loadHeat() {
+  const ctl = new AbortController();
+  const tt = setTimeout(() => ctl.abort(), 15000);
+  let j;
+  try {
+    const r = await fetch(JFX_URL, { signal: ctl.signal, cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    j = await r.json();
+  } finally { clearTimeout(tt); }
+
+  const ser = (j.series || []).find(x => x.platform === 'iqiyi') || (j.series || [])[0] || {};
+  const byDay = {};
+  (ser.points || []).forEach(pt => {
+    if (pt == null || pt.v == null) return;
+    const at = new Date(pt.t); if (isNaN(at)) return;
+    const d = bjDay(at);
+    (byDay[d] = byDay[d] || []).push({ hhmm: bjHM(at), v: +pt.v });
+  });
+  Object.values(byDay).forEach(a => a.sort((x, y) => x.hhmm < y.hhmm ? -1 : 1));
+  const days = Object.keys(byDay).sort();
   const today = bjDay(), yest = bjShiftDay(today, -1);
-  const want = S.tab.heat === 'peak' ? [] : (S.tab.heat === '-1' ? [yest] : [today]);
-  /* 分时点上游 3 分钟才落一个 ⇒ 曲线按 heatHist 那一档重取。
-     旧写法是 `if (!S.heat[d])`＝一天只取一次，页面整开着曲线右端就冻在打开那一刻。 */
-  for (const d of want) {
-    if (S.heat[d] && Date.now() - (S.heatAt[d] || 0) < CONFIG.refresh.heatHist) continue;
-    const rows = await heatHistory(d).catch(() => null);
-    if (rows) { S.heat[d] = rows; S.heatAt[d] = Date.now(); }
+  if (byDay[today]) S.heat[today] = byDay[today];
+  if (byDay[yest]) S.heat[yest] = byDay[yest];
+
+  /* 逐日峰值＝每天里最大的那个点；同分取先落的那一拍 */
+  S.heat.peak = days.map(d => {
+    let best = byDay[d][0];
+    for (const r of byDay[d]) if (r.v > best.v) best = r;
+    return { d, v: best.v, t: best.hhmm };
+  });
+
+  const lastDay = days[days.length - 1], lastRec = lastDay && byDay[lastDay];
+  const last = lastRec && lastRec[lastRec.length - 1];
+  if (last) { S.jy.cur = last.v; S.jy.curAt = lastDay + ' ' + last.hhmm; }
+
+  const car = pickPl(j.careerByPlatform, 'iqiyi') || {};
+  const st = pickPl(j.statsByPlatform, 'iqiyi') || j.stats || {};
+  if (car.maxHeat != null || st.max != null) {
+    S.jy.max = car.maxHeat != null ? +car.maxHeat : +st.max;
+    S.jy.maxDay = car.maxHeatAt || '';
+    S.jy.maxTime = '';
+    const rec = S.jy.maxDay && byDay[S.jy.maxDay];
+    if (rec) for (const r of rec) if (r.v === S.jy.max) { S.jy.maxTime = r.hhmm; break; }
   }
-  const [cur, mx, pk] = await Promise.all([
-    pjson(JYL('get_current_heat')).catch(() => null),
-    S.jy.max == null ? pjson(JYL('get_max_heat')).catch(() => null) : null,
-    S.heat.peak ? null : pjson(JYL('get_daily_peaks') + '&days=60').catch(() => null)
-  ]);
-  if (cur && cur.success && cur.heat_value != null) { S.jy.cur = +cur.heat_value; S.jy.curAt = cur.record_time; }
-  if (mx && mx.success && mx.heat_value != null) {
-    S.jy.max = +mx.heat_value; S.jy.maxDay = mx.record_date; S.jy.maxTime = mx.record_time_only;
-  }
-  if (pk && pk.success && !S.heat.peak) {
-    S.heat.peak = (pk.items || []).map(x => ({ d: x.date, v: +x.heat, t: x.time, diff: x.diff }));
-  }
+
   const ok = S.jy.cur != null || (S.heat[today] && S.heat[today].length);
-  if (!ok) throw new Error('爱奇艺热度已建档，暂无数据');
+  if (!ok) throw new Error('剧风向里还没有本剧的分时点');
   renderHeat(); renderKPI(); renderStatus();
   mark('爱奇艺热度', true);
 }
@@ -893,7 +917,7 @@ function renderHeat() {
   note.innerHTML = title
     ? `${esc(title)} · 现值 <b style="color:var(--gold)">${S.jy.cur == null ? '—' : S.jy.cur}</b>（${esc(S.jy.curAt || '')}）`
       + (S.jy.max != null ? ` · 建档以来峰值 ${S.jy.max} · ${esc(S.jy.maxDay || '')}${S.jy.maxTime ? ' ' + esc(S.jy.maxTime) : ''}` : '')
-      + (dMinute != null && dMinute > 1.5 ? ` <span class="warn">· 上游回话在 ${dMinute.toFixed(0)} 分钟前</span>` : '')
+      + (dMinute != null && dMinute > 10 ? ` <span class="warn">· 上游回话在 ${dMinute.toFixed(0)} 分钟前</span>` : '')
     : '—';
   lineChart('heatChart', 'heat', labels, [{ label: '热度', data: vals, color: '#00d98a' }], { yTitle: '热度' });
 }
@@ -1606,7 +1630,7 @@ function renderHonor() {
     d: S.rank.no ? `按热度排 · 本页取数 ${bjHM(new Date(S.rank.at))}`
       : `榜内 ${S.rank.total} 行没有本剧` });
   /* 破万里程碑：已破到哪一档按历史峰值取整千（峰值才证明破过），差额按此刻热度算。
-     当前值优先用剧云录那一发（与顶部实时热度卡同源），没到就退回榜内热度。 */
+     当前值优先用热度那一发（与顶部实时热度卡同源），没到就退回榜内热度。 */
   const jyNow = S.jy.cur != null ? S.jy.cur : (S.rank && S.rank.heat != null ? S.rank.heat : null);
   if (jyNow != null) {
     const jyPeak = S.jy.max != null ? S.jy.max : jyNow;
@@ -2118,7 +2142,7 @@ let pollingStarted = false;
 function startPolling() {
   if (pollingStarted) return;
   pollingStarted = true;
-  everyVisible('爱奇艺热度', () => LIVE_POLL ? CONFIG.refresh.live : CONFIG.refresh.heat, loadHeat);
+  everyVisible('爱奇艺热度', CONFIG.refresh.heat, loadHeat);
   every('酷云', () => cadence(LIVE_POLL ? CONFIG.refresh.kuyun : CONFIG.refresh.pollGuest,
                              CONFIG.refresh.idleKuyun), loadKuyun);
   every('爱奇艺飙升榜', () => cadence(CONFIG.refresh.surge, CONFIG.refresh.idleSurge), loadSurge);
