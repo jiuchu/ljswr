@@ -1074,6 +1074,7 @@ async function loadRank() {
   S.rank = { no: i < 0 ? 0 : i + 1, heat: i < 0 ? null : (parseFloat(p.rows[i].rise) || null),
              total: p.rows.length, at: Date.now() };
   renderPosterBadge();
+  renderHonor();
   mark('爱奇艺热播榜', i >= 0, i < 0 ? `榜内 ${p.rows.length} 行没有本剧` : '');
 }
 function renderPosterBadge() {
@@ -1598,6 +1599,25 @@ function renderHonor() {
   if (dq && dq.mine && dq.mine.rank != null) items.push({ g: '🔥',
     t: `德塔文 · ${dq.mine.board === 'onair' ? '已播榜' : '待播榜'}第 ${dq.mine.rank} 名`,
     d: `景气指数 ${dq.mine.idx} · ${esc((dq.stamp && dq.stamp.real_date) || '')}` });
+  /* 爱奇艺热播榜：跟下面飙升榜是同一个口换 page_st，名次 = 本剧在这批行里的下标 +1；
+     榜只回前 20 行，掉出去时只说没有，不猜名次。 */
+  if (S.rank) items.push({ g: '🎞️',
+    t: S.rank.no ? `爱奇艺 · 电视剧热播榜第 ${S.rank.no} 名` : '爱奇艺 · 电视剧热播榜',
+    d: S.rank.no ? `按热度排 · 本页取数 ${bjHM(new Date(S.rank.at))}`
+      : `榜内 ${S.rank.total} 行没有本剧` });
+  /* 破万里程碑：已破到哪一档按历史峰值取整千（峰值才证明破过），差额按此刻热度算。
+     当前值优先用剧云录那一发（与顶部实时热度卡同源），没到就退回榜内热度。 */
+  const jyNow = S.jy.cur != null ? S.jy.cur : (S.rank && S.rank.heat != null ? S.rank.heat : null);
+  if (jyNow != null) {
+    const jyPeak = S.jy.max != null ? S.jy.max : jyNow;
+    const hit = jyPeak >= 1000 ? Math.floor(jyPeak / 1000) * 1000 : null;
+    items.push({ g: '🎯',
+      t: jyNow >= 10000 ? '爱奇艺热度已破 10,000'
+        : hit ? `爱奇艺热度破 ${num(hit)}` : '爱奇艺热度里程碑',
+      d: jyNow >= 10000
+        ? `当前 ${num(jyNow)}` + (S.jy.max != null ? ` · 历史最高 ${num(S.jy.max)}` : '')
+        : `当前 ${num(jyNow)} · 距 10,000 还差 ${num(10000 - jyNow)}` });
+  }
   if (S.surge && S.surge.mine) items.push({ g: '📈', t: `爱奇艺 · 电视剧飙升榜第 ${S.surge.mine.no} 名`,
     d: `升幅 ${(parseFloat(String(S.surge.mine.rise)) || 0)}%`
       + ` · 爱奇艺侧更新 ${esc(S.surge.head || '—')}` });
