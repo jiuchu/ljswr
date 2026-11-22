@@ -902,15 +902,15 @@ function renderHeat() {
    酷云 —— CCTV-8 实时收视
    ============================================================ */
 async function loadKuyun() {
-  if (!inLiveWindow()) { mark('酷云', false, '不在播出时段'); renderKuyun(); return; }
+  if (!inLiveWindow()) { S.kuyun = null; mark('酷云', false, '不在播出时段'); renderKuyun(); renderHonor(); return; }
   const j = await pjson('https://www.ky.live/api/rtepg?tv_type=0&ca_type=0&area=-1&end=0&rt=1');
   const list = j.data || [];
   /* 酷云写「两京十五日 2」，央视写「两京十五日第2集」；startsWith 同时躲掉别人的重名片段 */
   const hit = list.find(x => clean(x.epg).startsWith(CONFIG.title));
-  if (!hit) { mark('酷云', false, '频道单中未匹配（本集未播出或已播完）'); renderKuyun(); return; }
+  if (!hit) { S.kuyun = null; mark('酷云', false, '频道单中未匹配（本集未播出或已播完）'); renderKuyun(); renderHonor(); return; }
   S.kuyun = { rating: hit.r, share: hit.mr, rank: hit.rk, progress: hit.progress,
               time: hit.rt_time, tvn: hit.tvn, epg: hit.epg, start: hit.start_time, end: hit.end_time, size: list.length };
-  renderKuyun(); renderKPI(); mark('酷云', true);
+  renderKuyun(); renderKPI(); renderHonor(); mark('酷云', true);
 }
 /* 窗口外不敲接口：实时口只有 CCTV-8 正播本剧那两个小时有意义。
    酷云按天的历史榜（/api/oldepg，11-20 那播平均 1.8275%）匿名也取得到，
@@ -1626,6 +1626,13 @@ function renderHonor() {
     d: [cvb.latest.rating != null ? cvb.latest.rating.toFixed(3) + '%' : '',
         cvb.latest.share != null ? '份额 ' + cvb.latest.share.toFixed(3) + '%' : '',
         esc(cvb.latest.channel || ''), esc(cvb.latest.date || '')].filter(Boolean).join(' · ') });
+  /* 酷云实时：只在 CCTV-8 播出窗口内有数（窗口外或未匹配时 S.kuyun 会被清空），
+     名次分母是那一发频道单的行数，副行抄实时收视率、市占和取数时刻。 */
+  if (S.kuyun && S.kuyun.rank != null) items.push({ g: '📡',
+    t: `酷云 · 全国同时段第 ${S.kuyun.rank} 名`,
+    d: [`实时收视率 ${(S.kuyun.rating * 100).toFixed(2)}%`,
+        `市占 ${(S.kuyun.share * 100).toFixed(2)}%`,
+        esc((S.kuyun.time || '').slice(11, 16))].filter(Boolean).join(' · ') });
   const yhLast = yh && yh.days && yh.days.length ? yh.days[yh.days.length - 1] : null;
   if (yhLast && yhLast.level) items.push({ g: '⭐', t: `云合 · 评级 ${yhLast.level}`,
     d: [yhLast.share != null ? '有效播放市占 ' + esc(yhLast.share) + '%' : '', esc(yhLast.date || '')]
