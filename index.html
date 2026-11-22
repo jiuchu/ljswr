@@ -657,14 +657,14 @@ const CONFIG = {
     u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
     u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u)
   ],
-  /* live/idle 是一对：北京 liveWindow 内按 live 秒级轮，窗口外自动降到 idle。
+  /* liveWindow 内/外这一对：北京 liveWindow 内按快档、窗口外降到慢档。
      本剧 19:30 会员放量 + CCTV-8 19:30–21:31 两集连播，陡升段就这一段。
-     Cloudflare 免费档 10 万请求/天是整个账号共享的，两个面板加所有轮询都算在里面，
-     所以窗口外一律降到慢档，窗口内也只有剧云录按 20 秒、酷云 15 秒。
-     vvLive 那一趟不归这对管：它不看几点钟，只看这页在不在前台。 */
-  refresh: { live: 20e3, idle: 300e3, kuyun: 15e3, idleKuyun: 300e3, epg: 60e3,
+     Cloudflare 免费档 10 万请求/天是整个账号共享的，所以窗口外一律降到慢档，
+     窗口内也只有酷云按 15 秒。
+     vvLive（实时播放量）和 heat（爱奇艺热度）不归这对管：它们不看几点钟，只看这页在不在前台。 */
+  refresh: { live: 20e3, kuyun: 15e3, idleKuyun: 300e3, epg: 60e3,
              surge: 60e3, idleSurge: 600e3, rank: 600e3, dengta: 600e3, dengtaIdle: 1800e3,
-             heat: 600e3, file: 900e3, pollGuest: 60e3,
+             heat: 300e3, file: 900e3, pollGuest: 60e3,
              vvLive: 10e3, tick: 30e3 },
   liveWindow: [19.3, 23.5]
 };
@@ -824,8 +824,9 @@ function cdownText() {
   return (hh ? hh + ' 小时 ' : '') + p2(mm) + ' 分 ' + p2(s % 60) + ' 秒';
 }
 function cadence(kLive, kIdle) { return inLiveWindow() ? kLive : kIdle; }
-/* 实时那趟对所有人都是 10 秒（6 发/分钟，请求按同时打开这页的人数乘，窗口关了就是 0）；
-   ?live=1 只决定爱奇艺热度和酷云要不要从 60 秒抬回 20/15 秒，那是他自己在盯放量时的档。 */
+/* 实时那趟（vvLive 10 秒）和热度那趟（heat 5 分钟）只看这页在不在前台：在就按档敲，切走一发不敲，
+   所以请求数＝同时开着这页的人数 × 那一档的频次，页面不在就是 0。
+   ?live=1 是他自己盯放量时的把手：把热度从 5 分钟抬回 20 秒（酷云照旧 15 秒，不归这把管）。 */
 const LIVE_POLL = new URLSearchParams(location.search).get('live') === '1';
 
 /* ============================================================
@@ -1152,7 +1153,8 @@ async function loadDengta() {
    播出窗口内 10 分钟、窗口外 30 分钟，所以「累计」那张卡在窗口外是半小时一跳。
    11-22 上午实测这个口每 48 秒挪 1.1~1.4 万，约 1.9 万/分钟。
    节拍只看这页在不在前台：在就 10 秒一发（不分焦点），切走（document.hidden）一发不敲、
-   每秒空转等回来，回来 ≤1 秒补上第一拍；失败按 3 倍退避封顶 300 秒。
+   每秒空转等回来，回来 ≤1 秒补上第一拍（靠 visibilitychange 把睡下的循环叫醒，不是等那个在后台被
+   浏览器压到大约一分钟一次的定时器）；失败按 3 倍退避封顶 300 秒。
    11-22 之前这里还套着一条时段门（19:18 → 次日 08:00），白天 30 分钟才跳一格、被当成页面死了；
    按他的口径拆了——省额度靠"不在页面就不请求"，不靠几点钟。 */
 async function applyDengtaLive() {
@@ -1187,7 +1189,7 @@ async function dengtaTick() {
 async function liveLoop() {
   let dwell = CONFIG.refresh.vvLive;
   for (;;) {
-    if (document.hidden || !S.live) { await sleep(1e3); continue; }
+    if (document.hidden || !S.live) { await nap(1e3); continue; }
     const ok = await applyDengtaLive();
     dwell = !ok ? Math.min(300e3, dwell * 3) : CONFIG.refresh.vvLive;
     await sleep(dwell);
@@ -1980,6 +1982,36 @@ function barChart(id, key, labels, vals, color) {
    调度
    ============================================================ */
 const timers = [];
+/* 睡 ms 毫秒，或者这页被切回前台就立刻醒。
+   后台标签页里 setTimeout 会被浏览器压到大约一分钟一次，光靠一秒一次的轮询，「切回来马上那一拍」
+   最长要等一分钟才动，所以补一条 visibilitychange 把睡着的循环叫醒。 */
+const wakeups = [];
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) wakeups.splice(0).forEach(w => w());
+});
+function nap(ms) {
+  return new Promise(res => {
+    const done = () => {
+      const i = wakeups.indexOf(done);
+      if (i >= 0) wakeups.splice(i, 1);
+      res();
+    };
+    wakeups.push(done);
+    setTimeout(done, ms);
+  });
+}
+/* 前台才敲的那把轮子：间隔到点、且这页在前台，才跑一次 fn；切走一发不敲，切回来 ≤1 秒补上第一拍。
+   boot 那一发已经敲过了，所以第一拍先等满一个间隔，不重复请求。 */
+async function everyVisible(name, gap, fn) {
+  const ms = () => (typeof gap === 'function' ? gap() : gap);
+  let t0 = Date.now();
+  for (;;) {
+    if (document.hidden || !S.live) { await nap(1e3); continue; }
+    if (Date.now() - t0 < ms()) { await nap(Math.min(1e3, ms())); continue; }
+    t0 = Date.now();
+    await safe(name, fn);
+  }
+}
 /* 每个任务一把自己的锁、一个自己的名字：名字同时是状态格的键和 busy 的键。
    早先传匿名函数进去，safe 收到的名字全是 'task'，四个任务并成一把锁，撞车的那些直接跳过。 */
 function every(name, ms, fn) {
@@ -2082,8 +2114,7 @@ let pollingStarted = false;
 function startPolling() {
   if (pollingStarted) return;
   pollingStarted = true;
-  every('爱奇艺热度', () => cadence(LIVE_POLL ? CONFIG.refresh.live : CONFIG.refresh.pollGuest,
-                                   CONFIG.refresh.idle), loadHeat);
+  everyVisible('爱奇艺热度', () => LIVE_POLL ? CONFIG.refresh.live : CONFIG.refresh.heat, loadHeat);
   every('酷云', () => cadence(LIVE_POLL ? CONFIG.refresh.kuyun : CONFIG.refresh.pollGuest,
                              CONFIG.refresh.idleKuyun), loadKuyun);
   every('爱奇艺飙升榜', () => cadence(CONFIG.refresh.surge, CONFIG.refresh.idleSurge), loadSurge);
