@@ -1,31 +1,31 @@
 {
   "name": "两京十五日",
   "nameId": 8757221,
-  "at": "2026-11-22 12:30",
+  "at": "2026-11-22 16:20",
   "atDay": "2026-11-22",
-  "fetchedAt": "2026-11-22T04:30:52.323Z",
-  "runs": 8,
+  "fetchedAt": "2026-11-22T08:20:24.644Z",
+  "runs": 9,
   "board": {
-    "date": "2026-11-20",
+    "date": "2026-11-21",
     "size": 30,
     "inBoard": true
   },
   "inBoard": true,
   "latest": {
-    "date": "2026-11-20",
-    "rank": 6,
-    "share": 8,
+    "date": "2026-11-21",
+    "rank": 2,
+    "share": 13.7,
     "level": "",
-    "occurDays": 1,
+    "occurDays": 2,
     "dayPlatform": "iqiyi",
     "nameId": 8757221,
     "ep": {
       "max": 26,
-      "notvip": 4
+      "notvip": 6
     }
   },
   "stage": {
-    "date": "2026-11-20",
+    "date": "2026-11-21",
     "bands": {
       "A": {
         "min": 768735,
@@ -41,7 +41,7 @@
       },
       "B+": {
         "min": 247544,
-        "max": 768571
+        "max": 764582
       },
       "C": {
         "min": 10,
@@ -71,6 +71,20 @@
         "notvip": 4
       },
       "at": "2026-11-21 16:27"
+    },
+    {
+      "date": "2026-11-21",
+      "rank": 2,
+      "share": 13.7,
+      "level": "",
+      "occurDays": 2,
+      "dayPlatform": "iqiyi",
+      "nameId": 8757221,
+      "ep": {
+        "max": 26,
+        "notvip": 6
+      },
+      "at": "2026-11-22 16:20"
     }
   ],
   "fixes": []
