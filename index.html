@@ -1788,11 +1788,10 @@ function renderKPI() {
   const yhStage = yh && yh.stage && yh.stage.bands ? yh.stage.bands : null;
   const yhLine = yhStage && yhLevel && yhStage[yhLevel] ? yhStage[yhLevel].min : null;
   const yhFloor = yhLine != null ? `集均30天有效播放 ≥ ${yi(yhLine).t}${yi(yhLine).u}` : '';
-  const yhSub = [yhLevel ? '' : '评级未出',
-    yhLast && yhLast.share != null ? `有效播放市占 ${esc(yhLast.share)}%` : '',
+  const yhSub = [yhLast && yhLast.share != null ? `有效播放市占 ${esc(yhLast.share)}%` : '',
     yhLast ? esc(yhLast.date || '') : ''].filter(Boolean).join(' · ');
-  items.push(kpiItem('share', '云合 · 评级', yhLevel || '—', '',
-    yhLast ? yhSub : '云合评级未出', '#4f9dff', '',
+  items.push(kpiItem('share', '云合 · 评级', yhLevel || '未出', '',
+    yhSub, '#4f9dff', '',
     yhLine != null
       ? `<div class="c-foot">${yhFloor} · 晋级线 ${esc((yh.stage && yh.stage.date) || '')}</div>`
       : ''));
