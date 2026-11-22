@@ -1586,7 +1586,7 @@ function renderWx() {
       <span class="hb-v">${(mean[k] / tot * 100).toFixed(1)}%</span></div>`).join('')
     || '<div class="p-note">渠道那一份是空的</div>';
 }
-/* 抖音指数：一次请求回 32 天，窗口尾落在 T-2，所以最新那格永远比今天晚两天。
+/* 抖音指数：窗口尾按 T-1 请求（11-22 起，之前写死 T-2 所以档案总停在前天），
    搜索指数稳在综合指数的 2.96–3.22 倍，同一条轴装得下两条线。 */
 function renderDouyin() {
   const j = F('douyin');
@@ -1977,8 +1977,8 @@ function renderKPI() {
       esc(l.d.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')), '#3ddc97',
       pv ? deltaTag(l.s - pv.s, '', 0) : ''));
   }
-  /* 抖音搜索指数：档案一次回 32 天，窗口尾恒在 T-2，所以这张卡副行那个日期永远比今天晚两天，
-     不是采集断了。综合指数照旧只在「抖音指数」那一格里印数值、不占卡片。 */
+  /* 抖音搜索指数：窗口尾自 11-22 起按 T-1 请求（之前写死 T-2，档案总停在前天），
+     所以这张卡副行那个日期一般是昨天；那天还没出数时会停在前天。综合指数只在下面那一格印数值。 */
   const dy = F('douyin');
   if (dy && dy.days && dy.days.length) {
     const l = dy.days[dy.days.length - 1], pv = dy.days[dy.days.length - 2];
