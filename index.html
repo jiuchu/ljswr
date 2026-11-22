@@ -660,15 +660,13 @@ const CONFIG = {
   /* live/idle 是一对：北京 liveWindow 内按 live 秒级轮，窗口外自动降到 idle。
      本剧 19:30 会员放量 + CCTV-8 19:30–21:31 两集连播，陡升段就这一段。
      Cloudflare 免费档 10 万请求/天是整个账号共享的，两个面板加所有轮询都算在里面，
-     所以窗口外一律降到慢档，窗口内也只有剧云录按 20 秒、酷云 15 秒。 */
+     所以窗口外一律降到慢档，窗口内也只有剧云录按 20 秒、酷云 15 秒。
+     vvLive 那一趟不归这对管：它不看几点钟，只看这页在不在前台。 */
   refresh: { live: 20e3, idle: 300e3, kuyun: 15e3, idleKuyun: 300e3, epg: 60e3,
              surge: 60e3, idleSurge: 600e3, rank: 600e3, dengta: 600e3, dengtaIdle: 1800e3,
              heat: 600e3, file: 900e3, pollGuest: 60e3,
-             vvLive: 10e3, vvWait: 30e3, tick: 30e3 },
-  liveWindow: [19.3, 23.5],
-  /* 灯塔实时单独一条门，尾到次日 8 点：Cloudflare 的当日请求数是 08:00（北京）重置的，
-     夜里那 8.5 小时花的是已经翻篇的那一份额度。跨零点所以写成 a > b。 */
-  vvWindow: [19.3, 8]
+             vvLive: 60e3, tick: 30e3 },
+  liveWindow: [19.3, 23.5]
 };
 
 /* ============================================================
@@ -788,7 +786,7 @@ function jsonp(url, timeout = 18000) {
 const S = {
   jy: {}, heat: {}, kuyun: null, epg: null, epgToday: null, epgFocus: null,
   douban: null, dbInterest: null, dbStats: null,
-  dtDay: [], dtHour: [], dtRank: null, dtHot: null, dtMarket: null, dtMine: null,
+  dtDay: [], dtRank: null, dtHot: null, dtMarket: null, dtMine: null,
   dtLive: null, dtLiveErr: '',
   surge: null, rank: null,
   file: {}, tab: { heat: '0', epg: '0', dw: 'onair', dy: 'comp' },
@@ -822,8 +820,6 @@ function deltaTag(d, unit, digits) {
   return `<span class="delta ${cls}">${d > 0 ? '+' : '−'}${t}${unit || ''}</span>`;
 }
 function inLiveWindow() { const f = bjNow().f; const [a, b] = CONFIG.liveWindow; return f >= a && f <= b; }
-/* 尾小于头就是跨零点的写法（19.3 → 次日 8） */
-function inVvWindow() { const f = bjNow().f; const [a, b] = CONFIG.vvWindow; return a <= b ? (f >= a && f <= b) : (f >= a || f <= b); }
 /* 距下一次会员更新还剩多少：从墙上时钟算，不碰档案，所以一秒一跳不需要任何请求。
    北京时刻用「加 8 小时后读 UTC 字段」那一套，本机时区参与不进来。 */
 function cdownText() {
@@ -836,7 +832,7 @@ function cdownText() {
   return (hh ? hh + ' 小时 ' : '') + p2(mm) + ' 分 ' + p2(s % 60) + ' 秒';
 }
 function cadence(kLive, kIdle) { return inLiveWindow() ? kLive : kIdle; }
-/* 实时那趟对所有人都是 10 秒，请求按打开页面的人数乘；?live=1 只决定
+/* 实时那趟对所有人都是 1 分钟，请求按打开页面的人数乘；?live=1 只决定
    爱奇艺热度和酷云要不要从 60 秒抬回 20/15 秒，那是他自己在盯放量时的档。 */
 const LIVE_POLL = new URLSearchParams(location.search).get('live') === '1';
 
@@ -1127,11 +1123,9 @@ function renderSurge() {
    ============================================================ */
 async function loadDengta() {
   const today = bjYmd();
-  const [vvDay, vvHour, hot, rk] = await Promise.all([
+  const [vvDay, hot, rk] = await Promise.all([
     mtop('mtop.alipictures.gravitywave.media.vv.detail.list',
          { mediaId: CONFIG.mediaId, platform: 'ALL', dateType: 'DAY' }).catch(() => null),
-    mtop('mtop.alipictures.gravitywave.media.vv.detail.list',
-         { mediaId: CONFIG.mediaId, platform: 'ALL', dateType: 'HOUR' }).catch(() => null),
     mtop('mtop.alipictures.gravitywave.media.hot.newdetail',
          { mediaId: CONFIG.mediaId, platform: 'iqiyi', dateType: 'DAY' }).catch(() => null),
     mtop('mtop.alipictures.gravitywave.media.rank.list',
@@ -1144,9 +1138,6 @@ async function loadDengta() {
     vv: x.vvCnt, total: x.totalVv, share: x.marketShare, rank: x.vvRank, hot: x.hotIndex,
     epAvg: x.avgEpVv == null || x.avgEpVv === '' ? null : +x.avgEpVv
   })).sort((a, b) => a.d < b.d ? -1 : 1);
-  const hourRows = (vvHour && vvHour.dataList) || [];
-  if (hourRows.length) S.dtHour = hourRows.map(x => ({ hh: x.hh, vv: x.vvCnt, share: x.marketShare }))
-    .sort((a, b) => a.hh < b.hh ? -1 : 1);
   const hotList = ((hot && hot.dataList && hot.dataList[0] && hot.dataList[0].mediaVVHotDetailVOList) || [])
     .map(x => ({ d: String(x.showDate).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'),
                  avg: (x.vvCntList.find(y => y.hotKey === '当日平均') || {}).hotValue,
@@ -1161,15 +1152,17 @@ async function loadDengta() {
     S.dtMarket = rm.market ? rm.market.vvCnt : null;
     S.dtMine = rows.find(x => String(x.mediaId) === String(CONFIG.mediaId)) || null;
   }
-  const ok = S.dtDay.length || S.dtHour.length || !!S.dtRank;
-  if (!ok) throw new Error('四个口都空');
+  const ok = S.dtDay.length || !!S.dtRank;
+  if (!ok) throw new Error('三个口都空');
   renderDengta(); renderKPI(); mark('灯塔', true);
 }
-/* 实时播放量单敲 DAY 这一发，其余三发（分时/热度/榜单）走 dengtaTick 那一档：
-   播出窗口内 10 分钟、窗口外 30 分钟，所以夜里「分时峰值」「累计」两张卡是半小时一跳。
-   11-22 实测这个口凌晨每 20 秒挪 7 千，白天挪 1.9 万。
-   节拍：vvWindow 内有焦点 10 秒、失焦 20 秒、失败按 3 倍退避封顶 300 秒；
-   切到别的标签页（document.hidden）一发都不敲，回到前台第一拍就补上。 */
+/* 实时播放量单敲 DAY 这一发，其余两发（热度/榜单）走 dengtaTick 那一档：
+   播出窗口内 10 分钟、窗口外 30 分钟，所以「累计」那张卡在窗口外是半小时一跳。
+   11-22 上午实测这个口每 48 秒挪 1.1~1.4 万，约 1.9 万/分钟。
+   节拍只看这页在不在前台：在就 1 分钟一发（不分焦点），切走（document.hidden）一发不敲、
+   每秒空转等回来，回来 ≤1 秒补上第一拍；失败按 3 倍退避封顶 300 秒。
+   11-22 之前这里还套着一条时段门（19:18 → 次日 08:00），白天 30 分钟才跳一格、被当成页面死了；
+   按他的口径拆了——省额度靠"不在页面就不请求"，不靠几点钟。 */
 async function applyDengtaLive() {
   try {
     const d = await mtop('mtop.alipictures.gravitywave.media.vv.detail.list',
@@ -1203,12 +1196,8 @@ async function liveLoop() {
   let dwell = CONFIG.refresh.vvLive;
   for (;;) {
     if (document.hidden || !S.live) { await sleep(1e3); continue; }
-    /* 实时这一趟的门是 vvWindow（19:18 → 次日 08:00），比播出窗口长：
-       凌晨 0–1 点实测还有 66.8 万 VV，卡在 23:30 关门会让人以为这页不是实时的。 */
-    if (!inVvWindow()) { await sleep(CONFIG.refresh.vvWait); continue; }
     const ok = await applyDengtaLive();
-    dwell = !ok ? Math.min(300e3, dwell * 3)
-                : CONFIG.refresh.vvLive * (document.hasFocus() ? 1 : 2);
+    dwell = !ok ? Math.min(300e3, dwell * 3) : CONFIG.refresh.vvLive;
     await sleep(dwell);
   }
 }
@@ -1849,13 +1838,6 @@ function renderKPI() {
       `实时市占 ${sh}%` + (rkNow ? ` · 网剧榜第 ${rkNow}` : ''),
       '#ff5f43', deltaTag(pulse('dtd.' + dayKey, vvNow, 60e3), '', 0)));
   }
-  if (S.dtHour.length) {
-    const pk = S.dtHour.reduce((a, x) => x.vv > a.vv ? x : a, S.dtHour[0]);
-    const pkSh = S.dtHour.reduce((a, x) => (parseFloat(String(x.share)) || 0) >
-      (parseFloat(String(a.share)) || 0) ? x : a, S.dtHour[0]);
-    items.push(kpiItem('clock', '灯塔 · 分时峰值', yi(pk.vv).t, yi(pk.vv).u,
-      `${esc(pk.hh)} · 时段最高市占 ${(parseFloat(String(pkSh.share)) || 0).toFixed(2)}%`, '#00d98a', ''));
-  }
   if (lastDay && lastDay.total != null) {
     items.push(kpiItem('dl', '灯塔 · 累计正片播放量', yi(lastDay.total).t, yi(lastDay.total).u,
       `截至 ${esc(lastDay.d)}` + (prevTxt ? ` · ${esc(prevTxt)}` : ''), '#ffc861', ''));
@@ -2026,7 +2008,7 @@ async function safe(name, fn) {
 }
 function updateStamp() {
   document.getElementById('stamp').textContent =
-    `本页 ${bjClock()} · 播出时段每 ${CONFIG.refresh.vvLive / 1000} 秒更新，其余时段降慢档`
+    `本页 ${bjClock()} · 页面在前台时每 ${CONFIG.refresh.vvLive / 1000} 秒更新`
     + ` · 打开已 ${Math.round((Date.now() - S.bootAt) / 1000)} 秒`;
 }
 
