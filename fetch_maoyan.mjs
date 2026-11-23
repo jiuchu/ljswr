@@ -3,7 +3,7 @@
    所以不逆签名，让真浏览器打开榜单页，把它自己发出的那份回包截下来：
    名次 = dataList.list[] 里本剧的下标 + 1，热度 = 同一行的 barValue（明文浮点）。
    回包里 currHeat / historyMaxHeat 是 PUA 字形，读出来是空串，不碰、也不做 OCR。
-   失败只写 lastError，保留上一次数值；采集间隔不足 6 分钟就跳过（--force 可跳过这个闸门）。 */
+   失败只写 lastError，保留上一次数值；采集间隔不足 3 分钟就跳过（--force 可跳过这个闸门）。 */
 import { chromium } from 'playwright';
 import { readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 const FILE = fileURLToPath(new URL('./maoyan.json', import.meta.url));
 const TITLE = '两京十五日';
 const PAGE = 'https://piaofang.maoyan.com/dashboard/web-heat';
-const MIN_GAP_MIN = 6;
+const MIN_GAP_MIN = 3;
 const WAIT_MAX_MS = 90000;
 const force = process.argv.includes('--force');
 
