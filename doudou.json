@@ -1,21 +1,21 @@
 {
   "title": "两京十五日",
-  "at": "2026-11-23 23:30",
-  "fetchedAt": "2026-11-23T15:30:30.389Z",
-  "runs": 93,
+  "at": "2026-11-24 00:00",
+  "fetchedAt": "2026-11-23T16:00:41.048Z",
+  "runs": 94,
   "dy": [
     {
       "id": "dyRealTime",
       "name": "抖音剧集实时榜",
-      "label": "小时榜 21:00 - 22:00",
+      "label": "小时榜 22:00 - 23:00",
       "range": "2026-11-23 周一 — 2026-11-23 周一",
-      "active": "2026-11-23 22:00",
-      "version": 25543,
+      "active": "2026-11-23 23:00",
+      "version": 25544,
       "size": 20,
       "rank": 1,
-      "score": 136623281,
-      "wannaSee": 57890,
-      "comments": 70965,
+      "score": 134634566,
+      "wannaSee": 57969,
+      "comments": 71485,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -23,15 +23,15 @@
       "top": [
         {
           "title": "两京十五日",
-          "score": 136623281
+          "score": 134634566
         },
         {
           "title": "今天是太阳雨",
-          "score": 78671896
+          "score": 77495091
         },
         {
           "title": "十万狂花入梦来",
-          "score": 43621694
+          "score": 44446788
         }
       ]
     },
@@ -45,8 +45,8 @@
       "size": 20,
       "rank": 1,
       "score": 173990436,
-      "wannaSee": 57890,
-      "comments": 70965,
+      "wannaSee": 57967,
+      "comments": 71486,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -100,13 +100,13 @@
   ],
   "xhs": {
     "name": "小红书剧集榜",
-    "statDate": "2026-11-23",
+    "statDate": "2026-11-24",
     "size": 10,
     "rank": 1,
-    "score": 33448331,
-    "discuss": 186064,
-    "totalView": 227316671,
-    "totalDiscuss": 1938077,
+    "score": 35691239,
+    "discuss": 188634,
+    "totalView": 263007910,
+    "totalDiscuss": 2126711,
     "trend": "FLAT",
     "rankDelta": 0,
     "actors": "成毅",
@@ -114,15 +114,15 @@
     "top": [
       {
         "title": "两京十五日",
-        "score": 33448331
+        "score": 35691239
       },
       {
         "title": "今天是太阳雨",
-        "score": 47072860
+        "score": 30560126
       },
       {
-        "title": "主角",
-        "score": 16014112
+        "title": "十万狂花入梦来",
+        "score": 16886091
       }
     ]
   },
@@ -261,9 +261,9 @@
     },
     {
       "hour": "小时榜 22:00 - 23:00",
-      "at": "2026-11-22T18:00:54.357Z",
+      "at": "2026-11-23T16:00:41.048Z",
       "rank": 1,
-      "score": 174275114
+      "score": 134634566
     }
   ],
   "daily": [
@@ -285,6 +285,13 @@
       "date": "2026-11-23",
       "xhsRank": 1,
       "xhsScore": 33448331,
+      "dyDailyRank": 1,
+      "dyDailyScore": 173990436
+    },
+    {
+      "date": "2026-11-24",
+      "xhsRank": 1,
+      "xhsScore": 35691239,
       "dyDailyRank": 1,
       "dyDailyScore": 173990436
     }
