@@ -139,7 +139,8 @@ const body = {
   available: { from: dates[dates.length - 1], to: newest, days: dates.length },
   board: newestBoard || { date: newest, size: 0, inBoard: false, top: '' },
   inBoard: !!(newestBoard && newestBoard.inBoard),
-  latest: fresh.length ? fresh[fresh.length - 1] : (m.days.length ? m.days[m.days.length - 1] : null),
+  /* 同 newestBoard 那条坑：todo 新期在前，fresh 末位＝最旧那天 ⇒ latest 只认排好序的 days 末位 */
+  latest: m.days.length ? m.days[m.days.length - 1] : null,
   days: m.days,
   fixes: (Array.isArray(old?.fixes) ? old.fixes : []).concat(m.fixes),
 };
