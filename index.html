@@ -1676,7 +1676,7 @@ function renderMao() {
     : Number(v).toLocaleString('zh-CN', { maximumFractionDigits: 2 });
   box.innerHTML = `<div class="row"><span class="k">名次</span>`
     + `<span class="v">${j.rank == null ? '不在榜' : '第 ' + j.rank + ' 名'}</span></div>`
-    + `<div class="row"><span class="k">实时热度</span><span class="v">${n(j.heat)}</span></div>`;
+    + `<div class="row"><span class="k">热度</span><span class="v">${n(j.heat)}</span></div>`;
 }
 /* 里程碑与排名：每项只从本看板已有的档案抄当前那一格，名次与评级用接口自己给的字段。 */
 function renderHonor() {
@@ -1693,8 +1693,8 @@ function renderHonor() {
   if (x && x.rank != null) items.push({ g: '📕', t: `${x.name || '小红书剧集榜'}第 ${x.rank} 名`,
     d: ['当日浏览 ' + heat(x.score), '当日讨论 ' + heat(x.discuss), x.statDate].filter(Boolean).join(' · ') });
   const my = F('maoyan');
-  if (my && my.rank != null) items.push({ g: '🎥', t: `猫眼 · 剧集榜第 ${my.rank} 名`,
-    d: ['实时热度 ' + (my.heat == null ? '—'
+  if (my && my.rank != null) items.push({ g: '🎥', t: `猫眼剧集热度榜第 ${my.rank} 名`,
+    d: ['热度 ' + (my.heat == null ? '—'
         : Number(my.heat).toLocaleString('zh-CN', { maximumFractionDigits: 2 })), my.at]
       .filter(Boolean).join(' · ') });
   const lastDay = S.dtDay[S.dtDay.length - 1];
@@ -2009,11 +2009,11 @@ function renderKPI() {
       '#ff5000', ''));
   }
   /* 猫眼这一张：与下面那张面板同源（名次 = 榜单下标 +1、热度 = 同一行的 barValue 原值），
-     「实时热度」是猫眼回包自己那格的叫法，副行只报名次与这份档案的时刻。 */
+     副行只报名次与这份档案的时刻。 */
   const my = F('maoyan');
   if (my) {
     const myAt = String(my.at || '').slice(11, 16);
-    items.push(kpiItem('flame', '猫眼剧集榜实时热度',
+    items.push(kpiItem('flame', '猫眼剧集热度榜',
       my.heat == null ? '—' : Number(my.heat).toLocaleString('zh-CN', { maximumFractionDigits: 2 }), '',
       (my.rank == null ? '不在榜' : '第 ' + my.rank + ' 名') + (myAt ? ` · 采样于 ${myAt}` : ''),
       '#ff5f43', ''));
