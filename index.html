@@ -1065,13 +1065,15 @@ async function loadEpg() {
   if (day === bjDay()) S.epgToday = { at: S.epg.at, list };
   renderEpg(); renderHero(); mark('央视节目单', list.length > 0, list.length ? '' : '节目单为空');
 }
-/* CCTV 那两档的形状：正片写「两京十五日第3集」，「本集提要-两京十五日-第3集」不算在播。 */
+/* CCTV 那两档的形状：11-20~11-22 正片写「两京十五日第3集」，11-23 起改成「两京十五日7/26」
+   （第 7 集 / 共 26 集），提要也跟着写成「本集提要-两京十五日-9/26」；「本集提要」那一档不算在播。 */
 function epNo(title) {
   const s = clean(title);
   if (/前情|提要|看点|花絮/.test(s)) return 0;
   const i = s.indexOf(CONFIG.title);
   if (i < 0) return 0;
-  const m = /第?\s*(\d+)\s*集/.exec(s.slice(i + CONFIG.title.length));
+  const tail = s.slice(i + CONFIG.title.length).trim();
+  const m = /第?\s*(\d+)\s*集/.exec(tail) || /^(\d+)\s*\/\s*\d+$/.exec(tail);
   return m ? +m[1] : 0;
 }
 function tvLine() {
