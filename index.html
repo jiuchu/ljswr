@@ -2008,12 +2008,12 @@ function renderKPI() {
         + ` · ${esc(xh.statDate || '')}`,
       '#ff5000', ''));
   }
-  /* 猫眼剧集榜：与下面那张面板同源（名次 = 榜单下标 +1、热度 = 同一行的 barValue 原值），
-     副行只报名次与这份档案的时刻。 */
+  /* 猫眼这一张：与下面那张面板同源（名次 = 榜单下标 +1、热度 = 同一行的 barValue 原值），
+     「实时热度」是猫眼回包自己那格的叫法，副行只报名次与这份档案的时刻。 */
   const my = F('maoyan');
   if (my) {
     const myAt = String(my.at || '').slice(11, 16);
-    items.push(kpiItem('flame', '猫眼剧集榜',
+    items.push(kpiItem('flame', '猫眼剧集榜实时热度',
       my.heat == null ? '—' : Number(my.heat).toLocaleString('zh-CN', { maximumFractionDigits: 2 }), '',
       (my.rank == null ? '不在榜' : '第 ' + my.rank + ' 名') + (myAt ? ` · 采样于 ${myAt}` : ''),
       '#ff5f43', ''));
