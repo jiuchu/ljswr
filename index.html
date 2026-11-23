@@ -1468,20 +1468,29 @@ function renderYunhe() {
     (days.length > 1 ? row('已攒天数', days.length + ' 天 · ' + esc(days[0].date) + ' → ' + esc(days[days.length - 1].date)) : '') +
     (j.days && j.days.length ? '' : `<div class="p-note" style="margin-top:8px">开播首日还没有这一格，明天那一拍起才会出现。</div>`);
 }
+/* 档案 days 里 date 最大的那条才是最新一期。旧版直接吃 `latest`：青龙脚本把它写成
+   「这一拍查到的最后一条」，而查询顺序是新期在前 ⇒ 拿到的永远是最旧那天，且没新数时不提交，
+   一格就长期钉在旧日期上（11-23 榜内已有 11-21，页面还在印 11-20 那行）。 */
+function cvbRows(j) {
+  const days = (Array.isArray(j && j.days) ? j.days : []).filter(x => x && x.date);
+  const sorted = days.slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  return sorted.length ? sorted : (j && j.latest ? [j.latest] : []);
+}
 function renderCvb() {
   const j = F('cvb');
   const note = document.getElementById('cvbNote'), rows = document.getElementById('cvbRows');
   if (!note || !rows) return;
   if (!j) { note.innerHTML = '<span class="warn">CVB 日榜档案还没进仓库</span>'; rows.innerHTML = ''; return; }
+  const rs = cvbRows(j);
   note.innerHTML = j.inBoard
-    ? '榜内最新一期 ' + esc(j.board.date || '')
+    ? '榜内最新一期 ' + esc(rs.length ? rs[0].date : (j.board.date || ''))
+      + (rs.length > 1 ? ' · 已攒 ' + rs.length + ' 天' : '')
     : esc(j.board.date || '') + ' 那期 ' + j.board.size + ' 行里没有本剧 · 最后一次检查 ' + esc(j.at || '');
-  const d = j.latest;
   const td = v => '<td>' + v + '</td>';
-  rows.innerHTML = d
-    ? '<tr>' + td(d.rank) + td(esc(d.name)) + td(esc(d.channel || '')) + td(esc(d.episode || ''))
+  rows.innerHTML = rs.length
+    ? rs.map(d => '<tr>' + td(d.rank) + td(esc(d.name)) + td(esc(d.channel || '')) + td(esc(d.episode || ''))
         + td(d.rating != null ? d.rating.toFixed(3) + '%' : '—')
-        + td(d.share != null ? d.share.toFixed(3) + '%' : '—') + '</tr>'
+        + td(d.share != null ? d.share.toFixed(3) + '%' : '—') + '</tr>').join('')
     : '<tr><td colspan="6">榜内还没有本剧</td></tr>';
 }
 function renderIqiyi() {
@@ -1726,11 +1735,12 @@ function renderHonor() {
   if (S.surge && S.surge.mine) items.push({ g: '📈', t: `爱奇艺 · 电视剧飙升榜第 ${S.surge.mine.no} 名`,
     d: `升幅 ${(parseFloat(String(S.surge.mine.rise)) || 0)}%`
       + ` · 爱奇艺侧更新 ${esc(S.surge.head || '—')}` });
-  if (cvb && cvb.latest && cvb.latest.rank != null) items.push({ g: '📺',
-    t: `CVB 黄金时段电视剧日榜第 ${cvb.latest.rank} 名`,
-    d: [cvb.latest.rating != null ? cvb.latest.rating.toFixed(3) + '%' : '',
-        cvb.latest.share != null ? '份额 ' + cvb.latest.share.toFixed(3) + '%' : '',
-        esc(cvb.latest.channel || ''), esc(cvb.latest.date || '')].filter(Boolean).join(' · ') });
+  const cvbLast = cvbRows(cvb)[0];
+  if (cvbLast && cvbLast.rank != null) items.push({ g: '📺',
+    t: `CVB 黄金时段电视剧日榜第 ${cvbLast.rank} 名`,
+    d: [cvbLast.rating != null ? cvbLast.rating.toFixed(3) + '%' : '',
+        cvbLast.share != null ? '份额 ' + cvbLast.share.toFixed(3) + '%' : '',
+        esc(cvbLast.channel || ''), esc(cvbLast.date || '')].filter(Boolean).join(' · ') });
   /* 酷云实时：只在 CCTV-8 播出窗口内有数（窗口外或未匹配时 S.kuyun 会被清空），
      名次分母是那一发频道单的行数，副行抄实时收视率、市占和取数时刻。 */
   if (S.kuyun && S.kuyun.rank != null) items.push({ g: '📡',
@@ -1946,8 +1956,9 @@ function renderKPI() {
     '#ffc861', ''));
 
   const cvb = F('cvb');
-  if (cvb && cvb.latest) {
-    const c = cvb.latest;
+  const cvbNow = cvbRows(cvb)[0];
+  if (cvbNow) {
+    const c = cvbNow;
     items.push(kpiItem('tv', 'CVB · 收视率', c.rating != null ? c.rating.toFixed(3) : '—', '%',
       [c.share != null ? '收视份额 ' + c.share.toFixed(3) + '%' : '', esc(c.channel || ''),
         '榜内第 ' + c.rank + ' 名', esc(c.date)].filter(Boolean).join(' · '), '#ffc861', ''));
