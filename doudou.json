@@ -1,8 +1,8 @@
 {
   "title": "两京十五日",
-  "at": "2026-11-24 15:30",
-  "fetchedAt": "2026-11-24T07:30:40.654Z",
-  "runs": 125,
+  "at": "2026-11-24 16:00",
+  "fetchedAt": "2026-11-24T08:00:33.372Z",
+  "runs": 126,
   "dy": [
     {
       "id": "dyRealTime",
@@ -14,8 +14,8 @@
       "size": 20,
       "rank": 1,
       "score": 121480054,
-      "wannaSee": 59957,
-      "comments": 79057,
+      "wannaSee": 60001,
+      "comments": 79266,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -38,15 +38,15 @@
     {
       "id": "dyDaily",
       "name": "抖音剧集日榜",
-      "label": "日榜 11-22",
-      "range": "2026-11-22 周日 — 2026-11-23 周一",
-      "active": "2026-11-23 14:00",
-      "version": 1078,
+      "label": "日榜 11-23",
+      "range": "2026-11-23 周一 — 2026-11-24 周二",
+      "active": "2026-11-24 14:00",
+      "version": 1079,
       "size": 20,
       "rank": 1,
-      "score": 176406781,
-      "wannaSee": 59957,
-      "comments": 79057,
+      "score": 156632685,
+      "wannaSee": 60001,
+      "comments": 79266,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -54,15 +54,15 @@
       "top": [
         {
           "title": "两京十五日",
-          "score": 176406781
+          "score": 156632685
         },
         {
           "title": "今天是太阳雨",
-          "score": 171461251
+          "score": 112289536
         },
         {
           "title": "十万狂花入梦来",
-          "score": 45583741
+          "score": 46698306
         }
       ]
     },
@@ -76,8 +76,8 @@
       "size": 20,
       "rank": 1,
       "score": 120134292,
-      "wannaSee": 59957,
-      "comments": 79057,
+      "wannaSee": 60001,
+      "comments": 79266,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -207,7 +207,7 @@
     },
     {
       "hour": "小时榜 13:00 - 14:00",
-      "at": "2026-11-24T07:30:40.654Z",
+      "at": "2026-11-24T08:00:33.372Z",
       "rank": 1,
       "score": 121480054
     },
@@ -293,7 +293,7 @@
       "xhsRank": 1,
       "xhsScore": 35691239,
       "dyDailyRank": 1,
-      "dyDailyScore": 176406781
+      "dyDailyScore": 156632685
     }
   ],
   "lastError": ""
