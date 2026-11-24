@@ -1,11 +1,11 @@
 {
  "title": "两京十五日",
- "captured_at": "2026-11-24T08:30:39.274Z",
+ "captured_at": "2026-11-24T11:14:02.906Z",
  "stamp": {
   "real_date": "2026-11-24",
-  "real_time": "2026-11-24 16:30",
+  "real_time": "2026-11-24 19:14",
   "db_date": "2026-11-24",
-  "update_time": "2026-11-24 16:30"
+  "update_time": "2026-11-24 19:14"
  },
  "archive": {
   "earliest": "2018-08-06",
@@ -17,14 +17,14 @@
    {
     "rank": 1,
     "name": "两京十五日",
-    "idx": 2.478,
+    "idx": 2.178,
     "trend": "up"
    },
    {
     "rank": 2,
-    "name": "多喜一家人",
-    "idx": 1.643,
-    "trend": "up"
+    "name": "谷雨",
+    "idx": 1.785,
+    "trend": "down"
    },
    {
     "rank": 3,
@@ -34,20 +34,20 @@
    },
    {
     "rank": 4,
-    "name": "谷雨",
-    "idx": 1.535,
-    "trend": "down"
-   },
-   {
-    "rank": 5,
     "name": "今天是太阳雨",
     "idx": 1.532,
     "trend": "down"
    },
    {
+    "rank": 5,
+    "name": "多喜一家人",
+    "idx": 1.443,
+    "trend": "up"
+   },
+   {
     "rank": 6,
     "name": "嫁金钗",
-    "idx": 1.407,
+    "idx": 1.394,
     "trend": "down"
    },
    {
@@ -79,7 +79,7 @@
    {
     "rank": 1,
     "name": "云初令",
-    "idx": 0.649,
+    "idx": 0.641,
     "trend": "up"
    },
    {
@@ -102,38 +102,38 @@
    },
    {
     "rank": 5,
-    "name": "告别信",
-    "idx": 0.484,
-    "trend": "up"
-   },
-   {
-    "rank": 6,
     "name": "不为人知的故事",
     "idx": 0.473,
     "trend": "up"
    },
    {
-    "rank": 7,
+    "rank": 6,
     "name": "古乐风华录",
     "idx": 0.444,
     "trend": "up"
    },
    {
-    "rank": 8,
+    "rank": 7,
     "name": "千里江山图",
     "idx": 0.42,
     "trend": "flat"
    },
    {
-    "rank": 9,
+    "rank": 8,
     "name": "狩谎",
     "idx": 0.407,
     "trend": "up"
    },
    {
-    "rank": 10,
+    "rank": 9,
     "name": "爱在无尽夏",
     "idx": 0.387,
+    "trend": "up"
+   },
+   {
+    "rank": 10,
+    "name": "咸鱼飞升",
+    "idx": 0.357,
     "trend": "up"
    }
   ]
@@ -142,7 +142,7 @@
   "d": null,
   "board": "onair",
   "rank": 1,
-  "idx": 2.478,
+  "idx": 2.178,
   "trend": "up",
   "platform": "爱奇艺",
   "tv": [
@@ -155,38 +155,38 @@
    {
     "actor": "成毅",
     "role": "朱瞻基",
-    "contribute": 0.4226,
-    "yiren": 0.4667
+    "contribute": 0.4135,
+    "yiren": 0.4969
    },
    {
     "actor": "林更新",
     "role": "吴定缘",
-    "contribute": 0.2433,
-    "yiren": 0.4944
+    "contribute": 0.2224,
+    "yiren": 0.5812
    },
    {
     "actor": "吴幸键",
     "role": "于谦",
-    "contribute": 0.08,
-    "yiren": 0.0222
+    "contribute": 0.096,
+    "yiren": 0.3082
    },
    {
     "actor": "姜佩瑶",
     "role": "苏荆溪",
-    "contribute": 0.0766,
-    "yiren": 0.2
+    "contribute": 0.0778,
+    "yiren": 0.4616
    },
    {
-    "actor": "王和",
-    "role": "昨叶何",
-    "contribute": 0.0419,
-    "yiren": 1
+    "actor": "陈数",
+    "role": "张皇后",
+    "contribute": 0.0397,
+    "yiren": 0.4077
    }
   ]
  },
  "paid": {
-  "date": "2026-11-22",
-  "update_time": "2026-11-24 10:03",
+  "date": "2026-11-23",
+  "update_time": "2026-11-24 17:32",
   "labels": [
    "观众包场",
    "云周边",
@@ -197,47 +197,35 @@
    {
     "rank": 1,
     "name": "两京十五日",
-    "daily": "500万+",
+    "daily": "200万+",
     "cumulative": "2千万+"
    },
    {
     "rank": 2,
-    "name": "今天是太阳雨",
-    "daily": "10万+",
-    "cumulative": "500万+"
-   },
-   {
-    "rank": 3,
     "name": "多喜一家人",
     "daily": "10万+",
     "cumulative": "300万+"
    },
    {
-    "rank": 4,
+    "rank": 3,
     "name": "宝珠",
-    "daily": "10万+",
+    "daily": "1万+",
+    "cumulative": "100万+"
+   },
+   {
+    "rank": 4,
+    "name": "十万狂花入梦来",
+    "daily": "1万以下",
     "cumulative": "100万+"
    },
    {
     "rank": 5,
-    "name": "折月亮",
-    "daily": "1万+",
-    "cumulative": "500万+"
+    "name": "无声的回响",
+    "daily": "5千以下",
+    "cumulative": "1万以下"
    },
    {
     "rank": 6,
-    "name": "十万狂花入梦来",
-    "daily": "5千以下",
-    "cumulative": "100万+"
-   },
-   {
-    "rank": 7,
-    "name": "无声的回响",
-    "daily": "5千以下",
-    "cumulative": "5千以下"
-   },
-   {
-    "rank": 8,
     "name": "走马上任",
     "daily": "0",
     "cumulative": "200万+"
@@ -245,13 +233,13 @@
   ],
   "mine": {
    "rank": 1,
-   "daily": "500万+",
+   "daily": "200万+",
    "cumulative": "2千万+",
    "parts": [
     {
      "name": "观众包场",
-     "level": "300万+",
-     "blocks": 4
+     "level": "10万+",
+     "blocks": 2
     },
     {
      "name": "云周边",
@@ -260,8 +248,8 @@
     },
     {
      "name": "品牌广告",
-     "level": "100万+",
-     "blocks": 3
+     "level": "200万+",
+     "blocks": 4
     },
     {
      "name": "主创投入",
@@ -1112,7 +1100,7 @@
    "d": "2026-11-24",
    "board": "onair",
    "rank": 1,
-   "idx": 2.478,
+   "idx": 2.178,
    "trend": "up",
    "platform": "爱奇艺",
    "tv": [
@@ -1125,32 +1113,32 @@
     {
      "actor": "成毅",
      "role": "朱瞻基",
-     "contribute": 0.4226,
-     "yiren": 0.4667
+     "contribute": 0.4135,
+     "yiren": 0.4969
     },
     {
      "actor": "林更新",
      "role": "吴定缘",
-     "contribute": 0.2433,
-     "yiren": 0.4944
+     "contribute": 0.2224,
+     "yiren": 0.5812
     },
     {
      "actor": "吴幸键",
      "role": "于谦",
-     "contribute": 0.08,
-     "yiren": 0.0222
+     "contribute": 0.096,
+     "yiren": 0.3082
     },
     {
      "actor": "姜佩瑶",
      "role": "苏荆溪",
-     "contribute": 0.0766,
-     "yiren": 0.2
+     "contribute": 0.0778,
+     "yiren": 0.4616
     },
     {
-     "actor": "王和",
-     "role": "昨叶何",
-     "contribute": 0.0419,
-     "yiren": 1
+     "actor": "陈数",
+     "role": "张皇后",
+     "contribute": 0.0397,
+     "yiren": 0.4077
     }
    ]
   }
