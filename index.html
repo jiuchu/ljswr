@@ -1980,26 +1980,22 @@ function renderKPI() {
   const bd = F('baidu-index');
   const bdLast = bd && bd.rows && bd.rows.length ? bd.rows[bd.rows.length - 1] : null;
   items.push(kpiItem('search', '百度指数', bdLast ? num(bdLast[1]) : '—', '',
-    bdLast ? esc(bd.asof) : '档案未到', '#4f9dff',
-    bdLast && bd.rows.length > 1 ? deltaTag(bdLast[1] - bd.rows[bd.rows.length - 2][1], '', 0) : ''));
+    bdLast ? esc(bd.asof) : '档案未到', '#4f9dff', ''));
   const wx = F('wxindex');
   if (wx && wx.daily && wx.daily.length) {
     const l = wx.daily[wx.daily.length - 1];
-    const pv = wx.daily[wx.daily.length - 2];
     items.push(kpiItem('chat', '微信指数', yi(l.s).t, yi(l.s).u,
-      esc(l.d.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')), '#3ddc97',
-      pv ? deltaTag(l.s - pv.s, '', 0) : ''));
+      esc(l.d.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')), '#3ddc97', ''));
   }
   /* 抖音搜索指数：窗口尾自 11-22 起按 T-1 请求（之前写死 T-2，档案总停在前天），
      所以这张卡副行那个日期一般是昨天；那天还没出数时会停在前天。综合指数只在下面那一格印数值。 */
   const dy = F('douyin');
   if (dy && dy.days && dy.days.length) {
-    const l = dy.days[dy.days.length - 1], pv = dy.days[dy.days.length - 2];
+    const l = dy.days[dy.days.length - 1];
     const sv = l.search == null ? null : Number(l.search);
     items.push(kpiItem('search', '抖音 · 搜索指数', sv == null ? '—' : yi(sv).t,
       sv == null ? '' : yi(sv).u,
-      esc(String(l.d).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')), '#3ddc97',
-      sv != null && pv && pv.search != null ? deltaTag(sv - Number(pv.search), '', 0) : ''));
+      esc(String(l.d).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')), '#3ddc97', ''));
   }
   /* 两张剧集榜卡：榜名与时段字样照抄回包，名次是官方给的那一格。 */
   const dd = F('doudou');
