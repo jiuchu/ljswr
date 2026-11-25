@@ -1,8 +1,8 @@
 {
   "title": "两京十五日",
-  "at": "2026-11-26 02:00",
-  "fetchedAt": "2026-11-25T18:00:40.070Z",
-  "runs": 190,
+  "at": "2026-11-26 02:30",
+  "fetchedAt": "2026-11-25T18:30:42.472Z",
+  "runs": 191,
   "dy": [
     {
       "id": "dyRealTime",
@@ -14,8 +14,8 @@
       "size": 20,
       "rank": 1,
       "score": 105322702,
-      "wannaSee": 61857,
-      "comments": 95525,
+      "wannaSee": 61871,
+      "comments": 95630,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -45,8 +45,8 @@
       "size": 20,
       "rank": 1,
       "score": 156632685,
-      "wannaSee": 61857,
-      "comments": 95525,
+      "wannaSee": 61871,
+      "comments": 95630,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -76,8 +76,8 @@
       "size": 20,
       "rank": 1,
       "score": 120134292,
-      "wannaSee": 61857,
-      "comments": 95525,
+      "wannaSee": 61871,
+      "comments": 95630,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -267,7 +267,7 @@
     },
     {
       "hour": "小时榜 23:00 - 00:00",
-      "at": "2026-11-25T18:00:40.070Z",
+      "at": "2026-11-25T18:30:42.472Z",
       "rank": 1,
       "score": 105322702
     }
