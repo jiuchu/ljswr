@@ -90,7 +90,7 @@ jobs:
 
       # CVB 不在这里跑：www.cavbd.cn 只回境内 IP，机房 IP 是连接超时（11-21 实测
       # UND_ERR_CONNECT_TIMEOUT，Cloudflare 出口 522）。它搬到了青龙 —— 脚本 cvb_ljswr.js、
-      # cron「两京十五日 · CVB 日榜（境内出口）」一天六拍，档案同样写这份 cvb.json。
+      # cron「两京十五日 · CVB 日榜（境内出口）」一天七拍，档案同样写这份 cvb.json。
       # 本机那份 fetch_cvb.mjs 留着，是手机不在家时在电脑上手补 cvb.json 的那份（读写本地文件）。
 
       # 抖音指数的回包是密文，钥匙写死在脚本里（两把 AES 钥匙按响应头 x-encrypted 选）。
