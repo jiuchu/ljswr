@@ -1,11 +1,11 @@
 {
  "title": "两京十五日",
- "captured_at": "2026-11-25T09:59:44.076Z",
+ "captured_at": "2026-11-25T12:30:44.581Z",
  "stamp": {
   "real_date": "2026-11-25",
-  "real_time": "2026-11-25 17:59",
+  "real_time": "2026-11-25 20:30",
   "db_date": "2026-11-25",
-  "update_time": "2026-11-25 17:59"
+  "update_time": "2026-11-25 20:30"
  },
  "archive": {
   "earliest": "2018-08-06",
@@ -84,21 +84,21 @@
    },
    {
     "rank": 2,
-    "name": "云初令",
-    "idx": 0.592,
-    "trend": "down"
-   },
-   {
-    "rank": 3,
     "name": "风生水起",
     "idx": 0.592,
     "trend": "up"
    },
    {
-    "rank": 4,
+    "rank": 3,
     "name": "此刻的生活",
     "idx": 0.592,
     "trend": "up"
+   },
+   {
+    "rank": 4,
+    "name": "云初令",
+    "idx": 0.592,
+    "trend": "down"
    },
    {
     "rank": 5,
@@ -185,8 +185,8 @@
   ]
  },
  "paid": {
-  "date": "2026-11-23",
-  "update_time": "2026-11-24 17:32",
+  "date": "2026-11-24",
+  "update_time": "2026-11-25 18:22",
   "labels": [
    "观众包场",
    "云周边",
@@ -197,8 +197,8 @@
    {
     "rank": 1,
     "name": "两京十五日",
-    "daily": "200万+",
-    "cumulative": "2千万+"
+    "daily": "300万+",
+    "cumulative": "3千万+"
    },
    {
     "rank": 2,
@@ -215,14 +215,14 @@
    {
     "rank": 4,
     "name": "十万狂花入梦来",
-    "daily": "1万以下",
+    "daily": "5千以下",
     "cumulative": "100万+"
    },
    {
     "rank": 5,
     "name": "无声的回响",
     "daily": "5千以下",
-    "cumulative": "1万以下"
+    "cumulative": "1万+"
    },
    {
     "rank": 6,
@@ -233,13 +233,13 @@
   ],
   "mine": {
    "rank": 1,
-   "daily": "200万+",
-   "cumulative": "2千万+",
+   "daily": "300万+",
+   "cumulative": "3千万+",
    "parts": [
     {
      "name": "观众包场",
-     "level": "10万+",
-     "blocks": 2
+     "level": "50万+",
+     "blocks": 3
     },
     {
      "name": "云周边",
