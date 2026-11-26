@@ -1,8 +1,8 @@
 {
   "title": "两京十五日",
-  "at": "2026-11-27 00:00",
-  "fetchedAt": "2026-11-26T16:00:31.598Z",
-  "runs": 234,
+  "at": "2026-11-27 00:30",
+  "fetchedAt": "2026-11-26T16:30:31.072Z",
+  "runs": 235,
   "dy": [
     {
       "id": "dyRealTime",
@@ -14,8 +14,8 @@
       "size": 20,
       "rank": 1,
       "score": 90640336,
-      "wannaSee": 62857,
-      "comments": 102926,
+      "wannaSee": 62884,
+      "comments": 103277,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -45,8 +45,8 @@
       "size": 20,
       "rank": 1,
       "score": 130516464,
-      "wannaSee": 62857,
-      "comments": 102926,
+      "wannaSee": 62884,
+      "comments": 103277,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -76,8 +76,8 @@
       "size": 20,
       "rank": 1,
       "score": 120134292,
-      "wannaSee": 62857,
-      "comments": 102926,
+      "wannaSee": 62884,
+      "comments": 103275,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -100,13 +100,13 @@
   ],
   "xhs": {
     "name": "小红书剧集榜",
-    "statDate": "2026-11-26",
+    "statDate": "2026-11-27",
     "size": 10,
     "rank": 1,
-    "score": 26167405,
-    "discuss": 153239,
-    "totalView": 317513201,
-    "totalDiscuss": 2431691,
+    "score": 25225643,
+    "discuss": 155268,
+    "totalView": 342738844,
+    "totalDiscuss": 2586959,
     "trend": "FLAT",
     "rankDelta": 0,
     "actors": "成毅",
@@ -114,15 +114,15 @@
     "top": [
       {
         "title": "两京十五日",
-        "score": 26167405
+        "score": 25225643
       },
       {
         "title": "今天是太阳雨",
-        "score": 22591376
+        "score": 18775191
       },
       {
-        "title": "小城良方",
-        "score": 6239092
+        "title": "嫁金钗",
+        "score": 14094684
       }
     ]
   },
@@ -261,7 +261,7 @@
     },
     {
       "hour": "小时榜 22:00 - 23:00",
-      "at": "2026-11-26T16:00:31.598Z",
+      "at": "2026-11-26T16:30:31.072Z",
       "rank": 1,
       "score": 90640336
     },
@@ -312,6 +312,13 @@
       "date": "2026-11-26",
       "xhsRank": 1,
       "xhsScore": 26167405,
+      "dyDailyRank": 1,
+      "dyDailyScore": 130516464
+    },
+    {
+      "date": "2026-11-27",
+      "xhsRank": 1,
+      "xhsScore": 25225643,
       "dyDailyRank": 1,
       "dyDailyScore": 130516464
     }
