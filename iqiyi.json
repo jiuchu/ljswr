@@ -1,7 +1,7 @@
 {
  "title": "两京十五日",
  "qipuId": "3190714930072901",
- "captured_at": "2026-11-26T04:30:30.257Z",
+ "captured_at": "2026-11-26T08:30:30.771Z",
  "calendar": {
   "rows": [
    {
@@ -66,21 +66,75 @@
     "nonVip": "",
     "stopped": false,
     "stopReason": ""
+   },
+   {
+    "date": "2026-11-27",
+    "label": "11月27日",
+    "week": "周五",
+    "vip": "17-18",
+    "nonVip": "7",
+    "stopped": false,
+    "stopReason": ""
+   },
+   {
+    "date": "2026-11-28",
+    "label": "11月28日",
+    "week": "周六",
+    "vip": "19-20",
+    "nonVip": "8",
+    "stopped": false,
+    "stopReason": ""
+   },
+   {
+    "date": "2026-11-29",
+    "label": "11月29日",
+    "week": "周日",
+    "vip": "21-22",
+    "nonVip": "9",
+    "stopped": false,
+    "stopReason": ""
+   },
+   {
+    "date": "2026-11-30",
+    "label": "11月30日",
+    "week": "周一",
+    "vip": "23-24",
+    "nonVip": "10",
+    "stopped": false,
+    "stopReason": ""
+   },
+   {
+    "date": "2026-12-01",
+    "label": "12月1日",
+    "week": "周二",
+    "vip": "25",
+    "nonVip": "11",
+    "stopped": false,
+    "stopReason": ""
+   },
+   {
+    "date": "2026-12-02",
+    "label": "12月2日",
+    "week": "周三",
+    "vip": "26",
+    "nonVip": "",
+    "stopped": false,
+    "stopReason": ""
    }
   ],
-  "tail": "高能继续，敬请期待"
+  "tail": ""
  },
  "progress": {
   "update_status": "更新至14集/共26集",
-  "update_notification": "VIP会员每日19:30更新2集",
-  "display_update_notification": "VIP会员每日19:30更新2集",
+  "update_notification": "VIP会员每日19:30更新",
+  "display_update_notification": "非会员明日19:30更新",
   "extra_tip": "15-26集待更新",
   "ep_now": 14,
   "ep_total": 26,
   "total_episode": 26,
-  "heat": 9421,
-  "publish_date": "2026-11-24 21:25"
+  "heat": 9419,
+  "publish_date": "2026-11-26 14:31"
  },
- "reserve": 2931289,
+ "reserve": 2931094,
  "errors": []
 }
