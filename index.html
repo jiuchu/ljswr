@@ -1965,18 +1965,10 @@ function renderKPI() {
   }
   const yhLast = yh && yh.days && yh.days.length ? yh.days[yh.days.length - 1] : null;
   const yhLevel = yhLast && yhLast.level ? yhLast.level : null;
-  /* 定级线：云合「各评级最后一名的集均30天有效播放」。榜里那几个数是加过噪声的（会出负数），
-     只有这一张口没打散，所以它能给的是一句下界，不是点值。 */
-  const yhStage = yh && yh.stage && yh.stage.bands ? yh.stage.bands : null;
-  const yhLine = yhStage && yhLevel && yhStage[yhLevel] ? yhStage[yhLevel].min : null;
-  const yhFloor = yhLine != null ? `集均30天有效播放 ≥ ${yi(yhLine).t}${yi(yhLine).u}` : '';
   const yhSub = [yhLast && yhLast.share != null ? `有效播放市占 ${esc(yhLast.share)}%` : '',
     yhLast ? esc(yhLast.date || '') : ''].filter(Boolean).join(' · ');
   items.push(kpiItem('share', '云合 · 评级', yhLevel || '未出', '',
-    yhSub, '#4f9dff', '',
-    yhLine != null
-      ? `<div class="c-foot">${yhFloor} · 晋级线 ${esc((yh.stage && yh.stage.date) || '')}</div>`
-      : ''));
+    yhSub, '#4f9dff', ''));
   const bd = F('baidu-index');
   const bdLast = bd && bd.rows && bd.rows.length ? bd.rows[bd.rows.length - 1] : null;
   items.push(kpiItem('search', '百度指数', bdLast ? num(bdLast[1]) : '—', '',
