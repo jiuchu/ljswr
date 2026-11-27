@@ -1,7 +1,7 @@
 {
  "title": "两京十五日",
  "qipuId": "3190714930072901",
- "captured_at": "2026-11-26T22:28:27.217Z",
+ "captured_at": "2026-11-27T00:30:30.307Z",
  "calendar": {
   "rows": [
    {
@@ -132,9 +132,9 @@
   "ep_now": 16,
   "ep_total": 26,
   "total_episode": 26,
-  "heat": 9269,
+  "heat": 9410,
   "publish_date": "2026-11-26 21:04"
  },
- "reserve": 2930578,
+ "reserve": 2930540,
  "errors": []
 }
