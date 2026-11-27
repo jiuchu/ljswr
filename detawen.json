@@ -1,11 +1,11 @@
 {
  "title": "两京十五日",
- "captured_at": "2026-11-27T08:30:45.769Z",
+ "captured_at": "2026-11-27T09:50:05.246Z",
  "stamp": {
   "real_date": "2026-11-27",
-  "real_time": "2026-11-27 16:30",
+  "real_time": "2026-11-27 17:50",
   "db_date": "2026-11-27",
-  "update_time": "2026-11-27 16:30"
+  "update_time": "2026-11-27 17:50"
  },
  "archive": {
   "earliest": "2018-08-06",
@@ -185,8 +185,8 @@
   ]
  },
  "paid": {
-  "date": "2026-11-25",
-  "update_time": "2026-11-26 18:09",
+  "date": "2026-11-26",
+  "update_time": "2026-11-27 17:33",
   "labels": [
    "观众包场",
    "云周边",
@@ -202,30 +202,42 @@
    },
    {
     "rank": 2,
+    "name": "不为人知的故事",
+    "daily": "50万+",
+    "cumulative": "50万+"
+   },
+   {
+    "rank": 3,
     "name": "多喜一家人",
     "daily": "10万+",
     "cumulative": "300万+"
    },
    {
-    "rank": 3,
+    "rank": 4,
     "name": "宝珠",
     "daily": "1万+",
-    "cumulative": "100万+"
+    "cumulative": "200万+"
    },
    {
-    "rank": 4,
+    "rank": 5,
+    "name": "骨鉴卿心",
+    "daily": "1万+",
+    "cumulative": "1万+"
+   },
+   {
+    "rank": 6,
     "name": "十万狂花入梦来",
     "daily": "5千以下",
     "cumulative": "100万+"
    },
    {
-    "rank": 5,
+    "rank": 7,
     "name": "无声的回响",
     "daily": "5千以下",
     "cumulative": "1万+"
    },
    {
-    "rank": 6,
+    "rank": 8,
     "name": "走马上任",
     "daily": "0",
     "cumulative": "200万+"
@@ -238,7 +250,7 @@
    "parts": [
     {
      "name": "观众包场",
-     "level": "50万+",
+     "level": "100万+",
      "blocks": 3
     },
     {
