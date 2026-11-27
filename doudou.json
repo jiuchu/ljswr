@@ -1,21 +1,21 @@
 {
   "title": "两京十五日",
-  "at": "2026-11-27 23:30",
-  "fetchedAt": "2026-11-27T15:30:40.174Z",
-  "runs": 281,
+  "at": "2026-11-28 00:00",
+  "fetchedAt": "2026-11-27T16:00:47.228Z",
+  "runs": 282,
   "dy": [
     {
       "id": "dyRealTime",
       "name": "抖音剧集实时榜",
-      "label": "小时榜 21:00 - 22:00",
+      "label": "小时榜 22:00 - 23:00",
       "range": "2026-11-27 周五 — 2026-11-27 周五",
-      "active": "2026-11-27 22:00",
-      "version": 25639,
+      "active": "2026-11-27 23:00",
+      "version": 25640,
       "size": 20,
       "rank": 1,
-      "score": 91731228,
-      "wannaSee": 63884,
-      "comments": 109831,
+      "score": 92245278,
+      "wannaSee": 63933,
+      "comments": 110186,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -23,30 +23,30 @@
       "top": [
         {
           "title": "两京十五日",
-          "score": 91731228
+          "score": 92245278
         },
         {
           "title": "不为人知的故事",
-          "score": 48894668
+          "score": 48343511
         },
         {
-          "title": "多喜一家人",
-          "score": 42519186
+          "title": "今天是太阳雨",
+          "score": 42482433
         }
       ]
     },
     {
       "id": "dyDaily",
       "name": "抖音剧集日榜",
-      "label": "日榜 11-25",
-      "range": "2026-11-25 周三 — 2026-11-26 周四",
-      "active": "2026-11-26 14:00",
-      "version": 1081,
+      "label": "日榜 11-26",
+      "range": "2026-11-26 周四 — 2026-11-27 周五",
+      "active": "2026-11-27 14:00",
+      "version": 1082,
       "size": 20,
       "rank": 1,
-      "score": 130516464,
-      "wannaSee": 63884,
-      "comments": 109831,
+      "score": 106897440,
+      "wannaSee": 63933,
+      "comments": 110186,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -54,15 +54,15 @@
       "top": [
         {
           "title": "两京十五日",
-          "score": 130516464
+          "score": 106897440
         },
         {
           "title": "不为人知的故事",
-          "score": 14175016
+          "score": 47754621
         },
         {
-          "title": "多喜一家人",
-          "score": 62096174
+          "title": "今天是太阳雨",
+          "score": 53634550
         }
       ]
     },
@@ -76,8 +76,8 @@
       "size": 20,
       "rank": 1,
       "score": 120134292,
-      "wannaSee": 63884,
-      "comments": 109831,
+      "wannaSee": 63933,
+      "comments": 110186,
       "episodes": 26,
       "actors": "成毅 / 王和 / 张凯莹",
       "tags": "古装",
@@ -88,25 +88,25 @@
           "score": 120134292
         },
         {
-          "title": "多喜一家人",
-          "score": 74649578
-        },
-        {
           "title": "今天是太阳雨",
           "score": 214983628
+        },
+        {
+          "title": "多喜一家人",
+          "score": 74649578
         }
       ]
     }
   ],
   "xhs": {
     "name": "小红书剧集榜",
-    "statDate": "2026-11-27",
+    "statDate": "2026-11-28",
     "size": 10,
     "rank": 1,
-    "score": 25225643,
-    "discuss": 155268,
-    "totalView": 342738844,
-    "totalDiscuss": 2586959,
+    "score": 23985076,
+    "discuss": 148263,
+    "totalView": 366723920,
+    "totalDiscuss": 2735222,
     "trend": "FLAT",
     "rankDelta": 0,
     "actors": "成毅",
@@ -114,15 +114,15 @@
     "top": [
       {
         "title": "两京十五日",
-        "score": 25225643
+        "score": 23985076
       },
       {
         "title": "今天是太阳雨",
-        "score": 18775191
+        "score": 15954105
       },
       {
-        "title": "嫁金钗",
-        "score": 14094684
+        "title": "主角",
+        "score": 16144409
       }
     ]
   },
@@ -261,9 +261,9 @@
     },
     {
       "hour": "小时榜 22:00 - 23:00",
-      "at": "2026-11-26T18:31:15.108Z",
+      "at": "2026-11-27T16:00:47.228Z",
       "rank": 1,
-      "score": 90640336
+      "score": 92245278
     },
     {
       "hour": "小时榜 23:00 - 00:00",
@@ -321,6 +321,13 @@
       "xhsScore": 25225643,
       "dyDailyRank": 1,
       "dyDailyScore": 130516464
+    },
+    {
+      "date": "2026-11-28",
+      "xhsRank": 1,
+      "xhsScore": 23985076,
+      "dyDailyRank": 1,
+      "dyDailyScore": 106897440
     }
   ],
   "lastError": ""
