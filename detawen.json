@@ -1,11 +1,11 @@
 {
  "title": "两京十五日",
- "captured_at": "2026-11-28T08:30:38.131Z",
+ "captured_at": "2026-11-28T09:01:38.204Z",
  "stamp": {
   "real_date": "2026-11-28",
-  "real_time": "2026-11-28 16:30",
+  "real_time": "2026-11-28 17:01",
   "db_date": "2026-11-28",
-  "update_time": "2026-11-28 16:30"
+  "update_time": "2026-11-28 17:01"
  },
  "archive": {
   "earliest": "2018-08-06",
@@ -17,7 +17,7 @@
    {
     "rank": 1,
     "name": "两京十五日",
-    "idx": 1.947,
+    "idx": 1.936,
     "trend": "down"
    },
    {
@@ -40,38 +40,38 @@
    },
    {
     "rank": 5,
-    "name": "今天是太阳雨",
-    "idx": 1.45,
-    "trend": "up"
-   },
-   {
-    "rank": 6,
     "name": "不为人知的故事",
     "idx": 1.377,
     "trend": "down"
    },
    {
-    "rank": 7,
+    "rank": 6,
     "name": "谷雨",
     "idx": 1.268,
     "trend": "down"
    },
    {
-    "rank": 8,
-    "name": "兰香如故",
-    "idx": 1.261,
-    "trend": "up"
+    "rank": 7,
+    "name": "今天是太阳雨",
+    "idx": 1.268,
+    "trend": "down"
    },
    {
-    "rank": 9,
+    "rank": 8,
     "name": "多喜一家人",
     "idx": 1.254,
     "trend": "down"
    },
    {
+    "rank": 9,
+    "name": "兰香如故",
+    "idx": 1.251,
+    "trend": "up"
+   },
+   {
     "rank": 10,
     "name": "伟大的长征",
-    "idx": 1.203,
+    "idx": 1.136,
     "trend": "up"
    }
   ],
@@ -126,15 +126,15 @@
    },
    {
     "rank": 9,
-    "name": "千里江山图",
-    "idx": 0.357,
+    "name": "谍报上不封顶",
+    "idx": 0.356,
     "trend": "up"
    },
    {
     "rank": 10,
-    "name": "谍报上不封顶",
-    "idx": 0.356,
-    "trend": "up"
+    "name": "重庆号",
+    "idx": 0.345,
+    "trend": "down"
    }
   ]
  },
@@ -142,7 +142,7 @@
   "d": null,
   "board": "onair",
   "rank": 1,
-  "idx": 1.947,
+  "idx": 1.936,
   "trend": "down",
   "platform": "爱奇艺",
   "tv": [
@@ -155,32 +155,32 @@
    {
     "actor": "成毅",
     "role": "朱瞻基",
-    "contribute": 0.4637,
-    "yiren": 0.4667
+    "contribute": 0.4448,
+    "yiren": 0.4865
    },
    {
     "actor": "林更新",
     "role": "吴定缘",
-    "contribute": 0.1957,
-    "yiren": 0.0452
+    "contribute": 0.177,
+    "yiren": 0.583
    },
    {
     "actor": "吴幸键",
     "role": "于谦",
-    "contribute": 0.0872,
-    "yiren": 0
+    "contribute": 0.1027,
+    "yiren": 0.2845
    },
    {
     "actor": "姜佩瑶",
     "role": "苏荆溪",
-    "contribute": 0.0736,
-    "yiren": 0.75
+    "contribute": 0.0773,
+    "yiren": 0.4994
    },
    {
-    "actor": "张凯莹",
-    "role": "吴玉露",
-    "contribute": 0.0394,
-    "yiren": 0.5
+    "actor": "陈数",
+    "role": "张皇后",
+    "contribute": 0.0417,
+    "yiren": 0.3915
    }
   ]
  },
@@ -1296,7 +1296,7 @@
    "d": "2026-11-28",
    "board": "onair",
    "rank": 1,
-   "idx": 1.947,
+   "idx": 1.936,
    "trend": "down",
    "platform": "爱奇艺",
    "tv": [
@@ -1309,32 +1309,32 @@
     {
      "actor": "成毅",
      "role": "朱瞻基",
-     "contribute": 0.4637,
-     "yiren": 0.4667
+     "contribute": 0.4448,
+     "yiren": 0.4865
     },
     {
      "actor": "林更新",
      "role": "吴定缘",
-     "contribute": 0.1957,
-     "yiren": 0.0452
+     "contribute": 0.177,
+     "yiren": 0.583
     },
     {
      "actor": "吴幸键",
      "role": "于谦",
-     "contribute": 0.0872,
-     "yiren": 0
+     "contribute": 0.1027,
+     "yiren": 0.2845
     },
     {
      "actor": "姜佩瑶",
      "role": "苏荆溪",
-     "contribute": 0.0736,
-     "yiren": 0.75
+     "contribute": 0.0773,
+     "yiren": 0.4994
     },
     {
-     "actor": "张凯莹",
-     "role": "吴玉露",
-     "contribute": 0.0394,
-     "yiren": 0.5
+     "actor": "陈数",
+     "role": "张皇后",
+     "contribute": 0.0417,
+     "yiren": 0.3915
     }
    ]
   }
